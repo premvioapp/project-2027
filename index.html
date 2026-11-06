@@ -75,8 +75,26 @@
   .tile svg{color:var(--green)}
   .tile b{font-size:20px;font-weight:600}
   .tile span{color:var(--muted);font-size:13px;min-height:18px}
-  table.docs{min-width:560px}
-  table.docs td.num{text-align:center;font-weight:600;width:72px}
+  table.docs{min-width:1130px}
+  .c-wk{width:130px}
+  td.wk input{text-align:center}
+  tr.newrow td{background:#fafafa}
+  tr.newrow td.num{color:#b0b0b0}
+  tr.newrow td.num svg{margin:auto}
+  tr.newrow input::placeholder{color:#a8a8a8}
+  td.tk.filled{background:#fde2e2!important;box-shadow:inset 3px 0 0 var(--nod)}
+  td.tk.filled input{color:var(--nod);font-weight:700}
+  .stage{margin:0 0 18px}
+  .shead{display:flex;align-items:center;gap:10px;background:#e8f2ec;border-bottom:1px solid #bcd8c6;border-top:1px solid #bcd8c6;padding:6px 10px;position:sticky;left:0;min-width:0}
+  .sname{font:inherit;font-weight:700;font-size:15px;border:1px solid transparent;background:transparent;padding:5px 8px;border-radius:2px;min-width:0;width:260px;max-width:50vw;outline:none;color:var(--green-d)}
+  .sname:hover{border-color:#bcd8c6;background:#fff}
+  .sname:focus{border-color:var(--green);box-shadow:0 0 0 1px var(--green);background:#fff}
+  .scount{font-size:13px;color:var(--muted);white-space:nowrap}
+  .shead .add{background:#fff;border:1px solid #bdbdbd;padding:5px 10px;border-radius:2px;font-weight:600;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+  .shead .add:hover{border-color:var(--green);color:var(--green)}
+  .stage th{top:0}
+  .c-dn{min-width:200px}.c-tx{min-width:170px}
+  td.num{text-align:center;font-weight:600;width:72px}
   .toast{position:fixed;left:50%;bottom:56px;transform:translateX(-50%);background:#323232;color:#fff;padding:9px 14px;border-radius:2px;font-size:13px;z-index:50}
   @media (max-width:600px){.bar .tb span{display:none}.bar .tb{padding:7px 9px}}
 </style>
@@ -105,6 +123,8 @@ const svg = {
   home: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11 12 4l9 7M5 10v10h5v-6h4v6h5V10"/></svg>',
   list: '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4h6v3H9zM7 5.5H5V21h14V5.5h-2"/><path d="m8.5 12 1.5 1.5 3-3M8.5 17.5h7"/></svg>',
   grid: '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="1"/><path d="M3 9h18M3 14.5h18M9 4v16"/></svg>',
+  alert: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.5v.01"/></svg>',
+  tasks: '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m4 6 1.5 1.5L8 5M4 12l1.5 1.5L8 11M4 18l1.5 1.5L8 17M11 6h9M11 12h9M11 18h9"/></svg>',
   out: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10"/></svg>',
 };
 const domain = window.CK_STAFF_EMAIL_DOMAIN || 'staff.cloudkitchen.app';
@@ -203,8 +223,10 @@ function showHome() {
 }
 const homeBtn = () => `<a class="tb" href="#" id="home">${svg.home}<span>Home</span></a>`;
 
-// ---------- What I need (document names) ----------
-const docs = new Map();
+// ---------- What I need: documents grouped in stages ----------
+const docs = new Map(), stages = new Map();
+const cleanTxt = v => v.replace(/\s+/g, ' ').trim();
+const byTime = m => (a, b) => (m.get(a).createdAt || 0) - (m.get(b).createdAt || 0);
 function showDocs() {
   $('#root').innerHTML = `
     <div class="app">
@@ -212,34 +234,30 @@ function showDocs() {
         ${homeBtn()}
         <h1 class="ttl">What I need</h1>
         <span class="sp"></span>
-        <button class="tb" id="addDoc">${svg.plus}<span>Add new doc</span></button>
+        <button class="tb" id="addStage">${svg.plus}<span>Add stage</span></button>
       </div>
-      <div class="wrap">
-        <table class="docs">
-          <thead><tr><th class="c-sn c">S.N.</th><th>Document name</th><th class="c">I have</th><th class="c">I don't have</th><th aria-label="Delete"></th></tr></thead>
-          <tbody id="docs"></tbody>
-        </table>
-        <div class="empty" id="dempty" hidden>No documents yet</div>
-      </div>
+      <div class="wrap" id="stages"></div>
       <div class="foot">
-        <button class="add" id="addDoc2">${svg.plus}Add new doc</button>
+        <button class="add" id="addStage2">${svg.plus}Add stage</button>
         <span id="dsum"></span>
       </div>
     </div>`;
-  $('#addDoc').onclick = $('#addDoc2').onclick = addDoc;
-  const tb = $('#docs');
-  tb.addEventListener('input', e => {
-    const i = e.target.closest('[data-d]'); if (!i) return;
-    const id = i.closest('tr').dataset.id, d = docs.get(id); if (d) d.name = i.value;
-    clearTimeout(timers['d' + id]);
-    timers['d' + id] = setTimeout(() => db.ref('rec/docs/' + id + '/name').set(i.value.replace(/\s+/g, ' ').trim()).catch(x => toast(friendly(x))), 500);
-  });
-  tb.addEventListener('change', e => {
-    const i = e.target.closest('[data-d]'); if (!i) return;
-    const id = i.closest('tr').dataset.id; clearTimeout(timers['d' + id]);
-    db.ref('rec/docs/' + id + '/name').set(i.value.replace(/\s+/g, ' ').trim()).catch(x => toast(friendly(x)));
-  });
-  tb.addEventListener('click', e => {
+  $('#addStage').onclick = $('#addStage2').onclick = addStage;
+  const box = $('#stages');
+  const saveField = (path, v, now) => {
+    clearTimeout(timers[path]);
+    const go = () => { if (gone.has(path.split('/')[2])) return; db.ref(path).set(cleanTxt(v)).catch(x => { if (!gone.has(path.split('/')[2])) toast(friendly(x)); }); };
+    if (now) go(); else timers[path] = setTimeout(go, 500);
+  };
+  const onEdit = now => e => {
+    const i = e.target.closest('[data-d]'), sn = e.target.closest('.sname');
+    if (i && i.closest('tr.newrow')) { if (!now && i.value.trim()) newDoc(i); return; }
+    if (i) { const id = i.closest('tr').dataset.id, f = i.dataset.d, d = docs.get(id); if (d) d[f] = i.value; if (f === 'task') i.closest('td').classList.toggle('filled', !!i.value.trim()); saveField(`rec/docs/${id}/${f}`, i.value, now); }
+    else if (sn) { const sid = sn.closest('.stage').dataset.sid, st = stages.get(sid); if (st) st.name = sn.value; saveField(`rec/stages/${sid}/name`, sn.value, now); }
+  };
+  box.addEventListener('input', onEdit(false));
+  box.addEventListener('change', onEdit(true));
+  box.addEventListener('click', e => {
     const h = e.target.closest('[data-h]');
     if (h) {
       const tr = h.closest('tr'), id = tr.dataset.id, d = docs.get(id); if (!d) return;
@@ -248,57 +266,154 @@ function showDocs() {
       db.ref('rec/docs/' + id + '/have').set(have).catch(x => toast(friendly(x)));
       return;
     }
-    const b = e.target.closest('.x'); if (!b) return;
-    const id = b.closest('tr').dataset.id, d = docs.get(id); if (!d) return;
-    if (!confirm(`Delete "${d.name || 'this document'}"?`)) return;
-    db.ref('rec/docs/' + id).remove().catch(x => toast(friendly(x)));
+    const x = e.target.closest('tr .x');
+    if (x) {
+      const id = x.closest('tr').dataset.id, d = docs.get(id); if (!d) return;
+      if (!confirm(`Delete "${d.name || 'this document'}"?`)) return;
+      cancelSaves('rec/docs/' + id + '/'); gone.add(id);
+      db.ref('rec/docs/' + id).remove().catch(err => toast(friendly(err)));
+      return;
+    }
+    const ds = e.target.closest('.sdel');
+    if (ds) {
+      const sid = ds.closest('.stage').dataset.sid, st = stages.get(sid); if (!st) return;
+      const inIt = [...docs.entries()].filter(([, d]) => stageOf(d) === sid).map(([id]) => id);
+      if (!confirm(`Delete "${st.name || 'this stage'}"${inIt.length ? ` and its ${inIt.length} ${inIt.length === 1 ? 'document' : 'documents'}` : ''}?`)) return;
+      const up = { ['stages/' + sid]: null }; inIt.forEach(id => { up['docs/' + id] = null; cancelSaves('rec/docs/' + id + '/'); gone.add(id); });
+      cancelSaves('rec/stages/' + sid + '/'); gone.add(sid);
+      db.ref('rec').update(up).catch(err => toast(friendly(err)));
+    }
   });
-  tb.addEventListener('keydown', e => {
-    if (e.key !== 'Enter' || !e.target.closest('[data-d]')) return;
+  box.addEventListener('keydown', e => {
+    const i = e.target.closest('[data-d]');
+    if (e.key !== 'Enter') return;
+    if (e.target.closest('.sname')) { e.preventDefault(); e.target.blur(); return; }
+    if (!i) return;
     e.preventDefault();
-    const next = e.target.closest('tr').nextElementSibling;
-    if (next) next.querySelector('[data-d]').focus(); else addDoc();
+    const next = i.closest('tr').nextElementSibling; // the empty row is always last
+    if (next) next.querySelector(`[data-d="${i.dataset.d}"]`).focus();
   });
-  const ref = db.ref('rec/docs');
-  const onVal = snap => {
-    const seen = new Set();
-    snap.forEach(c => { seen.add(c.key); docs.set(c.key, c.val()); });
-    for (const id of [...docs.keys()]) if (!seen.has(id)) docs.delete(id);
-    const ids = [...docs.keys()].sort((a, b) => (docs.get(a).createdAt || 0) - (docs.get(b).createdAt || 0));
-    [...tb.children].forEach(tr => { if (!docs.has(tr.dataset.id)) tr.remove(); });
-    ids.forEach((id, n) => {
-      let tr = tb.querySelector(`tr[data-id="${CSS.escape(id)}"]`);
-      if (!tr) {
-        tr = document.createElement('tr'); tr.dataset.id = id;
-        tr.innerHTML = `<td class="num"></td><td><input type="text" data-d="name" maxlength="120" aria-label="Document name" placeholder="Document name"></td><td class="tick"><button type="button" class="chk ap" data-h="yes" aria-label="I have">${svg.check}</button></td><td class="tick"><button type="button" class="chk rj" data-h="no" aria-label="I don't have">${svg.check}</button></td><td class="del"><button type="button" class="x" aria-label="Delete document">${svg.trash}</button></td>`;
+
+  let gotS = false, gotD = false, fixing = false;
+  const sref = db.ref('rec/stages'), dref = db.ref('rec/docs');
+  const onS = snap => { stages.clear(); snap.forEach(c => { stages.set(c.key, c.val()); }); gotS = true; draw(); };
+  const onD = snap => { docs.clear(); snap.forEach(c => { docs.set(c.key, c.val()); }); gotD = true; draw(); };
+  function draw() {
+    if (!gotS || !gotD) return;
+    // first time (or documents from before stages): put them in Stage 1.
+    // Waits a moment: when a stage and its documents are deleted together, the stage can disappear first.
+    if (!stages.size && !fixing) { fixing = true; setTimeout(fixOrphans, 0); return; }
+    if ([...docs.entries()].some(([id, d]) => !stages.has(d.stage) && !gone.has(id)) && !fixing) { fixing = true; setTimeout(fixOrphans, 900); }
+    const sids = [...stages.keys()].sort(byTime(stages));
+    [...box.children].forEach(sec => { if (!stages.has(sec.dataset.sid)) sec.remove(); });
+    sids.forEach((sid, n) => {
+      let sec = box.querySelector(`.stage[data-sid="${CSS.escape(sid)}"]`);
+      if (!sec) {
+        sec = document.createElement('section'); sec.className = 'stage'; sec.dataset.sid = sid;
+        sec.innerHTML = `
+          <div class="shead">
+            <input class="sname" maxlength="80" aria-label="Stage name">
+            <span class="scount"></span>
+            <span class="sp"></span>
+            <button type="button" class="x sdel" aria-label="Delete stage">${svg.trash}</button>
+          </div>
+          <table class="docs">
+            <thead><tr><th class="c-sn c">S.N.</th><th class="c-dn">Document name</th><th class="c-tx">How</th><th class="c-tx">Task</th><th class="c-tx">Who gives it</th><th class="c-wk c">Approx. time (weeks)</th><th class="c">I have</th><th class="c">I don't have</th><th aria-label="Delete"></th></tr></thead>
+            <tbody></tbody>
+          </table>
+`;
       }
-      if (tb.children[n] !== tr) tb.insertBefore(tr, tb.children[n] || null);
-      tr.querySelector('.num').textContent = n + 1;
-      const i = tr.querySelector('[data-d]'); if (i !== document.activeElement && i.value !== (docs.get(id).name || '')) i.value = docs.get(id).name || '';
-      drawHave(tr, docs.get(id).have);
+      if (box.children[n] !== sec) box.insertBefore(sec, box.children[n] || null);
+      const sn = sec.querySelector('.sname'), name = stages.get(sid).name || '';
+      if (sn !== document.activeElement && sn.value !== name) sn.value = name;
+      const tb = sec.querySelector('tbody');
+      const ids = [...docs.keys()].filter(id => stageOf(docs.get(id)) === sid).sort(byTime(docs));
+      [...tb.children].forEach(tr => { if (!tr.classList.contains('newrow') && !ids.includes(tr.dataset.id)) tr.remove(); });
+      ids.forEach((id, k) => {
+        let tr = box.querySelector(`tr[data-id="${CSS.escape(id)}"]`);
+        if (!tr) {
+          tr = document.createElement('tr'); tr.dataset.id = id;
+          tr.innerHTML = `<td class="num"></td><td><input type="text" data-d="name" maxlength="120" aria-label="Document name" placeholder="Document name"></td><td><input type="text" data-d="how" maxlength="300" aria-label="How"></td><td class="tk"><input type="text" data-d="task" maxlength="300" aria-label="Task"></td><td><input type="text" data-d="who" maxlength="300" aria-label="Who gives it"></td><td class="wk"><input type="text" data-d="weeks" maxlength="10" inputmode="decimal" aria-label="Approx. time in weeks"></td><td class="tick"><button type="button" class="chk ap" data-h="yes" aria-label="I have">${svg.check}</button></td><td class="tick"><button type="button" class="chk rj" data-h="no" aria-label="I don't have">${svg.check}</button></td><td class="del"><button type="button" class="x" aria-label="Delete document">${svg.trash}</button></td>`;
+        }
+        if (tb.children[k] !== tr) tb.insertBefore(tr, tb.children[k] || null);
+        tr.querySelector('.num').textContent = k + 1;
+        tr.querySelectorAll('[data-d]').forEach(i => { const v = docs.get(id)[i.dataset.d] || ''; if (i !== document.activeElement && i.value !== v) i.value = v; });
+        tr.querySelector('td.tk').classList.toggle('filled', !!(tr.querySelector('[data-d=task]').value || '').trim());
+        drawHave(tr, docs.get(id).have);
+      });
+      // empty row at the end: type in it to add a document
+      let nr = tb.querySelector('tr.newrow');
+      if (!nr) { nr = document.createElement('tr'); nr.className = 'newrow'; nr.innerHTML = `<td class="num">${svg.plus}</td><td><input type="text" data-d="name" maxlength="120" aria-label="Document name" placeholder="Document name"></td><td><input type="text" data-d="how" maxlength="300" aria-label="How"></td><td class="tk"><input type="text" data-d="task" maxlength="300" aria-label="Task"></td><td><input type="text" data-d="who" maxlength="300" aria-label="Who gives it"></td><td class="wk"><input type="text" data-d="weeks" maxlength="10" inputmode="decimal" aria-label="Approx. time in weeks"></td><td></td><td></td><td></td>`; }
+      if (tb.lastElementChild !== nr) tb.appendChild(nr);
+      // a document just made from the empty row: move the cursor into it
+      if (pendingNew && pendingNew.sid === sid) {
+        const tr = tb.querySelector(`tr[data-id="${CSS.escape(pendingNew.id)}"]`);
+        if (tr) {
+          const src = nr.querySelector(`[data-d="${pendingNew.f}"]`), dst = tr.querySelector(`[data-d="${pendingNew.f}"]`);
+          const v = src.value; pendingNew = null;
+          nr.querySelectorAll('input').forEach(x => { x.value = ''; });
+          dst.value = v; dst.focus(); dst.setSelectionRange(v.length, v.length);
+          tr.querySelector('td.tk').classList.toggle('filled', !!v.trim());
+          if (v !== (docs.get(tr.dataset.id)[dst.dataset.d] || '')) saveField(`rec/docs/${tr.dataset.id}/${dst.dataset.d}`, v);
+        }
+      }
+      const y = ids.filter(id => docs.get(id).have === 'yes').length;
+      sec.querySelector('.scount').textContent = `${ids.length} ${ids.length === 1 ? 'document' : 'documents'}${ids.length ? ` · I have ${y}` : ''}`;
     });
-    $('#dempty').hidden = docs.size > 0;
     docSum();
-  };
-  ref.on('value', onVal, e => toast(friendly(e)));
-  unsub = () => { ref.off('value', onVal); docs.clear(); };
+  }
+  function fixOrphans() {
+    if (!$('#stages')) { fixing = false; return; }
+    const orphans = [...docs.entries()].filter(([id, d]) => !stages.has(d.stage) && !gone.has(id)).map(([id]) => id);
+    if (stages.size && !orphans.length) { fixing = false; return; }
+    const sid = stages.size ? [...stages.keys()].sort(byTime(stages))[0] : db.ref('rec/stages').push().key;
+    const up = stages.size ? {} : { ['stages/' + sid]: { name: 'Stage 1', createdAt: TS() } };
+    orphans.forEach(id => { up[`docs/${id}/stage`] = sid; });
+    db.ref('rec').update(up).catch(() => {}).finally(() => { fixing = false; });
+  }
+  sref.on('value', onS, e => toast(friendly(e)));
+  dref.on('value', onD, e => toast(friendly(e)));
+  unsub = () => { sref.off('value', onS); dref.off('value', onD); docs.clear(); stages.clear(); };
 }
+const gone = new Set(); // ids just deleted: late saves for them are skipped
+const cancelSaves = prefix => Object.keys(timers).forEach(k => { if (k.startsWith(prefix)) { clearTimeout(timers[k]); delete timers[k]; } });
+const stageOf = d => stages.has(d.stage) ? d.stage : [...stages.keys()].sort(byTime(stages))[0];
 function drawHave(tr, have) {
   tr.className = have === 'yes' ? 'approved' : have === 'no' ? 'rejected' : '';
   tr.querySelectorAll('[data-h]').forEach(b => { const on = have === b.dataset.h; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
 }
 function docSum() {
-  const all = [...docs.values()], y = all.filter(d => d.have === 'yes').length, n = all.filter(d => d.have === 'no').length;
-  $('#dsum').innerHTML = `<b>${docs.size}</b> ${docs.size === 1 ? 'document' : 'documents'} · I have <b>${y}</b> · I don't have <b>${n}</b>${docs.size - y - n ? ` · Not marked <b>${docs.size - y - n}</b>` : ''}`;
+  const all = [...docs.values()], y = all.filter(d => d.have === 'yes').length, n = all.filter(d => d.have === 'no').length, e = $('#dsum');
+  if (e) e.innerHTML = `<b>${stages.size}</b> ${stages.size === 1 ? 'stage' : 'stages'} · <b>${docs.size}</b> ${docs.size === 1 ? 'document' : 'documents'} · I have <b>${y}</b> · I don't have <b>${n}</b>${docs.size - y - n ? ` · Not marked <b>${docs.size - y - n}</b>` : ''}`;
 }
-async function addDoc() {
+async function waitFor(sel) {
+  for (let i = 0; i < 40; i++) { const el = document.querySelector(sel); if (el) return el; await new Promise(r => setTimeout(r, 50)); }
+  return null;
+}
+let pendingNew = null;
+function newDoc(i) {
+  if (pendingNew) return; // already being made
+  const sid = i.closest('.stage').dataset.sid, f = i.dataset.d;
   const ref = db.ref('rec/docs').push();
-  try { await ref.set({ name: '', have: '', createdAt: TS() }); } catch (x) { return toast(friendly(x)); }
-  let tr = null;
-  for (let i = 0; !tr && i < 40; i++) { tr = document.querySelector(`#docs tr[data-id="${CSS.escape(ref.key)}"]`); if (!tr) await new Promise(r => setTimeout(r, 50)); }
-  if (tr) { tr.scrollIntoView({ block: 'nearest' }); tr.querySelector('[data-d]').focus(); }
+  pendingNew = { id: ref.key, sid, f };
+  const row = { name: '', how: '', task: '', who: '', weeks: '', have: '', stage: sid, createdAt: TS() };
+  row[f] = cleanTxt(i.value);
+  ref.set(row).catch(x => { pendingNew = null; toast(friendly(x)); });
+}
+async function addStage() {
+  const ref = db.ref('rec/stages').push();
+  try { await ref.set({ name: 'Stage ' + (stages.size + 1), createdAt: TS() }); } catch (x) { return toast(friendly(x)); }
+  const sec = await waitFor(`#stages .stage[data-sid="${CSS.escape(ref.key)}"]`);
+  if (sec) { sec.scrollIntoView({ block: 'nearest' }); const i = sec.querySelector('.sname'); i.focus(); i.select(); }
 }
 
+// ---------- saving helper ----------
+function saveAt(path, v, now) {
+  clearTimeout(timers[path]);
+  const id = path.split('/')[2];
+  const go = () => { if (gone.has(id)) return; db.ref(path).set(v).catch(x => { if (!gone.has(id)) toast(friendly(x)); }); };
+  if (now) go(); else timers[path] = setTimeout(go, 500);
+}
 // ---------- See records ----------
 function showSheet() {
   $('#root').innerHTML = `
@@ -410,6 +525,7 @@ function onClick(e) {
   const tr = b.closest('tr'), id = tr.dataset.id, r = rows.get(id); if (!r) return;
   if (b.classList.contains('x')) {
     if (!confirm(`Delete row ${r.sn || ''} ${r.name || ''}?`.replace(/\s+/g, ' '))) return;
+    FIELDS.forEach(f => clearTimeout(timers[id + f]));
     db.ref('rec/rows/' + id).remove().catch(x => toast(friendly(x)));
     return;
   }
