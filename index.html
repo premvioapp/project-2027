@@ -79,6 +79,14 @@
   .c-wk{width:130px}
   td.wk input{text-align:center}
   table.pdocs{min-width:420px}
+  .pnote{display:flex;align-items:flex-start;gap:8px;padding:8px 10px;border-bottom:1px solid var(--grid);background:#fff;color:#c9c9c9;cursor:text}
+  .pnote svg{flex:none;margin-top:3px}
+  .pnote textarea{flex:1;border:0;outline:none;resize:none;background:transparent;font:inherit;line-height:1.5;padding:2px 0;min-height:24px;overflow:hidden;color:var(--text)}
+  .pnote textarea::placeholder{color:#a8a8a8}
+  .pnote:focus-within{box-shadow:inset 0 0 0 2px var(--green)}
+  .pnote.filled{background:#fde2e2;color:var(--nod);box-shadow:inset 4px 0 0 var(--nod)}
+  .pnote.filled:focus-within{box-shadow:inset 4px 0 0 var(--nod),inset 0 0 0 2px var(--nod)}
+  .pnote.filled textarea{color:var(--nod);font-weight:700;font-size:15px}
   .stage[hidden]{display:none}
   tr.newrow td{background:#fafafa}
   tr.newrow td.num{color:#b0b0b0}
@@ -444,8 +452,13 @@ function showWhere() {
   $('#pq').oninput = () => { pq = $('#pq').value.trim().toLowerCase(); drawPlaces(); };
   const box = $('#places');
   const onEdit = now => e => {
-    const pn = e.target.closest('.pname'), pd = e.target.closest('[data-pd]');
-    if (pn) { const pid = pn.closest('.stage').dataset.pid, pl = places.get(pid); if (pl) pl.name = pn.value; saveAt(`rec/places/${pid}/name`, cleanTxt(pn.value), now); }
+    const pn = e.target.closest('.pname'), pd = e.target.closest('[data-pd]'), nt = e.target.closest('[data-pn]');
+    if (nt) {
+      const pid = nt.closest('.stage').dataset.pid, pl = places.get(pid); if (pl) pl.note = nt.value;
+      nt.closest('.pnote').classList.toggle('filled', !!nt.value.trim()); grow(nt);
+      saveAt(`rec/places/${pid}/note`, nt.value.replace(/[ \t]+/g, ' ').trim(), now);
+    }
+    else if (pn) { const pid = pn.closest('.stage').dataset.pid, pl = places.get(pid); if (pl) pl.name = pn.value; saveAt(`rec/places/${pid}/name`, cleanTxt(pn.value), now); }
     else if (pd) {
       const tr = pd.closest('tr'), pid = pd.closest('.stage').dataset.pid;
       if (tr.classList.contains('newrow')) { if (!now && pd.value.trim()) newPlaceDoc(pid, pd); return; }
@@ -475,7 +488,7 @@ function showWhere() {
   });
   box.addEventListener('keydown', e => {
     if (e.key !== 'Enter') return;
-    if (e.target.closest('.pname')) { e.preventDefault(); const nr = e.target.closest('.stage').querySelector('tr.newrow [data-pd]'); if (nr) nr.focus(); return; }
+    if (e.target.closest('.pname')) { e.preventDefault(); e.target.closest('.stage').querySelector('[data-pn]').focus(); return; }
     const pd = e.target.closest('[data-pd]'); if (!pd) return;
     e.preventDefault();
     const next = pd.closest('tr').nextElementSibling;
@@ -505,6 +518,7 @@ function drawPlaces() {
           <span class="sp"></span>
           <button type="button" class="x pdel" aria-label="Delete name">${svg.trash}</button>
         </div>
+        <label class="pnote">${svg.alert}<textarea data-pn="note" rows="1" maxlength="1000" aria-label="Instruction" placeholder="Add instruction"></textarea></label>
         <table class="pdocs">
           <thead><tr><th class="c-sn c">S.N.</th><th>Document needed</th><th aria-label="Delete"></th></tr></thead>
           <tbody></tbody>
@@ -513,6 +527,10 @@ function drawPlaces() {
     if (box.children[n] !== sec) box.insertBefore(sec, box.children[n] || null);
     const pn = sec.querySelector('.pname');
     if (pn !== document.activeElement && pn.value !== (pl.name || '')) pn.value = pl.name || '';
+    const nt = sec.querySelector('[data-pn]');
+    if (nt !== document.activeElement && nt.value !== (pl.note || '')) nt.value = pl.note || '';
+    sec.querySelector('.pnote').classList.toggle('filled', !!nt.value.trim());
+    requestAnimationFrame(() => grow(nt));
     const tb = sec.querySelector('tbody');
     [...tb.children].forEach(tr => { if (!tr.classList.contains('newrow') && !dm[tr.dataset.id]) tr.remove(); });
     dids.forEach((did, k) => {
@@ -539,7 +557,7 @@ function drawPlaces() {
     }
     sec.querySelector('.scount').textContent = `${dids.length} ${dids.length === 1 ? 'document' : 'documents'}`;
     // search: name or any document
-    const hit = !pq || String(pl.name || '').toLowerCase().includes(pq) || dids.some(d => String(dm[d].doc || '').toLowerCase().includes(pq));
+    const hit = !pq || String(pl.name || '').toLowerCase().includes(pq) || String(pl.note || '').toLowerCase().includes(pq) || dids.some(d => String(dm[d].doc || '').toLowerCase().includes(pq));
     sec.hidden = !hit && !sec.contains(document.activeElement);
     if (!sec.hidden) shown++;
   });
@@ -550,6 +568,7 @@ function drawPlaces() {
   em.textContent = places.size ? `Nothing matches "${$('#pq').value.trim()}"` : 'No names yet';
   $('#psum').innerHTML = `<b>${places.size}</b> ${places.size === 1 ? 'name' : 'names'} · <b>${docCount}</b> ${docCount === 1 ? 'document' : 'documents'}`;
 }
+const grow = t => { t.style.height = 'auto'; t.style.height = t.scrollHeight + 'px'; };
 function newPlaceDoc(pid, input) {
   if (pendingPD) return;
   const ref = db.ref(`rec/places/${pid}/docs`).push();
