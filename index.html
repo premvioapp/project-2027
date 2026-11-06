@@ -67,6 +67,16 @@
   .foot .add{background:#fff;border:1px solid #bdbdbd;padding:5px 10px;border-radius:2px;font-weight:600;display:inline-flex;align-items:center;gap:6px}
   .foot .add:hover{border-color:var(--green);color:var(--green)}
   .foot b{font-weight:600}
+  a.tb{text-decoration:none}
+  .bar .ttl{font-size:16px;font-weight:600;margin:0 4px}
+  .home{flex:1;display:flex;align-items:center;justify-content:center;gap:20px;padding:24px;flex-wrap:wrap;background:#f5f5f5}
+  .tile{width:260px;height:180px;background:#fff;border:1px solid var(--grid);border-top:4px solid var(--green);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-decoration:none;color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.06)}
+  .tile:hover,.tile:focus-visible{border-color:var(--green);box-shadow:0 2px 12px rgba(33,115,70,.18);outline:none}
+  .tile svg{color:var(--green)}
+  .tile b{font-size:20px;font-weight:600}
+  .tile span{color:var(--muted);font-size:13px;min-height:18px}
+  table.docs{min-width:560px}
+  table.docs td.num{text-align:center;font-weight:600;width:72px}
   .toast{position:fixed;left:50%;bottom:56px;transform:translateX(-50%);background:#323232;color:#fff;padding:9px 14px;border-radius:2px;font-size:13px;z-index:50}
   @media (max-width:600px){.bar .tb span{display:none}.bar .tb{padding:7px 9px}}
 </style>
@@ -92,6 +102,9 @@ const svg = {
   check: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>',
   trash: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>',
   down: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m-5-5 5 5 5-5M5 20h14"/></svg>',
+  home: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11 12 4l9 7M5 10v10h5v-6h4v6h5V10"/></svg>',
+  list: '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4h6v3H9zM7 5.5H5V21h14V5.5h-2"/><path d="m8.5 12 1.5 1.5 3-3M8.5 17.5h7"/></svg>',
+  grid: '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="1"/><path d="M3 9h18M3 14.5h18M9 4v16"/></svg>',
   out: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10"/></svg>',
 };
 const domain = window.CK_STAFF_EMAIL_DOMAIN || 'staff.cloudkitchen.app';
@@ -109,15 +122,25 @@ function friendly(e) {
 }
 
 // ---------- login / first-time setup ----------
-let unsub = null, creating = false;
+let unsub = null, creating = false, signedIn = false;
+// pages: home (two buttons), #needs (What I need), #records (See records)
+function stop() { if (unsub) { unsub(); unsub = null; } }
+function route() {
+  if (!signedIn) return;
+  stop();
+  const h = location.hash;
+  if (h === '#records') showSheet(); else if (h === '#needs') showDocs(); else showHome();
+}
+window.addEventListener('hashchange', route);
 auth.onAuthStateChanged(async user => {
   if (creating) return; // first account is being set up
-  if (unsub) { unsub(); unsub = null; }
+  stop();
+  signedIn = false;
   if (!user) return showLogin();
   try {
     const ok = (await db.ref('rec/members/' + user.uid).once('value')).val() === true;
     if (!ok) { await auth.signOut(); return showLogin('This account has no access'); }
-    showSheet();
+    signedIn = true; route();
   } catch (e) { await auth.signOut(); showLogin(friendly(e)); }
 });
 
@@ -149,7 +172,7 @@ async function showLogin(msg) {
           try { await db.ref('rec').update({ setup: true, ['members/' + user.uid]: true }); }
           catch (x) { creating = false; await auth.signOut(); throw x; }
         } finally { creating = false; }
-        showSheet();
+        signedIn = true; route();
       }
     } catch (x) { err.textContent = friendly(x); b.disabled = false; }
   };
@@ -159,17 +182,134 @@ async function showLogin(msg) {
 const rows = new Map(); // id -> data
 const FIELDS = ['sn', 'name', 'forDate', 'sent', 'reply'];
 let q = '';
-function showSheet() {
-  if (unsub) return;
+function showHome() {
   $('#root').innerHTML = `
     <div class="app">
       <div class="bar">
+        <span class="sp"></span>
+        <button class="tb" id="out" aria-label="Log out">${svg.out}<span>Log out</span></button>
+      </div>
+      <div class="home">
+        <a class="tile" href="#needs" id="goNeeds">${svg.list}<b>What I need</b><span id="nDocs"></span></a>
+        <a class="tile" href="#records" id="goRecords">${svg.grid}<b>See records</b><span id="nRecs"></span></a>
+      </div>
+    </div>`;
+  $('#out').onclick = () => auth.signOut();
+  const a = db.ref('rec/docs'), b = db.ref('rec/rows');
+  const fa = s => { const v = Object.values(s.val() || {}), n = v.length, y = v.filter(d => d.have === 'yes').length; const e = $('#nDocs'); if (e) e.textContent = (n === 1 ? '1 document' : n + ' documents') + (n ? ` · I have ${y}` : ''); };
+  const fb = s => { const n = Object.keys(s.val() || {}).length; const e = $('#nRecs'); if (e) e.textContent = n === 1 ? '1 record' : n + ' records'; };
+  a.on('value', fa, () => {}); b.on('value', fb, () => {});
+  unsub = () => { a.off('value', fa); b.off('value', fb); };
+}
+const homeBtn = () => `<a class="tb" href="#" id="home">${svg.home}<span>Home</span></a>`;
+
+// ---------- What I need (document names) ----------
+const docs = new Map();
+function showDocs() {
+  $('#root').innerHTML = `
+    <div class="app">
+      <div class="bar">
+        ${homeBtn()}
+        <h1 class="ttl">What I need</h1>
+        <span class="sp"></span>
+        <button class="tb" id="addDoc">${svg.plus}<span>Add new doc</span></button>
+      </div>
+      <div class="wrap">
+        <table class="docs">
+          <thead><tr><th class="c-sn c">S.N.</th><th>Document name</th><th class="c">I have</th><th class="c">I don't have</th><th aria-label="Delete"></th></tr></thead>
+          <tbody id="docs"></tbody>
+        </table>
+        <div class="empty" id="dempty" hidden>No documents yet</div>
+      </div>
+      <div class="foot">
+        <button class="add" id="addDoc2">${svg.plus}Add new doc</button>
+        <span id="dsum"></span>
+      </div>
+    </div>`;
+  $('#addDoc').onclick = $('#addDoc2').onclick = addDoc;
+  const tb = $('#docs');
+  tb.addEventListener('input', e => {
+    const i = e.target.closest('[data-d]'); if (!i) return;
+    const id = i.closest('tr').dataset.id, d = docs.get(id); if (d) d.name = i.value;
+    clearTimeout(timers['d' + id]);
+    timers['d' + id] = setTimeout(() => db.ref('rec/docs/' + id + '/name').set(i.value.replace(/\s+/g, ' ').trim()).catch(x => toast(friendly(x))), 500);
+  });
+  tb.addEventListener('change', e => {
+    const i = e.target.closest('[data-d]'); if (!i) return;
+    const id = i.closest('tr').dataset.id; clearTimeout(timers['d' + id]);
+    db.ref('rec/docs/' + id + '/name').set(i.value.replace(/\s+/g, ' ').trim()).catch(x => toast(friendly(x)));
+  });
+  tb.addEventListener('click', e => {
+    const h = e.target.closest('[data-h]');
+    if (h) {
+      const tr = h.closest('tr'), id = tr.dataset.id, d = docs.get(id); if (!d) return;
+      const have = d.have === h.dataset.h ? '' : h.dataset.h; // tap again to clear
+      d.have = have; drawHave(tr, have); docSum();
+      db.ref('rec/docs/' + id + '/have').set(have).catch(x => toast(friendly(x)));
+      return;
+    }
+    const b = e.target.closest('.x'); if (!b) return;
+    const id = b.closest('tr').dataset.id, d = docs.get(id); if (!d) return;
+    if (!confirm(`Delete "${d.name || 'this document'}"?`)) return;
+    db.ref('rec/docs/' + id).remove().catch(x => toast(friendly(x)));
+  });
+  tb.addEventListener('keydown', e => {
+    if (e.key !== 'Enter' || !e.target.closest('[data-d]')) return;
+    e.preventDefault();
+    const next = e.target.closest('tr').nextElementSibling;
+    if (next) next.querySelector('[data-d]').focus(); else addDoc();
+  });
+  const ref = db.ref('rec/docs');
+  const onVal = snap => {
+    const seen = new Set();
+    snap.forEach(c => { seen.add(c.key); docs.set(c.key, c.val()); });
+    for (const id of [...docs.keys()]) if (!seen.has(id)) docs.delete(id);
+    const ids = [...docs.keys()].sort((a, b) => (docs.get(a).createdAt || 0) - (docs.get(b).createdAt || 0));
+    [...tb.children].forEach(tr => { if (!docs.has(tr.dataset.id)) tr.remove(); });
+    ids.forEach((id, n) => {
+      let tr = tb.querySelector(`tr[data-id="${CSS.escape(id)}"]`);
+      if (!tr) {
+        tr = document.createElement('tr'); tr.dataset.id = id;
+        tr.innerHTML = `<td class="num"></td><td><input type="text" data-d="name" maxlength="120" aria-label="Document name" placeholder="Document name"></td><td class="tick"><button type="button" class="chk ap" data-h="yes" aria-label="I have">${svg.check}</button></td><td class="tick"><button type="button" class="chk rj" data-h="no" aria-label="I don't have">${svg.check}</button></td><td class="del"><button type="button" class="x" aria-label="Delete document">${svg.trash}</button></td>`;
+      }
+      if (tb.children[n] !== tr) tb.insertBefore(tr, tb.children[n] || null);
+      tr.querySelector('.num').textContent = n + 1;
+      const i = tr.querySelector('[data-d]'); if (i !== document.activeElement && i.value !== (docs.get(id).name || '')) i.value = docs.get(id).name || '';
+      drawHave(tr, docs.get(id).have);
+    });
+    $('#dempty').hidden = docs.size > 0;
+    docSum();
+  };
+  ref.on('value', onVal, e => toast(friendly(e)));
+  unsub = () => { ref.off('value', onVal); docs.clear(); };
+}
+function drawHave(tr, have) {
+  tr.className = have === 'yes' ? 'approved' : have === 'no' ? 'rejected' : '';
+  tr.querySelectorAll('[data-h]').forEach(b => { const on = have === b.dataset.h; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
+}
+function docSum() {
+  const all = [...docs.values()], y = all.filter(d => d.have === 'yes').length, n = all.filter(d => d.have === 'no').length;
+  $('#dsum').innerHTML = `<b>${docs.size}</b> ${docs.size === 1 ? 'document' : 'documents'} · I have <b>${y}</b> · I don't have <b>${n}</b>${docs.size - y - n ? ` · Not marked <b>${docs.size - y - n}</b>` : ''}`;
+}
+async function addDoc() {
+  const ref = db.ref('rec/docs').push();
+  try { await ref.set({ name: '', have: '', createdAt: TS() }); } catch (x) { return toast(friendly(x)); }
+  let tr = null;
+  for (let i = 0; !tr && i < 40; i++) { tr = document.querySelector(`#docs tr[data-id="${CSS.escape(ref.key)}"]`); if (!tr) await new Promise(r => setTimeout(r, 50)); }
+  if (tr) { tr.scrollIntoView({ block: 'nearest' }); tr.querySelector('[data-d]').focus(); }
+}
+
+// ---------- See records ----------
+function showSheet() {
+  $('#root').innerHTML = `
+    <div class="app">
+      <div class="bar">
+        ${homeBtn()}
         <label class="search">${svg.search}<input id="q" type="search" placeholder="Search name or S.N." aria-label="Search"></label>
         <span class="net" id="net" hidden>Offline</span>
         <span class="sp"></span>
         <button class="tb" id="add">${svg.plus}<span>New row</span></button>
         <button class="tb" id="csv">${svg.down}<span>Download Excel</span></button>
-        <button class="tb" id="out" aria-label="Log out">${svg.out}<span>Log out</span></button>
       </div>
       <div class="wrap" id="wrap">
         <table>
@@ -189,7 +329,6 @@ function showSheet() {
   $('#q').oninput = () => { q = $('#q').value.trim().toLowerCase(); filter(); };
   $('#add').onclick = $('#add2').onclick = addRow;
   $('#csv').onclick = download;
-  $('#out').onclick = () => auth.signOut();
   const tb = $('#rows');
   tb.addEventListener('input', onInput);
   tb.addEventListener('change', onInput);
