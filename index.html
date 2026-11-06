@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Records</title>
+<link rel="icon" href="data:,">
+<style>
+  :root{--green:#217346;--green-d:#185c37;--grid:#d4d4d4;--head:#f3f3f3;--text:#1f1f1f;--muted:#6b6b6b;--ok:#e2f0d9;--okd:#1e7b34;--no:#fbe0e0;--nod:#c42b1c}
+  *{box-sizing:border-box}
+  html,body,#root{margin:0;height:100%}
+  body{font:14px/1.4 Calibri,"Segoe UI",Carlito,Arial,sans-serif;color:var(--text);background:#fff}
+  button,input{font:inherit;color:inherit}
+  button{cursor:pointer}
+  [hidden]{display:none!important}
+  svg{display:block}
+
+  /* login */
+  .login{min-height:100%;display:grid;place-items:center;background:#f5f5f5;padding:20px}
+  .login form{background:#fff;border:1px solid var(--grid);width:100%;max-width:340px;padding:24px;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+  .login h1{font-size:20px;margin:0 0 18px;font-weight:600}
+  .login label{display:block;font-size:13px;color:var(--muted);margin:0 0 4px}
+  .login input{width:100%;border:1px solid #bdbdbd;padding:9px 10px;margin:0 0 14px;outline:none;border-radius:2px}
+  .login input:focus{border-color:var(--green);box-shadow:0 0 0 1px var(--green)}
+  .btn{background:var(--green);color:#fff;border:0;padding:9px 14px;border-radius:2px;font-weight:600;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+  .btn:hover{background:var(--green-d)}
+  .btn:disabled{opacity:.6;cursor:default}
+  .login .btn{width:100%;justify-content:center;padding:10px}
+  .err{color:var(--nod);font-size:13px;min-height:18px;margin:-4px 0 8px}
+
+  /* sheet */
+  .app{display:flex;flex-direction:column;height:100%}
+  .bar{background:var(--green);color:#fff;display:flex;align-items:center;gap:8px;padding:8px 12px;flex-wrap:wrap}
+  .search{display:flex;align-items:center;gap:6px;background:#fff;color:var(--text);border-radius:2px;padding:0 8px;flex:1 1 220px;max-width:380px}
+  .search svg{color:var(--muted);flex:none}
+  .search input{border:0;outline:none;padding:8px 0;width:100%;background:transparent}
+  .bar .tb{background:transparent;border:1px solid rgba(255,255,255,.55);color:#fff;padding:7px 11px;border-radius:2px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+  .bar .tb:hover{background:rgba(255,255,255,.14)}
+  .bar .sp{flex:1}
+  .net{font-size:12px;background:#fff3cd;color:#7a5a00;padding:3px 8px;border-radius:2px}
+  .wrap{flex:1;overflow:auto;background:#fff}
+  table{border-collapse:separate;border-spacing:0;min-width:930px;width:100%}
+  th,td{border-right:1px solid var(--grid);border-bottom:1px solid var(--grid);padding:0;height:34px}
+  th{background:var(--head);font-weight:600;font-size:13px;text-align:left;padding:0 8px;position:sticky;top:0;z-index:2;color:#333;border-bottom-color:#bdbdbd}
+  th:first-child,td:first-child{position:sticky;left:0;z-index:1;background:var(--head)}
+  th:first-child{z-index:3}
+  td:first-child input{text-align:center;font-weight:600}
+  th.c{text-align:center}
+  td input[type=text],td input[type=date]{width:100%;height:33px;border:0;padding:0 8px;background:transparent;outline:none;border-radius:0}
+  td input:focus{box-shadow:inset 0 0 0 2px var(--green);background:#fff}
+  td.tick{text-align:center;width:96px}
+  .chk{width:22px;height:22px;border:1.5px solid #8a8a8a;background:#fff;border-radius:3px;display:inline-grid;place-items:center;padding:0;vertical-align:middle}
+  .chk svg{opacity:0}
+  .chk:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+  .chk.ap.on{background:var(--okd);border-color:var(--okd);color:#fff}
+  .chk.rj.on{background:var(--nod);border-color:var(--nod);color:#fff}
+  .chk.on svg{opacity:1}
+  tr.approved td:not(:first-child){background:var(--ok)}
+  tr.rejected td:not(:first-child){background:var(--no)}
+  td.del{width:40px;text-align:center}
+  .x{border:0;background:transparent;color:#9a9a9a;width:32px;height:32px;display:inline-grid;place-items:center;border-radius:2px}
+  .x:hover{color:var(--nod);background:#fde7e7}
+  .c-sn{width:72px}.c-name{min-width:220px}.c-date{width:170px}
+  .empty{padding:28px 12px;color:var(--muted);text-align:center}
+  .foot{border-top:1px solid var(--grid);background:var(--head);display:flex;align-items:center;gap:14px;padding:6px 12px;font-size:13px;flex-wrap:wrap}
+  .foot .add{background:#fff;border:1px solid #bdbdbd;padding:5px 10px;border-radius:2px;font-weight:600;display:inline-flex;align-items:center;gap:6px}
+  .foot .add:hover{border-color:var(--green);color:var(--green)}
+  .foot b{font-weight:600}
+  .toast{position:fixed;left:50%;bottom:56px;transform:translateX(-50%);background:#323232;color:#fff;padding:9px 14px;border-radius:2px;font-size:13px;z-index:50}
+  @media (max-width:600px){.bar .tb span{display:none}.bar .tb{padding:7px 9px}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="firebase-app-compat.js"></script>
+<script src="firebase-auth-compat.js"></script>
+<script src="firebase-database-compat.js"></script>
+<script src="config.js"></script>
+<script>
+'use strict';
+// Record panel: separate site (own login), data in rec/ of the same database.
+const app = firebase.initializeApp(window.CK_FIREBASE, 'ck-records');
+const auth = app.auth(), db = app.database();
+const TS = () => firebase.database.ServerValue.TIMESTAMP;
+const $ = (s, el = document) => el.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const svg = {
+  search: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>',
+  plus: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+  check: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>',
+  trash: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>',
+  down: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m-5-5 5 5 5-5M5 20h14"/></svg>',
+  out: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10"/></svg>',
+};
+const domain = window.CK_STAFF_EMAIL_DOMAIN || 'staff.cloudkitchen.app';
+const emailOf = u => `${u}.rec@${domain}`;
+function toast(t) { const d = document.createElement('div'); d.className = 'toast'; d.textContent = t; document.body.appendChild(d); setTimeout(() => d.remove(), 2600); }
+function friendly(e) {
+  const c = (e && (e.code || e.message)) || '';
+  if (/invalid-credential|wrong-password|user-not-found|invalid-login/i.test(c)) return 'Wrong username or password';
+  if (/email-already-in-use/i.test(c)) return 'That username is taken';
+  if (/weak-password/i.test(c)) return 'Password must be at least 6 characters';
+  if (/too-many-requests/i.test(c)) return 'Too many tries. Wait a minute and try again';
+  if (/network/i.test(c)) return 'No internet connection';
+  if (/PERMISSION_DENIED|permission/i.test(c)) return 'Not allowed';
+  return 'Something went wrong. Try again';
+}
+
+// ---------- login / first-time setup ----------
+let unsub = null, creating = false;
+auth.onAuthStateChanged(async user => {
+  if (creating) return; // first account is being set up
+  if (unsub) { unsub(); unsub = null; }
+  if (!user) return showLogin();
+  try {
+    const ok = (await db.ref('rec/members/' + user.uid).once('value')).val() === true;
+    if (!ok) { await auth.signOut(); return showLogin('This account has no access'); }
+    showSheet();
+  } catch (e) { await auth.signOut(); showLogin(friendly(e)); }
+});
+
+async function showLogin(msg) {
+  let setupDone = true;
+  try { setupDone = (await db.ref('rec/setup').once('value')).val() === true; } catch {}
+  $('#root').innerHTML = `
+    <div class="login"><form id="lf" autocomplete="on">
+      <h1>${setupDone ? 'Sign in' : 'Create account'}</h1>
+      <label for="u">Username</label><input id="u" name="username" autocomplete="username" autocapitalize="none" spellcheck="false" required>
+      <label for="p">Password</label><input id="p" name="password" type="password" autocomplete="${setupDone ? 'current-password' : 'new-password'}" required minlength="6">
+      ${setupDone ? '' : '<label for="p2">Password again</label><input id="p2" type="password" autocomplete="new-password" required minlength="6">'}
+      <div class="err" id="lerr">${esc(msg || '')}</div>
+      <button class="btn">${setupDone ? 'Sign in' : 'Create account'}</button>
+    </form></div>`;
+  $('#u').focus();
+  $('#lf').onsubmit = async e => {
+    e.preventDefault();
+    const u = $('#u').value.trim().toLowerCase(), pw = $('#p').value, err = $('#lerr'), b = $('#lf button');
+    if (!/^[a-z0-9_]{3,20}$/.test(u)) return err.textContent = 'Username: 3 to 20 letters, numbers or _';
+    if (!setupDone && pw !== $('#p2').value) return err.textContent = 'Passwords do not match';
+    b.disabled = true; err.textContent = '';
+    try {
+      if (setupDone) await auth.signInWithEmailAndPassword(emailOf(u), pw);
+      else {
+        creating = true;
+        try {
+          const { user } = await auth.createUserWithEmailAndPassword(emailOf(u), pw);
+          try { await db.ref('rec').update({ setup: true, ['members/' + user.uid]: true }); }
+          catch (x) { creating = false; await auth.signOut(); throw x; }
+        } finally { creating = false; }
+        showSheet();
+      }
+    } catch (x) { err.textContent = friendly(x); b.disabled = false; }
+  };
+}
+
+// ---------- the sheet ----------
+const rows = new Map(); // id -> data
+const FIELDS = ['sn', 'name', 'forDate', 'sent', 'reply'];
+let q = '';
+function showSheet() {
+  if (unsub) return;
+  $('#root').innerHTML = `
+    <div class="app">
+      <div class="bar">
+        <label class="search">${svg.search}<input id="q" type="search" placeholder="Search name or S.N." aria-label="Search"></label>
+        <span class="net" id="net" hidden>Offline</span>
+        <span class="sp"></span>
+        <button class="tb" id="add">${svg.plus}<span>New row</span></button>
+        <button class="tb" id="csv">${svg.down}<span>Download Excel</span></button>
+        <button class="tb" id="out" aria-label="Log out">${svg.out}<span>Log out</span></button>
+      </div>
+      <div class="wrap" id="wrap">
+        <table>
+          <thead><tr>
+            <th class="c-sn c">S.N.</th><th class="c-name">Name</th><th class="c-date">For when</th><th class="c-date">Sent date</th><th class="c-date">Reply received date</th>
+            <th class="c">Approved</th><th class="c">Rejected</th><th aria-label="Delete"></th>
+          </tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+        <div class="empty" id="empty" hidden></div>
+      </div>
+      <div class="foot">
+        <button class="add" id="add2">${svg.plus}New row</button>
+        <span id="sum"></span>
+      </div>
+    </div>`;
+  $('#q').oninput = () => { q = $('#q').value.trim().toLowerCase(); filter(); };
+  $('#add').onclick = $('#add2').onclick = addRow;
+  $('#csv').onclick = download;
+  $('#out').onclick = () => auth.signOut();
+  const tb = $('#rows');
+  tb.addEventListener('input', onInput);
+  tb.addEventListener('change', onInput);
+  tb.addEventListener('click', onClick);
+  tb.addEventListener('keydown', onKey);
+  tb.addEventListener('focusout', () => setTimeout(() => { if (!tb.contains(document.activeElement)) sortRows(); }, 0));
+
+  const ref = db.ref('rec/rows');
+  const onVal = snap => {
+    const seen = new Set();
+    snap.forEach(c => { seen.add(c.key); rows.set(c.key, c.val()); drawRow(c.key); });
+    for (const id of [...rows.keys()]) if (!seen.has(id)) { rows.delete(id); const tr = trOf(id); if (tr) tr.remove(); }
+    if (!tb.contains(document.activeElement)) sortRows();
+    filter();
+  };
+  ref.on('value', onVal, e => toast(friendly(e)));
+  const con = db.ref('.info/connected');
+  const onCon = s => { const n = $('#net'); if (n) n.hidden = s.val() !== false; };
+  con.on('value', onCon);
+  unsub = () => { ref.off('value', onVal); con.off('value', onCon); rows.clear(); };
+}
+
+const trOf = id => document.querySelector(`#rows tr[data-id="${CSS.escape(id)}"]`);
+function drawRow(id) {
+  const r = rows.get(id); if (!r) return;
+  let tr = trOf(id);
+  if (!tr) {
+    tr = document.createElement('tr'); tr.dataset.id = id;
+    tr.innerHTML = `
+      <td><input type="text" data-f="sn" maxlength="12" inputmode="numeric" aria-label="S.N."></td>
+      <td><input type="text" data-f="name" maxlength="120" aria-label="Name"></td>
+      <td><input type="date" data-f="forDate" aria-label="For when"></td>
+      <td><input type="date" data-f="sent" aria-label="Sent date"></td>
+      <td><input type="date" data-f="reply" aria-label="Reply received date"></td>
+      <td class="tick"><button type="button" class="chk ap" data-s="approved" aria-label="Approved">${svg.check}</button></td>
+      <td class="tick"><button type="button" class="chk rj" data-s="rejected" aria-label="Rejected">${svg.check}</button></td>
+      <td class="del"><button type="button" class="x" aria-label="Delete row">${svg.trash}</button></td>`;
+    $('#rows').appendChild(tr);
+  }
+  for (const f of FIELDS) { const i = tr.querySelector(`[data-f="${f}"]`); if (i !== document.activeElement && i.value !== (r[f] || '')) i.value = r[f] || ''; }
+  tr.className = r.status || '';
+  tr.querySelectorAll('.chk').forEach(b => { const on = r.status === b.dataset.s; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
+}
+
+const snNum = r => { const n = parseFloat(r.sn); return isNaN(n) ? Infinity : n; };
+function sortRows() {
+  const tb = $('#rows'); if (!tb) return;
+  const ids = [...rows.keys()].sort((a, b) => snNum(rows.get(a)) - snNum(rows.get(b)) || (rows.get(a).createdAt || 0) - (rows.get(b).createdAt || 0));
+  ids.forEach((id, i) => { const tr = trOf(id); if (tr && tb.children[i] !== tr) tb.insertBefore(tr, tb.children[i] || null); });
+}
+function filter() {
+  let shown = 0, ap = 0, rj = 0;
+  for (const [id, r] of rows) {
+    const hit = !q || String(r.name || '').toLowerCase().includes(q) || String(r.sn || '').toLowerCase() === q;
+    const tr = trOf(id); if (tr) tr.hidden = !hit;
+    if (hit) shown++;
+    if (r.status === 'approved') ap++; else if (r.status === 'rejected') rj++;
+  }
+  const total = rows.size, e = $('#empty');
+  e.hidden = shown > 0;
+  e.textContent = total ? `No name matches "${$('#q').value.trim()}"` : 'No records yet';
+  $('#sum').innerHTML = `${q ? `<b>${shown}</b> of ${total} shown · ` : ''}<b>${total}</b> total · Approved <b>${ap}</b> · Rejected <b>${rj}</b> · Waiting <b>${total - ap - rj}</b>`;
+}
+
+// save typing (short delay so every key isn't a save)
+const timers = {};
+function onInput(e) {
+  const i = e.target.closest('[data-f]'); if (!i) return;
+  const id = i.closest('tr').dataset.id, f = i.dataset.f, key = id + f;
+  const v = f === 'name' || f === 'sn' ? i.value.replace(/\s+/g, ' ').trimStart() : i.value;
+  const r = rows.get(id); if (r) r[f] = v;
+  clearTimeout(timers[key]);
+  const save = () => db.ref('rec/rows/' + id).update({ [f]: f === 'name' || f === 'sn' ? v.trim() : v, updatedAt: TS() }).catch(x => toast(friendly(x)));
+  if (e.type === 'change') save(); else timers[key] = setTimeout(save, 500);
+  if (f === 'name' || f === 'sn') filter();
+}
+function onClick(e) {
+  const b = e.target.closest('.chk, .x'); if (!b) return;
+  const tr = b.closest('tr'), id = tr.dataset.id, r = rows.get(id); if (!r) return;
+  if (b.classList.contains('x')) {
+    if (!confirm(`Delete row ${r.sn || ''} ${r.name || ''}?`.replace(/\s+/g, ' '))) return;
+    db.ref('rec/rows/' + id).remove().catch(x => toast(friendly(x)));
+    return;
+  }
+  const status = r.status === b.dataset.s ? '' : b.dataset.s; // tick again to clear
+  r.status = status; drawRow(id); filter();
+  db.ref('rec/rows/' + id).update({ status, updatedAt: TS() }).catch(x => toast(friendly(x)));
+}
+// Enter moves down like Excel; on the last row it makes a new row
+function onKey(e) {
+  if (e.key !== 'Enter') return;
+  const i = e.target.closest('[data-f]'); if (!i) return;
+  e.preventDefault();
+  let tr = i.closest('tr').nextElementSibling;
+  while (tr && tr.hidden) tr = tr.nextElementSibling;
+  if (tr) tr.querySelector(`[data-f="${i.dataset.f}"]`).focus();
+  else if (!q) addRow(i.dataset.f);
+}
+
+async function addRow(focusField) {
+  const max = Math.max(0, ...[...rows.values()].map(snNum).filter(isFinite));
+  const ref = db.ref('rec/rows').push();
+  try {
+    await ref.set({ sn: String(Math.floor(max) + 1), name: '', forDate: '', sent: '', reply: '', status: '', createdAt: TS(), updatedAt: TS() });
+  } catch (x) { return toast(friendly(x)); }
+  if (q) { $('#q').value = ''; q = ''; filter(); }
+  let tr = trOf(ref.key);
+  for (let i = 0; !tr && i < 40; i++) { await new Promise(r => setTimeout(r, 50)); tr = trOf(ref.key); }
+  if (tr) { sortRows(); tr.scrollIntoView({ block: 'nearest' }); tr.querySelector(`[data-f="${typeof focusField === 'string' ? focusField : 'name'}"]`).focus(); }
+}
+
+function download() {
+  const cell = v => /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
+  const list = [...rows.values()].sort((a, b) => snNum(a) - snNum(b) || (a.createdAt || 0) - (b.createdAt || 0));
+  const lines = [['S.N.', 'Name', 'For when', 'Sent date', 'Reply received date', 'Approved', 'Rejected']]
+    .concat(list.map(r => [r.sn || '', r.name || '', r.forDate || '', r.sent || '', r.reply || '', r.status === 'approved' ? 'Yes' : '', r.status === 'rejected' ? 'Yes' : '']));
+  const csv = '﻿' + lines.map(l => l.map(x => cell(String(x))).join(',')).join('\r\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+  a.download = `records-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+</script>
+</body>
+</html>
