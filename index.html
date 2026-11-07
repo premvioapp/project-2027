@@ -47,7 +47,9 @@
   th:first-child{z-index:3}
   td:first-child input{text-align:center;font-weight:600}
   th.c{text-align:center}
-  td input[type=text],td input[type=date]{width:100%;height:33px;border:0;padding:0 8px;background:transparent;outline:none;border-radius:0}
+  td input[type=number]{-moz-appearance:textfield}
+  td input::-webkit-outer-spin-button,td input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  td input[type=text],td input[type=date],td input[type=number]{width:100%;height:33px;border:0;padding:0 8px;background:transparent;outline:none;border-radius:0}
   td input:focus{box-shadow:inset 0 0 0 2px var(--green);background:#fff}
   td.tick{text-align:center;width:96px}
   .chk{width:22px;height:22px;border:1.5px solid #8a8a8a;background:#fff;border-radius:3px;display:inline-grid;place-items:center;padding:0;vertical-align:middle}
@@ -79,6 +81,43 @@
   .c-wk{width:130px}
   td.wk input{text-align:center}
   table.pdocs{min-width:420px}
+  /* expenses */
+  .cards{display:grid;grid-template-columns:repeat(5,minmax(120px,1fr));gap:10px;padding:12px;background:#f5f5f5;border-bottom:1px solid var(--grid)}
+  .cards .card{background:#fff;border:1px solid var(--grid);border-top:3px solid var(--green);padding:8px 12px}
+  .cards .card span{display:block;font-size:12px;color:var(--muted)}
+  .cards .card b{font-size:18px;font-weight:700}
+  .cards .card.neg{border-top-color:var(--nod)} .cards .card.neg b{color:var(--nod)}
+  .cards .card.pos b{color:var(--okd)}
+  .etabs{display:flex;gap:0;border-bottom:1px solid var(--grid);background:#fff;position:sticky;left:0}
+  .etabs button{border:0;background:transparent;padding:10px 16px;font-weight:600;color:var(--muted);border-bottom:3px solid transparent}
+  .etabs button.on{color:var(--green-d);border-bottom-color:var(--green)}
+  .etools{display:flex;gap:8px;padding:8px 10px;align-items:center;flex-wrap:wrap;border-bottom:1px solid var(--grid)}
+  .search.light{border:1px solid #bdbdbd;flex:0 1 300px}
+  .etools select{border:1px solid #bdbdbd;padding:7px 8px;border-radius:2px;background:#fff}
+  table.etable{min-width:1000px}
+  td select{width:100%;height:33px;border:0;background:transparent;padding:0 6px;outline:none}
+  td select:focus{box-shadow:inset 0 0 0 2px var(--green);background:#fff}
+  td.amt input{text-align:right}
+  .c-amt{width:120px}.c-en{min-width:180px}.c-cat{width:150px}.c-mon{min-width:200px}
+  td.calc{text-align:right;padding:0 8px;white-space:nowrap;color:var(--muted)}
+  td.calc.pos,.wstats .pos{color:var(--okd);font-weight:700}
+  td.calc.neg,.wstats .neg{color:var(--nod);font-weight:700}
+  #weeks{padding:12px;display:grid;gap:12px;background:#f5f5f5;min-height:100%}
+  .week{background:#fff;border:1px solid var(--grid);padding:12px 14px}
+  .week.now{border-color:var(--green)}
+  .whead{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+  .whead b{font-size:15px}
+  .wtag{font-size:12px;background:#e8f2ec;color:var(--green-d);padding:2px 8px;border-radius:2px}
+  .week.now .wtag{background:var(--green);color:#fff}
+  .wstats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:8px}
+  .wstats span{display:block;font-size:12px;color:var(--muted)}
+  .wstats b{font-size:16px}
+  .wcats{display:grid;gap:4px;margin:6px 0}
+  .wcat{display:grid;grid-template-columns:130px 1fr 100px;align-items:center;gap:8px;font-size:13px}
+  .wcat i{display:block;height:10px;background:var(--green);border-radius:1px}
+  .wcat b{text-align:right}
+  .wtop{font-size:13px;color:var(--muted)} .wtop b{color:var(--text)}
+  @media (max-width:700px){.cards{grid-template-columns:repeat(2,1fr)}.wstats{grid-template-columns:repeat(2,1fr)}.wcat{grid-template-columns:100px 1fr 80px}}
   .pnote{display:flex;align-items:flex-start;gap:8px;padding:8px 10px;border-bottom:1px solid var(--grid);background:#fff;color:#c9c9c9;cursor:text}
   .pnote svg{flex:none;margin-top:3px}
   .pnote textarea{flex:1;border:0;outline:none;resize:none;background:transparent;font:inherit;line-height:1.5;padding:2px 0;min-height:24px;overflow:hidden;color:var(--text)}
@@ -134,6 +173,7 @@ const svg = {
   list: '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4h6v3H9zM7 5.5H5V21h14V5.5h-2"/><path d="m8.5 12 1.5 1.5 3-3M8.5 17.5h7"/></svg>',
   grid: '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="1"/><path d="M3 9h18M3 14.5h18M9 4v16"/></svg>',
   alert: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.5v.01"/></svg>',
+  wallet: '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7.5V18a2 2 0 0 0 2 2h14V9H6a2 2 0 0 1-2-2 2 2 0 0 1 2-2h12v4"/><circle cx="16" cy="14.5" r="1.2"/></svg>',
   pin: '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>',
   tasks: '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m4 6 1.5 1.5L8 5M4 12l1.5 1.5L8 11M4 18l1.5 1.5L8 17M11 6h9M11 12h9M11 18h9"/></svg>',
   out: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10"/></svg>',
@@ -160,7 +200,7 @@ function route() {
   if (!signedIn) return;
   stop();
   const h = location.hash;
-  if (h === '#records') showSheet(); else if (h === '#needs') showDocs(); else if (h === '#where') showWhere(); else showHome();
+  if (h === '#records') showSheet(); else if (h === '#needs') showDocs(); else if (h === '#where') showWhere(); else if (h === '#expenses') showExpenses(); else showHome();
 }
 window.addEventListener('hashchange', route);
 auth.onAuthStateChanged(async user => {
@@ -224,16 +264,22 @@ function showHome() {
         <a class="tile" href="#needs" id="goNeeds">${svg.list}<b>What I need</b><span id="nDocs"></span></a>
         <a class="tile" href="#records" id="goRecords">${svg.grid}<b>See records</b><span id="nRecs"></span></a>
         <a class="tile" href="#where" id="goWhere">${svg.pin}<b>Where to what</b><span id="nPlaces"></span></a>
+        <a class="tile" href="#expenses" id="goExp">${svg.wallet}<b>Expenses</b><span id="nExp"></span></a>
       </div>
     </div>`;
   $('#out').onclick = () => auth.signOut();
-  const a = db.ref('rec/docs'), b = db.ref('rec/rows'), c = db.ref('rec/places');
+  const a = db.ref('rec/docs'), b = db.ref('rec/rows'), c = db.ref('rec/places'), ei = db.ref('rec/income'), ee = db.ref('rec/expenses');
+  let gotI = 0, gotE = 0;
+  const fe = () => { const e = $('#nExp'); if (e) e.textContent = `Left ${rs(gotI - gotE)}`; };
+  const fi = s => { gotI = Object.values(s.val() || {}).reduce((t, x) => t + (Number(x.amount) || 0), 0); fe(); };
+  const fx = s => { gotE = Object.values(s.val() || {}).reduce((t, x) => t + (Number(x.cost) || 0), 0); fe(); };
+  ei.on('value', fi, () => {}); ee.on('value', fx, () => {});
   const fc = s => { const n = Object.keys(s.val() || {}).length; const e = $('#nPlaces'); if (e) e.textContent = n === 1 ? '1 name' : n + ' names'; };
   c.on('value', fc, () => {});
   const fa = s => { const v = Object.values(s.val() || {}), n = v.length, y = v.filter(d => d.have === 'yes').length; const e = $('#nDocs'); if (e) e.textContent = (n === 1 ? '1 document' : n + ' documents') + (n ? ` · I have ${y}` : ''); };
   const fb = s => { const n = Object.keys(s.val() || {}).length; const e = $('#nRecs'); if (e) e.textContent = n === 1 ? '1 record' : n + ' records'; };
   a.on('value', fa, () => {}); b.on('value', fb, () => {});
-  unsub = () => { a.off('value', fa); b.off('value', fb); c.off('value', fc); };
+  unsub = () => { a.off('value', fa); b.off('value', fb); c.off('value', fc); ei.off('value', fi); ee.off('value', fx); };
 }
 const homeBtn = () => `<a class="tb" href="#" id="home">${svg.home}<span>Home</span></a>`;
 
@@ -581,6 +627,353 @@ async function addPlace() {
   if (pq) { $('#pq').value = ''; pq = ''; drawPlaces(); }
   const sec = await waitFor(`#places .stage[data-pid="${CSS.escape(ref.key)}"]`);
   if (sec) { sec.scrollIntoView({ block: 'nearest' }); sec.querySelector('.pname').focus(); }
+}
+
+// ---------- Expenses: money received, expenses, weekly summaries ----------
+const income = new Map(), expenses = new Map(), weeksSaved = new Map();
+const CATS = [['food', 'Food'], ['travel', 'Travel'], ['fees', 'Documents & fees'], ['shopping', 'Shopping'], ['bills', 'Bills'], ['other', 'Other']];
+const catName = c => (CATS.find(x => x[0] === c) || [, ''])[1];
+const rs = n => 'Rs. ' + (Math.round((Number(n) || 0) * 100) / 100).toLocaleString('en-IN');
+const pad2 = n => String(n).padStart(2, '0');
+const ymd = d => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+const today = () => ymd(new Date());
+const parseYmd = s => { const [y, m, d] = String(s).split('-').map(Number); return new Date(y, (m || 1) - 1, d || 1); };
+const weekStart = s => { const d = parseYmd(s); d.setDate(d.getDate() - d.getDay()); return ymd(d); }; // weeks run Sunday to Saturday
+const addDays = (s, n) => { const d = parseYmd(s); d.setDate(d.getDate() + n); return ymd(d); };
+const niceDate = s => parseYmd(s).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+const niceDateY = s => parseYmd(s).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+let expTab = 'spent', expPeriod = 'all', eq = '', pendingExp = null;
+
+const spentFrom = id => [...expenses.values()].filter(e => e.money === id).reduce((a, e) => a + (Number(e.cost) || 0), 0);
+function inPeriod(date, p) {
+  if (p === 'all') return true;
+  if (!date) return false;
+  const t = today(), ws = weekStart(t);
+  if (p === 'week') return date >= ws && date <= t;
+  if (p === 'lastweek') return date >= addDays(ws, -7) && date < ws;
+  if (p === 'month') return date.slice(0, 7) === t.slice(0, 7);
+  return true;
+}
+
+function showExpenses() {
+  $('#root').innerHTML = `
+    <div class="app">
+      <div class="bar">
+        ${homeBtn()}
+        <h1 class="ttl">Expenses</h1>
+        <span class="sp"></span>
+        <button class="tb" id="expCsv">${svg.down}<span>Download Excel</span></button>
+      </div>
+      <div class="wrap" id="expWrap">
+        <div class="cards" id="expCards"></div>
+        <div class="etabs" role="tablist">
+          <button role="tab" data-tab="spent">Expenses</button>
+          <button role="tab" data-tab="got">Money received</button>
+          <button role="tab" data-tab="weeks">Weekly summary</button>
+        </div>
+        <div id="expBody"></div>
+      </div>
+      <div class="foot"><span id="esum"></span></div>
+    </div>`;
+  eq = ''; expPeriod = 'all';
+  $('.etabs').onclick = e => { const b = e.target.closest('[data-tab]'); if (!b) return; expTab = b.dataset.tab; drawExpBody(true); };
+  $('#expCsv').onclick = expDownload;
+  const body = $('#expBody');
+  const onEdit = now => e => {
+    const i = e.target.closest('[data-x]'); if (!i) return;
+    const tr = i.closest('tr'), kind = tr.closest('table').dataset.kind, f = i.dataset.x;
+    const num = f === 'amount' || f === 'cost';
+    const val = num ? (i.value === '' ? 0 : Math.max(0, Number(i.value) || 0)) : (i.tagName === 'SELECT' || i.type === 'date' ? i.value : (now ? cleanTxt(i.value) : i.value));
+    if (tr.classList.contains('newrow')) {
+      // typing / picking in the empty row makes a new line
+      if ((i.tagName === 'SELECT' || i.type === 'date') ? now : (!now && i.value.trim() !== '')) newExpRow(kind, f, val);
+      return;
+    }
+    const id = tr.dataset.id, m = kind === 'income' ? income : expenses, it = m.get(id); if (it) it[f] = val;
+    saveAt(`rec/${kind === 'income' ? 'income' : 'expenses'}/${id}/${f}`, num ? val : (typeof val === 'string' && i.tagName !== 'SELECT' && i.type !== 'date' ? cleanTxt(val) : val), now || i.tagName === 'SELECT' || i.type === 'date');
+    if (num || f === 'money' || f === 'date') { drawCards(); drawExpTotals(); if (kind === 'income' || f === 'money' || f === 'cost') drawLeft(); }
+  };
+  body.addEventListener('input', onEdit(false));
+  body.addEventListener('change', onEdit(true));
+  body.addEventListener('click', e => {
+    const x = e.target.closest('tr .x'); if (!x) return;
+    const tr = x.closest('tr'), kind = tr.closest('table').dataset.kind, id = tr.dataset.id;
+    if (kind === 'income') {
+      const it = income.get(id); if (!it) return;
+      const used = [...expenses.entries()].filter(([, ex]) => ex.money === id);
+      if (!confirm(`Delete money from "${it.from || '?'}" (${rs(it.amount)})?${used.length ? `\n${used.length} ${used.length === 1 ? 'expense uses' : 'expenses use'} it; they will stay, without "Money used".` : ''}`)) return;
+      const up = { ['income/' + id]: null }; used.forEach(([eid]) => { up[`expenses/${eid}/money`] = ''; });
+      cancelSaves('rec/income/' + id + '/'); gone.add(id);
+      db.ref('rec').update(up).catch(err => toast(friendly(err)));
+    } else {
+      const it = expenses.get(id); if (!it) return;
+      if (!confirm(`Delete "${it.name || 'this expense'}" (${rs(it.cost)})?`)) return;
+      cancelSaves('rec/expenses/' + id + '/'); gone.add(id);
+      db.ref('rec/expenses/' + id).remove().catch(err => toast(friendly(err)));
+    }
+  });
+  body.addEventListener('keydown', e => {
+    const i = e.target.closest('input[data-x]'); if (!i || e.key !== 'Enter') return;
+    e.preventDefault();
+    let next = i.closest('tr').nextElementSibling;
+    while (next && next.hidden) next = next.nextElementSibling;
+    const n = next && next.querySelector(`[data-x="${i.dataset.x}"]`);
+    if (n) n.focus(); else i.blur();
+  });
+  let got = 0;
+  const refs = [[db.ref('rec/income'), income], [db.ref('rec/expenses'), expenses], [db.ref('rec/expWeeks'), weeksSaved]];
+  const handlers = refs.map(([ref, m]) => {
+    const h = snap => { m.clear(); snap.forEach(c => { m.set(c.key, c.val()); }); got |= 1 << refs.findIndex(r => r[1] === m); if (got === 7) { saveWeeks(); drawCards(); drawExpBody(); } };
+    ref.on('value', h, e => toast(friendly(e)));
+    return h;
+  });
+  unsub = () => { refs.forEach(([ref], k) => ref.off('value', handlers[k])); income.clear(); expenses.clear(); weeksSaved.clear(); };
+}
+
+function drawCards() {
+  const el = $('#expCards'); if (!el) return;
+  const got = [...income.values()].reduce((a, x) => a + (Number(x.amount) || 0), 0);
+  const all = [...expenses.values()];
+  const spent = all.reduce((a, x) => a + (Number(x.cost) || 0), 0);
+  const wk = all.filter(x => inPeriod(x.date, 'week')).reduce((a, x) => a + (Number(x.cost) || 0), 0);
+  const mo = all.filter(x => inPeriod(x.date, 'month')).reduce((a, x) => a + (Number(x.cost) || 0), 0);
+  const left = got - spent;
+  el.innerHTML = `
+    <div class="card"><span>Received</span><b>${rs(got)}</b></div>
+    <div class="card"><span>Spent</span><b>${rs(spent)}</b></div>
+    <div class="card ${left < 0 ? 'neg' : 'pos'}"><span>Left</span><b>${rs(left)}</b></div>
+    <div class="card"><span>This week</span><b>${rs(wk)}</b></div>
+    <div class="card"><span>This month</span><b>${rs(mo)}</b></div>`;
+}
+
+function drawExpBody(reset) {
+  const body = $('#expBody'); if (!body) return;
+  document.querySelectorAll('.etabs [data-tab]').forEach(b => { const on = b.dataset.tab === expTab; b.classList.toggle('on', on); b.setAttribute('aria-selected', on); });
+  if (reset || body.dataset.tab !== expTab) {
+    body.dataset.tab = expTab;
+    if (expTab === 'spent') body.innerHTML = `
+      <div class="etools">
+        <label class="search light">${svg.search}<input id="eq" type="search" placeholder="Search expense or place" aria-label="Search expenses"></label>
+        <select id="eper" aria-label="Show">
+          <option value="all">All</option><option value="week">This week</option><option value="lastweek">Last week</option><option value="month">This month</option>
+        </select>
+      </div>
+      <table class="etable" data-kind="expense">
+        <thead><tr><th class="c-sn c">S.N.</th><th class="c-date">Date</th><th class="c-en">Expense name</th><th class="c-amt">Cost (Rs.)</th><th class="c-tx">Where</th><th class="c-cat">Category</th><th class="c-mon">Money used</th><th aria-label="Delete"></th></tr></thead>
+        <tbody id="erows"></tbody>
+      </table>`;
+    else if (expTab === 'got') body.innerHTML = `
+      <table class="etable" data-kind="income">
+        <thead><tr><th class="c-sn c">S.N.</th><th class="c-date">Date</th><th class="c-en">From whom</th><th class="c-amt">Amount (Rs.)</th><th class="c-tx">Note</th><th class="c-amt">Spent</th><th class="c-amt">Left</th><th aria-label="Delete"></th></tr></thead>
+        <tbody id="irows"></tbody>
+      </table>`;
+    else body.innerHTML = `<div id="weeks"></div>`;
+    if (expTab === 'spent') {
+      $('#eq').value = eq; $('#eper').value = expPeriod;
+      $('#eq').oninput = () => { eq = $('#eq').value.trim().toLowerCase(); drawExpRows(); };
+      $('#eper').onchange = () => { expPeriod = $('#eper').value; drawExpRows(); };
+    }
+  }
+  if (expTab === 'spent') drawExpRows(); else if (expTab === 'got') drawIncomeRows(); else drawWeeks();
+}
+
+const incomeIds = () => [...income.keys()].sort((a, b) => String(income.get(a).date || '').localeCompare(String(income.get(b).date || '')) || byTime(income)(a, b));
+const expIds = () => [...expenses.keys()].sort((a, b) => String(expenses.get(a).date || '').localeCompare(String(expenses.get(b).date || '')) || byTime(expenses)(a, b));
+const moneyLabel = id => { const it = income.get(id); return it ? `${it.from || 'Money'} (${rs(it.amount)}${it.date ? ', ' + niceDate(it.date) : ''})` : ''; };
+function moneyOptions(sel) {
+  return `<option value="">Choose</option>` + incomeIds().map(id => `<option value="${esc(id)}" ${id === sel ? 'selected' : ''}>${esc(moneyLabel(id))}</option>`).join('');
+}
+const catOptions = sel => `<option value="">Choose</option>` + CATS.map(([k, v]) => `<option value="${k}" ${k === sel ? 'selected' : ''}>${esc(v)}</option>`).join('');
+
+// one table row: fills inputs without touching the one being typed in
+function fillRow(tr, item) {
+  tr.querySelectorAll('[data-x]').forEach(i => {
+    const f = i.dataset.x;
+    let v = item[f] ?? '';
+    if ((f === 'amount' || f === 'cost') && Number(v) === 0) v = '';
+    v = String(v);
+    if (i === document.activeElement) return;
+    if (i.tagName === 'SELECT') { if (i.value !== v) i.value = v; } else if (i.value !== v) i.value = v;
+  });
+}
+
+function drawExpRows() {
+  const tb = $('#erows'); if (!tb) return;
+  const ids = expIds();
+  const sig = incomeIds().map(id => id + moneyLabel(id)).join('|');
+  [...tb.children].forEach(tr => { if (!tr.classList.contains('newrow') && !expenses.has(tr.dataset.id)) tr.remove(); });
+  let k = 0;
+  ids.forEach(id => {
+    const ex = expenses.get(id);
+    let tr = tb.querySelector(`tr[data-id="${CSS.escape(id)}"]`);
+    if (!tr) {
+      tr = document.createElement('tr'); tr.dataset.id = id;
+      tr.innerHTML = `<td class="num"></td><td><input type="date" data-x="date" aria-label="Date"></td><td><input type="text" data-x="name" maxlength="120" aria-label="Expense name"></td><td class="amt"><input type="number" data-x="cost" min="0" step="any" inputmode="decimal" aria-label="Cost"></td><td><input type="text" data-x="where" maxlength="120" aria-label="Where"></td><td><select data-x="cat" aria-label="Category">${catOptions(ex.cat)}</select></td><td><select data-x="money" aria-label="Money used"></select></td><td class="del"><button type="button" class="x" aria-label="Delete expense">${svg.trash}</button></td>`;
+    }
+    const ms = tr.querySelector('[data-x=money]');
+    if (ms.dataset.sig !== sig && ms !== document.activeElement) { ms.innerHTML = moneyOptions(ex.money); ms.dataset.sig = sig; }
+    fillRow(tr, ex);
+    const hit = inPeriod(ex.date, expPeriod) && (!eq || String(ex.name || '').toLowerCase().includes(eq) || String(ex.where || '').toLowerCase().includes(eq));
+    tr.hidden = !hit && !tr.contains(document.activeElement);
+    if (tb.children[k] !== tr) tb.insertBefore(tr, tb.children[k] || null);
+    k++;
+    tr.querySelector('.num').textContent = k;
+  });
+  let nr = tb.querySelector('tr.newrow');
+  if (!nr) {
+    nr = document.createElement('tr'); nr.className = 'newrow';
+    nr.innerHTML = `<td class="num">${svg.plus}</td><td><input type="date" data-x="date" aria-label="Date"></td><td><input type="text" data-x="name" maxlength="120" placeholder="Expense name" aria-label="New expense name"></td><td class="amt"><input type="number" data-x="cost" min="0" step="any" inputmode="decimal" placeholder="0" aria-label="New expense cost"></td><td><input type="text" data-x="where" maxlength="120" placeholder="Where" aria-label="New expense place"></td><td><select data-x="cat" aria-label="New expense category">${catOptions('')}</select></td><td><select data-x="money" aria-label="New expense money used"></select></td><td></td>`;
+  }
+  const nms = nr.querySelector('[data-x=money]');
+  if (nms.dataset.sig !== sig) { nms.innerHTML = moneyOptions(''); nms.dataset.sig = sig; }
+  if (tb.lastElementChild !== nr) tb.appendChild(nr);
+  takePending(tb, nr, 'expense');
+  drawExpTotals();
+}
+
+function drawIncomeRows() {
+  const tb = $('#irows'); if (!tb) return;
+  const ids = incomeIds();
+  [...tb.children].forEach(tr => { if (!tr.classList.contains('newrow') && !income.has(tr.dataset.id)) tr.remove(); });
+  ids.forEach((id, k) => {
+    let tr = tb.querySelector(`tr[data-id="${CSS.escape(id)}"]`);
+    if (!tr) {
+      tr = document.createElement('tr'); tr.dataset.id = id;
+      tr.innerHTML = `<td class="num"></td><td><input type="date" data-x="date" aria-label="Date"></td><td><input type="text" data-x="from" maxlength="120" aria-label="From whom"></td><td class="amt"><input type="number" data-x="amount" min="0" step="any" inputmode="decimal" aria-label="Amount"></td><td><input type="text" data-x="note" maxlength="200" aria-label="Note"></td><td class="calc sp-c"></td><td class="calc left-c"></td><td class="del"><button type="button" class="x" aria-label="Delete money received">${svg.trash}</button></td>`;
+    }
+    fillRow(tr, income.get(id));
+    if (tb.children[k] !== tr) tb.insertBefore(tr, tb.children[k] || null);
+    tr.querySelector('.num').textContent = k + 1;
+  });
+  let nr = tb.querySelector('tr.newrow');
+  if (!nr) {
+    nr = document.createElement('tr'); nr.className = 'newrow';
+    nr.innerHTML = `<td class="num">${svg.plus}</td><td><input type="date" data-x="date" aria-label="Date"></td><td><input type="text" data-x="from" maxlength="120" placeholder="From whom" aria-label="New money from whom"></td><td class="amt"><input type="number" data-x="amount" min="0" step="any" inputmode="decimal" placeholder="0" aria-label="New money amount"></td><td><input type="text" data-x="note" maxlength="200" placeholder="Note" aria-label="New money note"></td><td></td><td></td><td></td>`;
+  }
+  if (tb.lastElementChild !== nr) tb.appendChild(nr);
+  takePending(tb, nr, 'income');
+  drawLeft();
+  drawExpTotals();
+}
+function drawLeft() {
+  document.querySelectorAll('#irows tr[data-id]').forEach(tr => {
+    const it = income.get(tr.dataset.id); if (!it) return;
+    const sp = spentFrom(tr.dataset.id), left = (Number(it.amount) || 0) - sp;
+    tr.querySelector('.sp-c').textContent = rs(sp);
+    const l = tr.querySelector('.left-c'); l.textContent = rs(left); l.classList.toggle('neg', left < 0); l.classList.toggle('pos', left > 0);
+  });
+}
+function drawExpTotals() {
+  const e = $('#esum'); if (!e) return;
+  if (expTab === 'spent') {
+    const shown = expIds().filter(id => { const tr = document.querySelector(`#erows tr[data-id="${CSS.escape(id)}"]`); return tr && !tr.hidden; });
+    const tot = shown.reduce((a, id) => a + (Number(expenses.get(id).cost) || 0), 0);
+    e.innerHTML = `<b>${shown.length}</b> ${shown.length === 1 ? 'expense' : 'expenses'} shown · Total <b>${rs(tot)}</b>`;
+  } else if (expTab === 'got') {
+    const tot = [...income.values()].reduce((a, x) => a + (Number(x.amount) || 0), 0);
+    e.innerHTML = `<b>${income.size}</b> ${income.size === 1 ? 'entry' : 'entries'} · Total received <b>${rs(tot)}</b>`;
+  } else {
+    e.innerHTML = `Weeks run Sunday to Saturday. Each finished week is saved.`;
+  }
+}
+
+// typing in the empty row: create the line, then move the cursor into it
+function newExpRow(kind, f, val) {
+  if (pendingExp) return;
+  const path = kind === 'income' ? 'rec/income' : 'rec/expenses';
+  const ref = db.ref(path).push();
+  const row = kind === 'income'
+    ? { date: today(), from: '', amount: 0, note: '', createdAt: TS() }
+    : { date: today(), name: '', cost: 0, where: '', cat: '', money: '', createdAt: TS() };
+  row[f] = typeof val === 'string' ? cleanTxt(val) : val;
+  pendingExp = { id: ref.key, kind, f };
+  if (kind === 'expense' && expPeriod !== 'all' && !inPeriod(row.date, expPeriod)) { expPeriod = 'all'; const p = $('#eper'); if (p) p.value = 'all'; }
+  ref.set(row).catch(x => { pendingExp = null; toast(friendly(x)); });
+}
+function takePending(tb, nr, kind) {
+  if (!pendingExp || pendingExp.kind !== kind) return;
+  const tr = tb.querySelector(`tr[data-id="${CSS.escape(pendingExp.id)}"]`); if (!tr) return;
+  const f = pendingExp.f; pendingExp = null;
+  const src = nr.querySelector(`[data-x="${f}"]`), dst = tr.querySelector(`[data-x="${f}"]`);
+  const typed = src.tagName === 'SELECT' || src.type === 'date' ? null : src.value;
+  nr.querySelectorAll('input').forEach(i => { i.value = ''; }); nr.querySelectorAll('select').forEach(s => { s.value = ''; });
+  if (typed !== null) {
+    dst.value = typed; dst.focus();
+    if (dst.type !== 'number') dst.setSelectionRange(typed.length, typed.length);
+    const m = kind === 'income' ? income : expenses, cur = m.get(tr.dataset.id) || {};
+    const num = f === 'amount' || f === 'cost', v = num ? (Number(typed) || 0) : typed;
+    if (String(v) !== String(cur[f] ?? '')) saveAt(`rec/${kind === 'income' ? 'income' : 'expenses'}/${tr.dataset.id}/${f}`, num ? v : cleanTxt(typed));
+  } else tr.querySelector('[data-x=name], [data-x=from]').focus();
+  tr.scrollIntoView({ block: 'nearest' });
+}
+
+// ---------- weekly summaries ----------
+function weekData() {
+  const weeks = new Map();
+  const W = ws => { if (!weeks.has(ws)) weeks.set(ws, { received: 0, spent: 0, count: 0, cats: {}, items: [] }); return weeks.get(ws); };
+  for (const it of income.values()) if (it.date) W(weekStart(it.date)).received += Number(it.amount) || 0;
+  for (const ex of expenses.values()) if (ex.date) {
+    const w = W(weekStart(ex.date)), c = Number(ex.cost) || 0;
+    w.spent += c; w.count++; w.items.push(ex);
+    const k = ex.cat || 'none'; w.cats[k] = (w.cats[k] || 0) + c;
+  }
+  return weeks;
+}
+function saveWeeks() {
+  // every finished week gets its summary saved (and re-saved if its entries were changed later)
+  const cur = weekStart(today()), up = {}, data = weekData();
+  for (const [ws, w] of data) {
+    if (ws >= cur) continue;
+    const row = { received: w.received, spent: w.spent, count: w.count, cats: w.cats };
+    const old = weeksSaved.get(ws);
+    const same = old && old.received === row.received && old.spent === row.spent && old.count === row.count && JSON.stringify(old.cats || {}) === JSON.stringify(row.cats);
+    if (!same) up[ws] = { ...row, savedAt: TS() };
+  }
+  for (const ws of weeksSaved.keys()) if (!data.has(ws)) up[ws] = null; // week no longer has entries
+  if (Object.keys(up).length) db.ref('rec/expWeeks').update(up).catch(() => {});
+}
+function drawWeeks() {
+  const el = $('#weeks'); if (!el) return;
+  const data = weekData(), cur = weekStart(today());
+  const keys = [...new Set([...data.keys(), ...weeksSaved.keys()])].sort().reverse();
+  if (!keys.length) { el.innerHTML = '<div class="empty">No entries yet</div>'; drawExpTotals(); return; }
+  // money left at the end of each week
+  let run = 0; const leftAt = {};
+  [...keys].reverse().forEach(ws => { const w = data.get(ws) || weeksSaved.get(ws) || {}; run += (w.received || 0) - (w.spent || 0); leftAt[ws] = run; });
+  el.innerHTML = keys.map(ws => {
+    const w = data.get(ws) || { ...weeksSaved.get(ws), items: [] };
+    const saved = weeksSaved.has(ws), now = ws === cur;
+    const cats = Object.entries(w.cats || {}).sort((a, b) => b[1] - a[1]);
+    const max = Math.max(1, ...cats.map(c => c[1]));
+    const top = [...(w.items || [])].sort((a, b) => (Number(b.cost) || 0) - (Number(a.cost) || 0)).slice(0, 3);
+    return `
+      <section class="week ${now ? 'now' : ''}" data-week="${ws}">
+        <div class="whead"><b>${niceDate(ws)} – ${niceDateY(addDays(ws, 6))}</b>
+          <span class="wtag">${now ? 'This week, so far' : saved ? 'Saved' : ''}</span></div>
+        <div class="wstats">
+          <div><span>Received</span><b>${rs(w.received)}</b></div>
+          <div><span>Spent</span><b>${rs(w.spent)}</b></div>
+          <div><span>${now ? 'Left now' : 'Left at end of week'}</span><b class="${leftAt[ws] < 0 ? 'neg' : 'pos'}">${rs(leftAt[ws])}</b></div>
+          <div><span>Expenses</span><b>${w.count || 0}</b></div>
+        </div>
+        ${cats.length ? `<div class="wcats">${cats.map(([k, v]) => `<div class="wcat"><span>${esc(catName(k) || 'No category')}</span><i style="width:${Math.max(4, Math.round(v / max * 100))}%"></i><b>${rs(v)}</b></div>`).join('')}</div>` : ''}
+        ${top.length ? `<div class="wtop"><span>Biggest:</span> ${top.map(t => `${esc(t.name || 'Expense')} <b>${rs(t.cost)}</b>`).join(' · ')}</div>` : ''}
+      </section>`;
+  }).join('');
+  drawExpTotals();
+}
+
+function expDownload() {
+  const cell = v => /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
+  const lines = [['Type', 'Date', 'Name / From whom', 'Amount (Rs.)', 'Where / Note', 'Category', 'Money used']];
+  incomeIds().forEach(id => { const x = income.get(id); lines.push(['Received', x.date || '', x.from || '', x.amount || 0, x.note || '', '', '']); });
+  expIds().forEach(id => { const x = expenses.get(id); lines.push(['Spent', x.date || '', x.name || '', x.cost || 0, x.where || '', catName(x.cat), moneyLabel(x.money)]); });
+  const csv = '﻿' + lines.map(l => l.map(x => cell(String(x))).join(',')).join('\r\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+  a.download = `expenses-${today()}.csv`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 
 // ---------- See records ----------
