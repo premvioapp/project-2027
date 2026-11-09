@@ -81,6 +81,7 @@
   .c-wk{width:130px}
   td.wk input{text-align:center}
   table.pdocs{min-width:420px}
+  .tempty{padding:12px;color:var(--muted);font-size:13px;border-bottom:1px solid var(--grid)}
   /* expenses */
   .cards{display:grid;grid-template-columns:repeat(5,minmax(120px,1fr));gap:10px;padding:12px;background:#f5f5f5;border-bottom:1px solid var(--grid)}
   .cards .card{background:#fff;border:1px solid var(--grid);border-top:3px solid var(--green);padding:8px 12px}
@@ -976,7 +977,12 @@ function expDownload() {
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 
-// ---------- See records ----------
+// ---------- See records (grouped in topics) ----------
+const recTopics = new Map();
+let fixingTopics = false;
+const SHEET_HEAD = `<thead><tr>
+  <th class="c-sn c">S.N.</th><th class="c-name">Name</th><th class="c-date">For when</th><th class="c-date">Sent date</th><th class="c-date">Reply received date</th>
+  <th class="c">Approved</th><th class="c">Rejected</th><th aria-label="Delete"></th></tr></thead>`;
 function showSheet() {
   $('#root').innerHTML = `
     <div class="app">
@@ -985,52 +991,90 @@ function showSheet() {
         <label class="search">${svg.search}<input id="q" type="search" placeholder="Search name or S.N." aria-label="Search"></label>
         <span class="net" id="net" hidden>Offline</span>
         <span class="sp"></span>
-        <button class="tb" id="add">${svg.plus}<span>New row</span></button>
+        <button class="tb" id="addTopic">${svg.plus}<span>Add topic</span></button>
         <button class="tb" id="csv">${svg.down}<span>Download Excel</span></button>
       </div>
       <div class="wrap" id="wrap">
-        <table>
-          <thead><tr>
-            <th class="c-sn c">S.N.</th><th class="c-name">Name</th><th class="c-date">For when</th><th class="c-date">Sent date</th><th class="c-date">Reply received date</th>
-            <th class="c">Approved</th><th class="c">Rejected</th><th aria-label="Delete"></th>
-          </tr></thead>
-          <tbody id="rows"></tbody>
-        </table>
+        <div id="topics"></div>
         <div class="empty" id="empty" hidden></div>
       </div>
       <div class="foot">
-        <button class="add" id="add2">${svg.plus}New row</button>
+        <button class="add" id="addTopic2">${svg.plus}Add topic</button>
         <span id="sum"></span>
       </div>
     </div>`;
+  q = '';
   $('#q').oninput = () => { q = $('#q').value.trim().toLowerCase(); filter(); };
-  $('#add').onclick = $('#add2').onclick = addRow;
+  $('#addTopic').onclick = $('#addTopic2').onclick = addTopic;
   $('#csv').onclick = download;
-  const tb = $('#rows');
-  tb.addEventListener('input', onInput);
-  tb.addEventListener('change', onInput);
-  tb.addEventListener('click', onClick);
-  tb.addEventListener('keydown', onKey);
-  tb.addEventListener('focusout', () => setTimeout(() => { if (!tb.contains(document.activeElement)) sortRows(); }, 0));
+  const box = $('#topics');
+  box.addEventListener('input', onInput);
+  box.addEventListener('change', onInput);
+  box.addEventListener('click', onClick);
+  box.addEventListener('keydown', onKey);
+  box.addEventListener('focusout', () => setTimeout(() => { if (!box.contains(document.activeElement)) sortRows(); }, 0));
 
-  const ref = db.ref('rec/rows');
-  const onVal = snap => {
-    const seen = new Set();
-    snap.forEach(c => { seen.add(c.key); rows.set(c.key, c.val()); drawRow(c.key); });
-    for (const id of [...rows.keys()]) if (!seen.has(id)) { rows.delete(id); const tr = trOf(id); if (tr) tr.remove(); }
-    if (!tb.contains(document.activeElement)) sortRows();
-    filter();
-  };
+  let gotR = false, gotT = false;
+  const ref = db.ref('rec/rows'), tref = db.ref('rec/topics');
+  const onVal = snap => { rows.clear(); snap.forEach(c => { rows.set(c.key, c.val()); }); gotR = true; if (gotT) drawSheet(); };
+  const onTop = snap => { recTopics.clear(); snap.forEach(c => { recTopics.set(c.key, c.val()); }); gotT = true; if (gotR) drawSheet(); };
   ref.on('value', onVal, e => toast(friendly(e)));
+  tref.on('value', onTop, e => toast(friendly(e)));
   const con = db.ref('.info/connected');
   const onCon = s => { const n = $('#net'); if (n) n.hidden = s.val() !== false; };
   con.on('value', onCon);
-  unsub = () => { ref.off('value', onVal); con.off('value', onCon); rows.clear(); };
+  unsub = () => { ref.off('value', onVal); tref.off('value', onTop); con.off('value', onCon); rows.clear(); recTopics.clear(); };
 }
 
-const trOf = id => document.querySelector(`#rows tr[data-id="${CSS.escape(id)}"]`);
+const topicIds = () => [...recTopics.keys()].sort(byTime(recTopics));
+const topicOf = r => recTopics.has(r.topic) ? r.topic : topicIds()[0];
+function fixTopics() {
+  // records from before topics (or whose topic was removed) go into the first topic; first time: make "Topic 1"
+  if (!$('#topics')) { fixingTopics = false; return; }
+  const orphans = [...rows.entries()].filter(([id, r]) => !recTopics.has(r.topic) && !gone.has(id)).map(([id]) => id);
+  if (recTopics.size && !orphans.length) { fixingTopics = false; return; }
+  const tid = recTopics.size ? topicIds()[0] : db.ref('rec/topics').push().key;
+  const up = recTopics.size ? {} : { ['topics/' + tid]: { name: 'Topic 1', createdAt: TS() } };
+  orphans.forEach(id => { up[`rows/${id}/topic`] = tid; up[`rows/${id}/updatedAt`] = TS(); });
+  db.ref('rec').update(up).catch(() => {}).finally(() => { fixingTopics = false; });
+}
+function drawSheet() {
+  const box = $('#topics'); if (!box) return;
+  if (!recTopics.size) { if (!fixingTopics) { fixingTopics = true; setTimeout(fixTopics, 0); } return; }
+  if (!fixingTopics && [...rows.entries()].some(([id, r]) => !recTopics.has(r.topic) && !gone.has(id))) { fixingTopics = true; setTimeout(fixTopics, 900); }
+  const tids = topicIds();
+  [...box.children].forEach(sec => { if (!recTopics.has(sec.dataset.tid)) sec.remove(); });
+  tids.forEach((tid, n) => {
+    let sec = box.querySelector(`.stage[data-tid="${CSS.escape(tid)}"]`);
+    if (!sec) {
+      sec = document.createElement('section'); sec.className = 'stage'; sec.dataset.tid = tid;
+      sec.innerHTML = `
+        <div class="shead">
+          <input class="sname tname" maxlength="80" aria-label="Topic name" placeholder="Topic name">
+          <span class="scount"></span>
+          <span class="sp"></span>
+          <button type="button" class="add radd">${svg.plus}New row</button>
+          <button type="button" class="x tdel" aria-label="Delete topic">${svg.trash}</button>
+        </div>
+        <table class="sheet">${SHEET_HEAD}<tbody></tbody></table>
+        <div class="tempty">No records in this topic yet</div>`;
+    }
+    if (box.children[n] !== sec) box.insertBefore(sec, box.children[n] || null);
+    const tn = sec.querySelector('.tname'), name = recTopics.get(tid).name || '';
+    if (tn !== document.activeElement && tn.value !== name) tn.value = name;
+  });
+  // rows into their topic
+  document.querySelectorAll('#topics tr[data-id]').forEach(tr => { if (!rows.has(tr.dataset.id)) tr.remove(); });
+  for (const id of rows.keys()) drawRow(id);
+  if (!box.contains(document.activeElement)) sortRows();
+  filter();
+}
+
+const trOf = id => document.querySelector(`#topics tr[data-id="${CSS.escape(id)}"]`);
+const tbodyOf = tid => document.querySelector(`#topics .stage[data-tid="${CSS.escape(tid)}"] tbody`);
 function drawRow(id) {
   const r = rows.get(id); if (!r) return;
+  const tb = tbodyOf(topicOf(r)); if (!tb) return;
   let tr = trOf(id);
   if (!tr) {
     tr = document.createElement('tr'); tr.dataset.id = id;
@@ -1043,51 +1087,77 @@ function drawRow(id) {
       <td class="tick"><button type="button" class="chk ap" data-s="approved" aria-label="Approved">${svg.check}</button></td>
       <td class="tick"><button type="button" class="chk rj" data-s="rejected" aria-label="Rejected">${svg.check}</button></td>
       <td class="del"><button type="button" class="x" aria-label="Delete row">${svg.trash}</button></td>`;
-    $('#rows').appendChild(tr);
   }
+  if (tr.parentElement !== tb && !tr.contains(document.activeElement)) tb.appendChild(tr);
   for (const f of FIELDS) { const i = tr.querySelector(`[data-f="${f}"]`); if (i !== document.activeElement && i.value !== (r[f] || '')) i.value = r[f] || ''; }
   tr.className = r.status || '';
   tr.querySelectorAll('.chk').forEach(b => { const on = r.status === b.dataset.s; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
 }
 
 const snNum = r => { const n = parseFloat(r.sn); return isNaN(n) ? Infinity : n; };
+const bySn = (a, b) => snNum(rows.get(a)) - snNum(rows.get(b)) || (rows.get(a).createdAt || 0) - (rows.get(b).createdAt || 0);
 function sortRows() {
-  const tb = $('#rows'); if (!tb) return;
-  const ids = [...rows.keys()].sort((a, b) => snNum(rows.get(a)) - snNum(rows.get(b)) || (rows.get(a).createdAt || 0) - (rows.get(b).createdAt || 0));
-  ids.forEach((id, i) => { const tr = trOf(id); if (tr && tb.children[i] !== tr) tb.insertBefore(tr, tb.children[i] || null); });
+  for (const tid of recTopics.keys()) {
+    const tb = tbodyOf(tid); if (!tb) continue;
+    const ids = [...rows.keys()].filter(id => topicOf(rows.get(id)) === tid).sort(bySn);
+    ids.forEach((id, i) => { const tr = trOf(id); if (tr && tb.children[i] !== tr) tb.insertBefore(tr, tb.children[i] || null); });
+  }
 }
 function filter() {
   let shown = 0, ap = 0, rj = 0;
+  const per = {};
   for (const [id, r] of rows) {
     const hit = !q || String(r.name || '').toLowerCase().includes(q) || String(r.sn || '').toLowerCase() === q;
     const tr = trOf(id); if (tr) tr.hidden = !hit;
-    if (hit) shown++;
-    if (r.status === 'approved') ap++; else if (r.status === 'rejected') rj++;
+    const t = topicOf(r), c = per[t] || (per[t] = { n: 0, hit: 0, ap: 0, rj: 0 });
+    c.n++; if (hit) { c.hit++; shown++; }
+    if (r.status === 'approved') { ap++; c.ap++; } else if (r.status === 'rejected') { rj++; c.rj++; }
   }
+  document.querySelectorAll('#topics .stage').forEach(sec => {
+    const c = per[sec.dataset.tid] || { n: 0, hit: 0, ap: 0, rj: 0 };
+    sec.querySelector('.scount').textContent = `${c.n} ${c.n === 1 ? 'record' : 'records'}${c.n ? ` · Approved ${c.ap} · Rejected ${c.rj}` : ''}`;
+    sec.querySelector('.tempty').hidden = c.n > 0;
+    sec.hidden = !!q && !c.hit && !sec.contains(document.activeElement);
+  });
   const total = rows.size, e = $('#empty');
-  e.hidden = shown > 0;
-  e.textContent = total ? `No name matches "${$('#q').value.trim()}"` : 'No records yet';
-  $('#sum').innerHTML = `${q ? `<b>${shown}</b> of ${total} shown · ` : ''}<b>${total}</b> total · Approved <b>${ap}</b> · Rejected <b>${rj}</b> · Waiting <b>${total - ap - rj}</b>`;
+  e.hidden = !q || shown > 0;
+  e.textContent = `No name matches "${$('#q').value.trim()}"`;
+  $('#sum').innerHTML = `${q ? `<b>${shown}</b> of ${total} shown · ` : ''}<b>${recTopics.size}</b> ${recTopics.size === 1 ? 'topic' : 'topics'} · <b>${total}</b> total · Approved <b>${ap}</b> · Rejected <b>${rj}</b> · Waiting <b>${total - ap - rj}</b>`;
 }
 
 // save typing (short delay so every key isn't a save)
 const timers = {};
 function onInput(e) {
+  const tn = e.target.closest('.tname');
+  if (tn) { const tid = tn.closest('.stage').dataset.tid, t = recTopics.get(tid); if (t) t.name = tn.value; saveAt(`rec/topics/${tid}/name`, cleanTxt(tn.value), e.type === 'change'); return; }
   const i = e.target.closest('[data-f]'); if (!i) return;
   const id = i.closest('tr').dataset.id, f = i.dataset.f, key = id + f;
   const v = f === 'name' || f === 'sn' ? i.value.replace(/\s+/g, ' ').trimStart() : i.value;
   const r = rows.get(id); if (r) r[f] = v;
   clearTimeout(timers[key]);
-  const save = () => db.ref('rec/rows/' + id).update({ [f]: f === 'name' || f === 'sn' ? v.trim() : v, updatedAt: TS() }).catch(x => toast(friendly(x)));
+  const save = () => { if (gone.has(id)) return; db.ref('rec/rows/' + id).update({ [f]: f === 'name' || f === 'sn' ? v.trim() : v, updatedAt: TS() }).catch(x => { if (!gone.has(id)) toast(friendly(x)); }); };
   if (e.type === 'change') save(); else timers[key] = setTimeout(save, 500);
   if (f === 'name' || f === 'sn') filter();
 }
 function onClick(e) {
-  const b = e.target.closest('.chk, .x'); if (!b) return;
+  const ra = e.target.closest('.radd');
+  if (ra) return addRow(ra.closest('.stage').dataset.tid);
+  const td = e.target.closest('.tdel');
+  if (td) {
+    const tid = td.closest('.stage').dataset.tid, t = recTopics.get(tid); if (!t) return;
+    const inIt = [...rows.entries()].filter(([, r]) => topicOf(r) === tid).map(([id]) => id);
+    if (!confirm(`Delete "${t.name || 'this topic'}"${inIt.length ? ` and its ${inIt.length} ${inIt.length === 1 ? 'record' : 'records'}` : ''}?`)) return;
+    const up = { ['topics/' + tid]: null };
+    inIt.forEach(id => { up['rows/' + id] = null; FIELDS.forEach(f => clearTimeout(timers[id + f])); gone.add(id); });
+    cancelSaves('rec/topics/' + tid + '/'); gone.add(tid);
+    db.ref('rec').update(up).catch(x => toast(friendly(x)));
+    return;
+  }
+  const b = e.target.closest('tr .chk, tr .x'); if (!b) return;
   const tr = b.closest('tr'), id = tr.dataset.id, r = rows.get(id); if (!r) return;
   if (b.classList.contains('x')) {
     if (!confirm(`Delete row ${r.sn || ''} ${r.name || ''}?`.replace(/\s+/g, ' '))) return;
-    FIELDS.forEach(f => clearTimeout(timers[id + f]));
+    FIELDS.forEach(f => clearTimeout(timers[id + f])); gone.add(id);
     db.ref('rec/rows/' + id).remove().catch(x => toast(friendly(x)));
     return;
   }
@@ -1095,34 +1165,45 @@ function onClick(e) {
   r.status = status; drawRow(id); filter();
   db.ref('rec/rows/' + id).update({ status, updatedAt: TS() }).catch(x => toast(friendly(x)));
 }
-// Enter moves down like Excel; on the last row it makes a new row
+// Enter moves down like Excel; on the last row of a topic it makes a new row there
 function onKey(e) {
   if (e.key !== 'Enter') return;
+  if (e.target.closest('.tname')) { e.preventDefault(); e.target.blur(); return; }
   const i = e.target.closest('[data-f]'); if (!i) return;
   e.preventDefault();
   let tr = i.closest('tr').nextElementSibling;
   while (tr && tr.hidden) tr = tr.nextElementSibling;
   if (tr) tr.querySelector(`[data-f="${i.dataset.f}"]`).focus();
-  else if (!q) addRow(i.dataset.f);
+  else if (!q) addRow(i.closest('.stage').dataset.tid, i.dataset.f);
 }
 
-async function addRow(focusField) {
-  const max = Math.max(0, ...[...rows.values()].map(snNum).filter(isFinite));
+async function addRow(tid, focusField) {
+  if (typeof tid !== 'string' || !recTopics.has(tid)) tid = topicIds()[topicIds().length - 1];
+  if (!tid) return;
+  const max = Math.max(0, ...[...rows.values()].filter(r => topicOf(r) === tid).map(snNum).filter(isFinite));
   const ref = db.ref('rec/rows').push();
   try {
-    await ref.set({ sn: String(Math.floor(max) + 1), name: '', forDate: '', sent: '', reply: '', status: '', createdAt: TS(), updatedAt: TS() });
+    await ref.set({ sn: String(Math.floor(max) + 1), name: '', forDate: '', sent: '', reply: '', status: '', topic: tid, createdAt: TS(), updatedAt: TS() });
   } catch (x) { return toast(friendly(x)); }
   if (q) { $('#q').value = ''; q = ''; filter(); }
   let tr = trOf(ref.key);
   for (let i = 0; !tr && i < 40; i++) { await new Promise(r => setTimeout(r, 50)); tr = trOf(ref.key); }
   if (tr) { sortRows(); tr.scrollIntoView({ block: 'nearest' }); tr.querySelector(`[data-f="${typeof focusField === 'string' ? focusField : 'name'}"]`).focus(); }
 }
+async function addTopic() {
+  const ref = db.ref('rec/topics').push();
+  try { await ref.set({ name: 'Topic ' + (recTopics.size + 1), createdAt: TS() }); } catch (x) { return toast(friendly(x)); }
+  if (q) { $('#q').value = ''; q = ''; filter(); }
+  const sec = await waitFor(`#topics .stage[data-tid="${CSS.escape(ref.key)}"]`);
+  if (sec) { sec.scrollIntoView({ block: 'nearest' }); const i = sec.querySelector('.tname'); i.focus(); i.select(); }
+}
 
 function download() {
   const cell = v => /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
-  const list = [...rows.values()].sort((a, b) => snNum(a) - snNum(b) || (a.createdAt || 0) - (b.createdAt || 0));
-  const lines = [['S.N.', 'Name', 'For when', 'Sent date', 'Reply received date', 'Approved', 'Rejected']]
-    .concat(list.map(r => [r.sn || '', r.name || '', r.forDate || '', r.sent || '', r.reply || '', r.status === 'approved' ? 'Yes' : '', r.status === 'rejected' ? 'Yes' : '']));
+  const order = topicIds();
+  const list = [...rows.keys()].sort((a, b) => order.indexOf(topicOf(rows.get(a))) - order.indexOf(topicOf(rows.get(b))) || bySn(a, b)).map(id => rows.get(id));
+  const lines = [['Topic', 'S.N.', 'Name', 'For when', 'Sent date', 'Reply received date', 'Approved', 'Rejected']]
+    .concat(list.map(r => [(recTopics.get(topicOf(r)) || {}).name || '', r.sn || '', r.name || '', r.forDate || '', r.sent || '', r.reply || '', r.status === 'approved' ? 'Yes' : '', r.status === 'rejected' ? 'Yes' : '']));
   const csv = '﻿' + lines.map(l => l.map(x => cell(String(x))).join(',')).join('\r\n');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
