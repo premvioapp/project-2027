@@ -115,7 +115,7 @@
   .negt{color:var(--nod)} .post{color:var(--okd)}
   table.wk{min-width:1150px} table.wk .c-date{width:142px} table.wk .c-amt{width:118px} table.wk .c-nm{min-width:200px} th.c-money svg{vertical-align:middle}
   td.wpro input{color:var(--okd);font-weight:600} td.wlos input{color:var(--nod);font-weight:600}
-  table.prof{min-width:700px} table.prof .c-amt{width:140px}
+  table.prof{min-width:900px} table.prof .c-date{width:142px} table.prof .c-en{width:200px} table.prof .c-amt{width:140px}
   td.phow textarea{display:block;width:100%;border:0;outline:none;resize:none;background:transparent;font:inherit;line-height:1.5;padding:7px 8px;min-height:34px;overflow:hidden;color:var(--text)}
   td.phow textarea:focus{background:var(--card);box-shadow:inset 0 0 0 2px var(--green)}
   td.cprof{text-align:right;padding:0 8px;white-space:nowrap}
@@ -475,7 +475,7 @@ function searchAll(H, q) {
   for (const [id, r] of E('cpa')) if (has(r.cid, r.sn, r.name, r.pfrom)) out.push({ section: 'CPA', title: r.cid ? 'ID ' + r.cid : 'S.N. ' + (r.sn || ''), sub: `${nm('cpaDays', r.day)} · S.N. ${r.sn || ''}${r.ap ? ' · ' + r.ap : ''}${r.pay ? ' · ' + r.pay : ''}`, hash: '#cpa', sel: `#days tr[data-id="${id}"]` });
   for (const [id, s] of E('ldStages')) if (has(s.name)) out.push({ section: 'Leiden', title: s.name, sub: 'Stage', hash: '#leiden', sel: `#ldst .stage[data-sid="${id}"]` });
   for (const [id, r] of E('ld')) if (has(r.from, r.spent, r.sn)) out.push({ section: 'Leiden', title: r.from || '(no name)', sub: `${nm('ldStages', r.stage)} · got ${rs(r.amt)}, gave ${rs(r.gave)}, remaining ${rs((Number(r.amt) || 0) - (Number(r.gave) || 0))}${r.spent ? ' · ' + r.spent : ''}`, hash: '#leiden', sel: `#ldst tr[data-id="${id}"]` });
-  for (const [id, r] of E('profit')) if (has(r.how, r.sn)) out.push({ section: 'Profit', title: rs(r.amt) + (r.how ? ' · ' + String(r.how).slice(0, 80) : ''), sub: `S.N. ${r.sn || ''}`, hash: '#profit', sel: `#prows tr[data-id="${id}"]` });
+  for (const [id, r] of E('profit')) if (has(r.how, r.sn, r.ename)) out.push({ section: 'Profit', title: rs(r.amt) + (r.ename ? ' · ' + r.ename : '') + (r.how ? ' · ' + String(r.how).slice(0, 80) : ''), sub: `S.N. ${r.sn || ''}${r.date ? ' · ' + niceDateY(r.date) : ''}`, hash: '#profit', sel: `#prows tr[data-id="${id}"]` });
   for (const [id, r] of E('work')) if (has(r.name, r.sn)) out.push({ section: 'Work money', title: r.name || '(no name)', sub: `S.N. ${r.sn || ''} · profit ${rs(r.profit)}, loss ${rs(r.loss)}${r.fin === 'finished' ? ' · finished' : r.fin === 'notfinished' ? ' · not finished' : ''}`, hash: '#work', sel: `#wrows tr[data-id="${id}"]` });
   return out;
 }
@@ -1556,7 +1556,7 @@ function showCpa() {
     if (tr) tr.querySelector(`[data-c="${i.dataset.c}"]`).focus();
     else if (!cq) addCpaRow(i.closest('.stage').dataset.did, i.dataset.c);
   });
-  box.addEventListener('focusout', e => { const i = e.target.closest('[data-c]'); if (i && i.type !== 'date') onEdit({ type: 'change', target: i }); setTimeout(() => { if (!box.contains(document.activeElement)) sortCpa(); }, 0); });
+  box.addEventListener('focusout', e => { const i = e.target.closest('[data-c]'); if (i && i.type !== 'date') onEdit({ type: 'change', target: i }); setTimeout(() => { if (!box.contains(document.activeElement)) sortCpa(); cpaFilter(); }, 0); });
   let gd = false, gr = false;
   const dref = db.ref('rec/cpaDays'), rref = db.ref('rec/cpa');
   const onD = s => { cpaDays.clear(); s.forEach(c => { cpaDays.set(c.key, c.val()); }); gd = true; if (gr) drawCpa(); };
@@ -1750,6 +1750,9 @@ function cpaDownload() {
 // ---------- Profit: one list, no stages (S.N., how much, how) ----------
 const prRows = new Map();
 let prq = '';
+const prP = newPer();
+const prDate = r => r.date || dayOfTs(r.createdAt);
+const PR_F = ['sn', 'date', 'amt', 'ename', 'how'];
 const prTr = id => document.querySelector(`#prows tr[data-id="${CSS.escape(id)}"]`);
 const prSn = id => { const n = parseFloat(prRows.get(id).sn); return isNaN(n) ? Infinity : n; };
 function showProfit() {
@@ -1758,18 +1761,20 @@ function showProfit() {
       <div class="bar">
         ${homeBtn()}
         <h1 class="ttl">Profit</h1>
-        <label class="search">${svg.search}<input id="prq" type="search" placeholder="Search how or S.N." aria-label="Search"></label>
+        <label class="search">${svg.search}<input id="prq" type="search" placeholder="Search how, expense or S.N." aria-label="Search"></label>
+        ${perHtml('prper')}
         <span class="sp"></span>
         ${selBtnHtml()}
         <button class="tb" id="prCsv">${svg.down}<span>Download Excel</span></button>
       </div>
       <div class="wrap">
-        <table class="prof"><thead><tr><th class="c-sn c">S.N.</th><th class="c-amt">How much</th><th>How</th><th aria-label="Delete"></th></tr></thead><tbody id="prows"></tbody></table>
+        <table class="prof"><thead><tr><th class="c-sn c">S.N.</th><th class="c-date">Date received</th><th class="c-amt">How much</th><th class="c-en">Expense name</th><th>How</th><th aria-label="Delete"></th></tr></thead><tbody id="prows"></tbody></table>
         <div class="empty" id="prempty" hidden></div>
       </div>
       <div class="foot"><button class="add" id="addPr">${svg.plus}New row</button><span id="prsum"></span></div>
     </div>`;
-  prq = '';
+  prq = ''; Object.assign(prP, newPer()); if (pendingAll === '#profit') prP.k = 'all'; pendingAll = '';
+  perBind('prper', prP, prFilter);
   $('#prq').oninput = () => { prq = $('#prq').value.trim().toLowerCase(); prFilter(); };
   $('#addPr').onclick = () => addPrRow();
   $('#prCsv').onclick = prDownload;
@@ -1783,8 +1788,8 @@ function showProfit() {
     if (f === 'amt') v = v === '' ? 0 : Math.max(0, Number(v) || 0);
     if (r) r[f] = v;
     clearTimeout(timers['p' + id + f]);
-    const save = () => { if (gone.has(id)) return; db.ref('rec/profit/' + id).update({ [f]: f === 'amt' ? v : f === 'how' ? String(v).trim() : cleanTxt(v), updatedAt: TS() }).catch(x => { if (!gone.has(id)) toast(friendly(x)); }); };
-    if (e.type === 'change') save(); else timers['p' + id + f] = setTimeout(save, 500);
+    const save = () => { if (gone.has(id)) return; db.ref('rec/profit/' + id).update({ [f]: f === 'amt' || f === 'date' ? v : f === 'how' ? String(v).trim() : cleanTxt(v), updatedAt: TS() }).catch(x => { if (!gone.has(id)) toast(friendly(x)); }); };
+    if (e.type === 'change' || f === 'date') save(); else timers['p' + id + f] = setTimeout(save, 500);
     prFilter();
   };
   box.addEventListener('input', onEdit);
@@ -1792,8 +1797,8 @@ function showProfit() {
   box.addEventListener('click', e => {
     const b = e.target.closest('tr .x'); if (!b) return;
     const id = b.closest('tr').dataset.id, r = prRows.get(id); if (!r) return;
-    ['sn', 'amt', 'how'].forEach(f => clearTimeout(timers['p' + id + f]));
-    toArchive('Profit', `S.N. ${r.sn || ''} ${rs(r.amt)}${r.how ? ', ' + r.how.slice(0, 60) : ''}`, { ['profit/' + id]: pickData(r) });
+    PR_F.forEach(f => clearTimeout(timers['p' + id + f]));
+    toArchive('Profit', `S.N. ${r.sn || ''} ${rs(r.amt)}${r.ename ? ', ' + r.ename : ''}${r.how ? ', ' + r.how.slice(0, 60) : ''}`, { ['profit/' + id]: pickData(r) });
   });
   box.addEventListener('keydown', e => {
     if (e.key !== 'Enter') return;
@@ -1804,7 +1809,7 @@ function showProfit() {
     if (tr) tr.querySelector(`[data-p="${i.dataset.p}"]`).focus();
     else if (!prq) addPrRow(i.dataset.p);
   });
-  box.addEventListener('focusout', e => { const i = e.target.closest('[data-p]'); if (i) onEdit({ type: 'change', target: i }); setTimeout(() => { if (!box.contains(document.activeElement)) sortPr(); }, 0); });
+  box.addEventListener('focusout', e => { const i = e.target.closest('[data-p]'); if (i && i.type !== 'date') onEdit({ type: 'change', target: i }); setTimeout(() => { if (!box.contains(document.activeElement)) sortPr(); prFilter(); }, 0); });
   const ref = db.ref('rec/profit');
   const on = s => { prRows.clear(); s.forEach(c => { prRows.set(c.key, c.val()); }); drawPr(); };
   ref.on('value', on, e => toast(friendly(e)));
@@ -1819,12 +1824,14 @@ function drawPr() {
       tr = document.createElement('tr'); tr.dataset.id = id;
       tr.innerHTML = `
         <td><input type="text" data-p="sn" maxlength="12" inputmode="numeric" aria-label="S.N."></td>
+        <td><input type="date" data-p="date" aria-label="Date received"></td>
         <td class="amt"><input type="number" data-p="amt" min="0" step="any" inputmode="decimal" aria-label="How much"></td>
+        <td><input type="text" data-p="ename" maxlength="200" aria-label="Expense name"></td>
         <td class="phow"><textarea data-p="how" rows="1" maxlength="5000" aria-label="How"></textarea></td>
         <td class="del"><button type="button" class="x" aria-label="Delete entry">${svg.trash}</button></td>`;
       box.appendChild(tr);
     }
-    for (const f of ['sn', 'amt', 'how']) {
+    for (const f of PR_F) {
       const i = tr.querySelector(`[data-p="${f}"]`); if (i === document.activeElement) continue;
       let v = r[f] ?? ''; if (f === 'amt' && Number(v) === 0) v = '';
       if (i.value !== String(v)) i.value = String(v);
@@ -1842,32 +1849,36 @@ function sortPr() {
 function prFilter() {
   let n = 0, shown = 0, tot = 0, totShown = 0;
   for (const [id, r] of prRows) {
-    const hit = !prq || String(r.how || '').toLowerCase().includes(prq) || String(r.sn || '').toLowerCase() === prq;
+    const inP = inPer(prDate(r), prP);
+    const hit = inP && (!prq || String(r.how || '').toLowerCase().includes(prq) || String(r.ename || '').toLowerCase().includes(prq) || String(r.sn || '').toLowerCase() === prq);
     const tr = prTr(id); if (tr) tr.hidden = !hit && !tr.contains(document.activeElement);
+    if (!inP) continue; // totals are for the period shown
     n++; tot += Number(r.amt) || 0; if (hit) { shown++; totShown += Number(r.amt) || 0; }
   }
   const e = $('#prempty'); if (!e) return;
   e.hidden = shown > 0;
-  e.textContent = prq ? `Nothing matches "${$('#prq').value.trim()}"` : 'No entries yet';
-  $('#prsum').innerHTML = prq ? `<b>${shown}</b> of ${n} shown · Total shown <b class="post">${rs(totShown)}</b> · All <b>${rs(tot)}</b>` : `<b>${n}</b> ${n === 1 ? 'entry' : 'entries'} · Total profit <b class="post">${rs(tot)}</b>`;
+  e.textContent = prq ? `Nothing matches "${$('#prq').value.trim()}"` : prRows.size ? `No entries in ${prP.k === 'cur' ? 'this month' : perLabel(prP)}` : 'No entries yet';
+  $('#prsum').innerHTML = `<b>${esc(perLabel(prP))}</b> · ` + (prq ? `<b>${shown}</b> of ${n} shown · Total shown <b class="post">${rs(totShown)}</b> · All <b>${rs(tot)}</b>` : `<b>${n}</b> ${n === 1 ? 'entry' : 'entries'} · Total profit <b class="post">${rs(tot)}</b>`);
+  perFill('prper', prP, [...prRows.values()].map(prDate));
   selSync();
 }
 async function addPrRow(field) {
   const max = Math.max(0, ...[...prRows.keys()].map(prSn).filter(isFinite));
   const ref = db.ref('rec/profit').push();
-  ref.set({ sn: String(Math.floor(max) + 1), amt: 0, how: '', createdAt: TS(), updatedAt: TS() }).catch(x => toast(friendly(x)));
+  if (!inPer(today(), prP)) Object.assign(prP, newPer()); // a new entry is dated today: show it
+  ref.set({ sn: String(Math.floor(max) + 1), date: today(), amt: 0, ename: '', how: '', createdAt: TS(), updatedAt: TS() }).catch(x => toast(friendly(x)));
   if (prq) { $('#prq').value = ''; prq = ''; prFilter(); }
   const tr = await waitFor(`#prows tr[data-id="${CSS.escape(ref.key)}"]`);
   if (tr) { sortPr(); tr.scrollIntoView({ block: 'nearest' }); tr.querySelector(`[data-p="${typeof field === 'string' ? field : 'amt'}"]`).focus(); }
 }
 function prDownload() {
   const cell = v => /[",\n\r]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
-  const lines = [['S.N.', 'How much', 'How']];
-  [...prRows.keys()].sort((a, b) => prSn(a) - prSn(b)).forEach(id => { const r = prRows.get(id); lines.push([r.sn || '', r.amt || 0, r.how || '']); });
+  const lines = [['S.N.', 'Date received', 'How much', 'Expense name', 'How']];
+  [...prRows.keys()].filter(id => inPer(prDate(prRows.get(id)), prP)).sort((a, b) => prSn(a) - prSn(b)).forEach(id => { const r = prRows.get(id); lines.push([r.sn || '', r.date || '', r.amt || 0, r.ename || '', r.how || '']); });
   const csv = '﻿' + lines.map(l => l.map(x => cell(String(x))).join(',')).join('\r\n');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
-  a.download = `profit-${today()}.csv`;
+  a.download = `profit-${perFile(prP)}.csv`;
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
@@ -1946,7 +1957,7 @@ function showWork() {
     if (tr) tr.querySelector(`[data-w="${i.dataset.w}"]`).focus();
     else if (!wq && wf === 'all') addWkRow(i.dataset.w);
   });
-  box.addEventListener('focusout', e => { const i = e.target.closest('[data-w]'); if (i && i.type !== 'date') onEdit({ type: 'change', target: i }); setTimeout(() => { if (!box.contains(document.activeElement)) sortWk(); }, 0); });
+  box.addEventListener('focusout', e => { const i = e.target.closest('[data-w]'); if (i && i.type !== 'date') onEdit({ type: 'change', target: i }); setTimeout(() => { if (!box.contains(document.activeElement)) sortWk(); wkFilter(); }, 0); });
   const ref = db.ref('rec/work');
   const on = s => { wkRows.clear(); s.forEach(c => { wkRows.set(c.key, c.val()); }); drawWk(); };
   ref.on('value', on, e => toast(friendly(e)));
@@ -2134,7 +2145,7 @@ function showLeiden() {
     if (tr) tr.querySelector(`[data-l="${i.dataset.l}"]`).focus();
     else if (!lq) addLdRow(i.closest('.stage').dataset.sid, i.dataset.l);
   });
-  box.addEventListener('focusout', e => { const i = e.target.closest('[data-l]'); if (i && i.type !== 'date') onEdit({ type: 'change', target: i }); setTimeout(() => { if (!box.contains(document.activeElement)) sortLd(); }, 0); });
+  box.addEventListener('focusout', e => { const i = e.target.closest('[data-l]'); if (i && i.type !== 'date') onEdit({ type: 'change', target: i }); setTimeout(() => { if (!box.contains(document.activeElement)) sortLd(); ldFilter(); }, 0); });
   let gs = false, gr = false;
   const sref = db.ref('rec/ldStages'), rref = db.ref('rec/ld');
   const onS = s => { ldStages.clear(); s.forEach(c => { ldStages.set(c.key, c.val()); }); gs = true; if (gr) { drawLd(); ldViews(); } };
