@@ -81,6 +81,17 @@
   .c-wk{width:130px}
   td.wk input{text-align:center}
   table.pdocs{min-width:420px}
+  table.cpa{min-width:1200px}
+  table.cpa .c-date{width:142px}
+  table.cpa .c-id{width:160px;min-width:150px}
+  table.cpa .c-amt{width:112px}
+  table.cpa th.c,table.cpa td.tick{width:78px}
+  .c-hmt{width:96px}
+  td.hmt input{text-align:center}
+  .c-id{width:190px;min-width:170px}
+  td.idc input{font-variant-numeric:tabular-nums;letter-spacing:.02em}
+  td.idc.bad{background:#fde2e2!important;box-shadow:inset 0 0 0 2px var(--nod)}
+  td.idc.dup:not(.bad){background:#fff1d6!important;box-shadow:inset 3px 0 0 #e8a33d}
   .tempty{padding:12px;color:var(--muted);font-size:13px;border-bottom:1px solid var(--grid)}
   /* expenses */
   .cards{display:grid;grid-template-columns:repeat(5,minmax(120px,1fr));gap:10px;padding:12px;background:#f5f5f5;border-bottom:1px solid var(--grid)}
@@ -146,7 +157,7 @@
   .c-dn{min-width:200px}.c-tx{min-width:170px}
   td.num{text-align:center;font-weight:600;width:72px}
   .toast{position:fixed;left:50%;bottom:56px;transform:translateX(-50%);background:#323232;color:#fff;padding:9px 14px;border-radius:2px;font-size:13px;z-index:50}
-  @media (max-width:600px){.bar .tb span{display:none}.bar .tb{padding:7px 9px}}
+  @media (max-width:600px){.bar .tb span{display:none}.bar .tb{padding:7px 9px}.shead{flex-wrap:wrap;position:sticky;left:0;width:100vw}.shead .scount{order:9;width:100%;white-space:normal}}
 </style>
 </head>
 <body>
@@ -174,6 +185,7 @@ const svg = {
   list: '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4h6v3H9zM7 5.5H5V21h14V5.5h-2"/><path d="m8.5 12 1.5 1.5 3-3M8.5 17.5h7"/></svg>',
   grid: '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="1"/><path d="M3 9h18M3 14.5h18M9 4v16"/></svg>',
   alert: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.5v.01"/></svg>',
+  idcard: '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="1.5"/><circle cx="8.5" cy="11" r="2"/><path d="M5.8 16c.6-1.4 1.6-2 2.7-2s2.1.6 2.7 2M14 10h4.5M14 13.5h3"/></svg>',
   wallet: '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7.5V18a2 2 0 0 0 2 2h14V9H6a2 2 0 0 1-2-2 2 2 0 0 1 2-2h12v4"/><circle cx="16" cy="14.5" r="1.2"/></svg>',
   pin: '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>',
   tasks: '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m4 6 1.5 1.5L8 5M4 12l1.5 1.5L8 11M4 18l1.5 1.5L8 17M11 6h9M11 12h9M11 18h9"/></svg>',
@@ -201,7 +213,7 @@ function route() {
   if (!signedIn) return;
   stop();
   const h = location.hash;
-  if (h === '#records') showSheet(); else if (h === '#needs') showDocs(); else if (h === '#where') showWhere(); else if (h === '#expenses') showExpenses(); else showHome();
+  if (h === '#records') showSheet(); else if (h === '#needs') showDocs(); else if (h === '#where') showWhere(); else if (h === '#expenses') showExpenses(); else if (h === '#cpa') showCpa(); else showHome();
 }
 window.addEventListener('hashchange', route);
 auth.onAuthStateChanged(async user => {
@@ -266,6 +278,7 @@ function showHome() {
         <a class="tile" href="#records" id="goRecords">${svg.grid}<b>See records</b><span id="nRecs"></span></a>
         <a class="tile" href="#where" id="goWhere">${svg.pin}<b>Where to what</b><span id="nPlaces"></span></a>
         <a class="tile" href="#expenses" id="goExp">${svg.wallet}<b>Expenses</b><span id="nExp"></span></a>
+        <a class="tile" href="#cpa" id="goCpa">${svg.idcard}<b>CPA</b><span id="nCpa"></span></a>
       </div>
     </div>`;
   $('#out').onclick = () => auth.signOut();
@@ -275,12 +288,15 @@ function showHome() {
   const fi = s => { gotI = Object.values(s.val() || {}).reduce((t, x) => t + (Number(x.amount) || 0), 0); fe(); };
   const fx = s => { gotE = Object.values(s.val() || {}).reduce((t, x) => t + (Number(x.cost) || 0), 0); fe(); };
   ei.on('value', fi, () => {}); ee.on('value', fx, () => {});
+  const cp = db.ref('rec/cpa');
+  const fcp = s => { const n = Object.keys(s.val() || {}).length; const e = $('#nCpa'); if (e) e.textContent = n === 1 ? '1 entry' : n + ' entries'; };
+  cp.on('value', fcp, () => {});
   const fc = s => { const n = Object.keys(s.val() || {}).length; const e = $('#nPlaces'); if (e) e.textContent = n === 1 ? '1 name' : n + ' names'; };
   c.on('value', fc, () => {});
   const fa = s => { const v = Object.values(s.val() || {}), n = v.length, y = v.filter(d => d.have === 'yes').length; const e = $('#nDocs'); if (e) e.textContent = (n === 1 ? '1 document' : n + ' documents') + (n ? ` · I have ${y}` : ''); };
   const fb = s => { const n = Object.keys(s.val() || {}).length; const e = $('#nRecs'); if (e) e.textContent = n === 1 ? '1 record' : n + ' records'; };
   a.on('value', fa, () => {}); b.on('value', fb, () => {});
-  unsub = () => { a.off('value', fa); b.off('value', fb); c.off('value', fc); ei.off('value', fi); ee.off('value', fx); };
+  unsub = () => { a.off('value', fa); b.off('value', fb); c.off('value', fc); ei.off('value', fi); ee.off('value', fx); cp.off('value', fcp); };
 }
 const homeBtn = () => `<a class="tb" href="#" id="home">${svg.home}<span>Home</span></a>`;
 
@@ -463,7 +479,7 @@ function newDoc(i) {
 }
 async function addStage() {
   const ref = db.ref('rec/stages').push();
-  try { await ref.set({ name: 'Stage ' + (stages.size + 1), createdAt: TS() }); } catch (x) { return toast(friendly(x)); }
+  ref.set({ name: 'Stage ' + (stages.size + 1), createdAt: TS() }).catch(x => toast(friendly(x))); // cursor moves as soon as the row shows, not after the server answers
   const sec = await waitFor(`#stages .stage[data-sid="${CSS.escape(ref.key)}"]`);
   if (sec) { sec.scrollIntoView({ block: 'nearest' }); const i = sec.querySelector('.sname'); i.focus(); i.select(); }
 }
@@ -624,7 +640,7 @@ function newPlaceDoc(pid, input) {
 }
 async function addPlace() {
   const ref = db.ref('rec/places').push();
-  try { await ref.set({ name: '', createdAt: TS() }); } catch (x) { return toast(friendly(x)); }
+  ref.set({ name: '', createdAt: TS() }).catch(x => toast(friendly(x))); // cursor moves as soon as the row shows, not after the server answers
   if (pq) { $('#pq').value = ''; pq = ''; drawPlaces(); }
   const sec = await waitFor(`#places .stage[data-pid="${CSS.escape(ref.key)}"]`);
   if (sec) { sec.scrollIntoView({ block: 'nearest' }); sec.querySelector('.pname').focus(); }
@@ -977,6 +993,254 @@ function expDownload() {
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 
+// ---------- CPA: entries grouped in named stages ----------
+const cpaDays = new Map(), cpaRows = new Map(); // cpaDays = the stages (node name kept from the first version)
+let cq = '', fixingCpa = false;
+const CPA_TXT = ['sn', 'cid', 'start', 'finish'];
+const CPA_NUM = ['dep', 'depN', 'wd', 'wdN'];
+const CPA_F = CPA_TXT.concat(CPA_NUM);
+const idOk = v => v === '' || /^[0-9]{8,15}$/.test(v);
+function showCpa() {
+  $('#root').innerHTML = `
+    <div class="app">
+      <div class="bar">
+        ${homeBtn()}
+        <h1 class="ttl">CPA</h1>
+        <label class="search">${svg.search}<input id="cq" type="search" placeholder="Search ID or S.N." aria-label="Search"></label>
+        <span class="sp"></span>
+        <button class="tb" id="addDay">${svg.plus}<span>Add stage</span></button>
+        <button class="tb" id="cpaCsv">${svg.down}<span>Download Excel</span></button>
+      </div>
+      <div class="wrap"><div id="days"></div><div class="empty" id="cempty" hidden></div></div>
+      <div class="foot"><button class="add" id="addDay2">${svg.plus}Add stage</button><span id="csum"></span></div>
+    </div>`;
+  cq = '';
+  $('#cq').oninput = () => { cq = $('#cq').value.trim().toLowerCase(); cpaFilter(); };
+  $('#addDay').onclick = $('#addDay2').onclick = addCpaStage;
+  $('#cpaCsv').onclick = cpaDownload;
+  const box = $('#days');
+  const onEdit = e => {
+    const sn = e.target.closest('.cname');
+    if (sn) { const did = sn.closest('.stage').dataset.did, d = cpaDays.get(did); if (d) d.name = sn.value; saveAt(`rec/cpaDays/${did}/name`, cleanTxt(sn.value), e.type === 'change'); return; }
+    const i = e.target.closest('[data-c]'); if (!i) return;
+    const tr = i.closest('tr'), id = tr.dataset.id, f = i.dataset.c, r = cpaRows.get(id);
+    const isNum = CPA_NUM.includes(f), isDate = f === 'start' || f === 'finish';
+    let v = i.value;
+    if (f === 'cid') { v = v.replace(/\D/g, ''); if (v !== i.value) i.value = v; }
+    if (isNum) v = v === '' ? 0 : Math.max(0, f.endsWith('N') ? Math.round(Number(v) || 0) : Number(v) || 0);
+    if (r) r[f] = v;
+    if (f === 'cid') {
+      const ok = idOk(v);
+      i.closest('td').classList.toggle('bad', !ok);
+      i.title = ok ? '' : 'ID must be 8 to 15 digits';
+      markDupes();
+      if (!ok) { clearTimeout(timers['c' + id + f]); if (e.type === 'change') toast('ID must be 8 to 15 digits'); return; }
+    }
+    clearTimeout(timers['c' + id + f]);
+    const save = () => { if (gone.has(id)) return; db.ref('rec/cpa/' + id).update({ [f]: isNum || isDate || f === 'cid' ? v : cleanTxt(v), updatedAt: TS() }).catch(x => { if (!gone.has(id)) toast(friendly(x)); }); };
+    if (e.type === 'change' || isDate) save(); else timers['c' + id + f] = setTimeout(save, 500);
+    cpaFilter();
+  };
+  box.addEventListener('input', onEdit);
+  box.addEventListener('change', onEdit);
+  box.addEventListener('click', e => {
+    const ra = e.target.closest('.cadd');
+    if (ra) return addCpaRow(ra.closest('.stage').dataset.did);
+    const dd = e.target.closest('.ddel');
+    if (dd) {
+      const did = dd.closest('.stage').dataset.did, d = cpaDays.get(did); if (!d) return;
+      const inIt = [...cpaRows.entries()].filter(([, r]) => r.day === did).map(([id]) => id);
+      if (!confirm(`Delete "${d.name || 'this stage'}"${inIt.length ? ` and its ${inIt.length} ${inIt.length === 1 ? 'entry' : 'entries'}` : ''}?`)) return;
+      const up = { ['cpaDays/' + did]: null };
+      inIt.forEach(id => { up['cpa/' + id] = null; CPA_F.forEach(f => clearTimeout(timers['c' + id + f])); gone.add(id); });
+      cancelSaves('rec/cpaDays/' + did + '/'); gone.add(did);
+      db.ref('rec').update(up).catch(x => toast(friendly(x)));
+      return;
+    }
+    const b = e.target.closest('tr .chk, tr .x'); if (!b) return;
+    const tr = b.closest('tr'), id = tr.dataset.id, r = cpaRows.get(id); if (!r) return;
+    if (b.classList.contains('x')) {
+      if (!confirm(`Delete S.N. ${r.sn || ''}${r.cid ? ' (ID ' + r.cid + ')' : ''}?`)) return;
+      CPA_F.forEach(f => clearTimeout(timers['c' + id + f])); gone.add(id);
+      db.ref('rec/cpa/' + id).remove().catch(x => toast(friendly(x)));
+      return;
+    }
+    const g = b.dataset.g, v = r[g] === b.dataset.v ? '' : b.dataset.v; // tap again to clear
+    r[g] = v; drawCpaRow(id); cpaFilter();
+    db.ref('rec/cpa/' + id).update({ [g]: v, updatedAt: TS() }).catch(x => toast(friendly(x)));
+  });
+  box.addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    if (e.target.closest('.cname')) { e.preventDefault(); e.target.blur(); return; }
+    const i = e.target.closest('[data-c]'); if (!i) return;
+    e.preventDefault();
+    let tr = i.closest('tr').nextElementSibling;
+    while (tr && tr.hidden) tr = tr.nextElementSibling;
+    if (tr) tr.querySelector(`[data-c="${i.dataset.c}"]`).focus();
+    else if (!cq) addCpaRow(i.closest('.stage').dataset.did, i.dataset.c);
+  });
+  box.addEventListener('focusout', () => setTimeout(() => { if (!box.contains(document.activeElement)) sortCpa(); }, 0));
+  let gd = false, gr = false;
+  const dref = db.ref('rec/cpaDays'), rref = db.ref('rec/cpa');
+  const onD = s => { cpaDays.clear(); s.forEach(c => { cpaDays.set(c.key, c.val()); }); gd = true; if (gr) drawCpa(); };
+  const onR = s => { cpaRows.clear(); s.forEach(c => { cpaRows.set(c.key, c.val()); }); gr = true; if (gd) drawCpa(); };
+  dref.on('value', onD, e => toast(friendly(e)));
+  rref.on('value', onR, e => toast(friendly(e)));
+  unsub = () => { dref.off('value', onD); rref.off('value', onR); cpaDays.clear(); cpaRows.clear(); };
+}
+const dayIds = () => [...cpaDays.keys()].sort(byTime(cpaDays));
+const cpaTr = id => document.querySelector(`#days tr[data-id="${CSS.escape(id)}"]`);
+// stages from the first version (by date, no name) get "Stage 1", "Stage 2"...
+function fixCpaNames() {
+  const up = {};
+  dayIds().forEach((did, k) => { if (typeof cpaDays.get(did).name !== 'string') up[`cpaDays/${did}/name`] = 'Stage ' + (k + 1); });
+  if (!Object.keys(up).length) { fixingCpa = false; return; }
+  db.ref('rec').update(up).catch(() => {}).finally(() => { fixingCpa = false; });
+}
+function drawCpa() {
+  const box = $('#days'); if (!box) return;
+  if (!fixingCpa && [...cpaDays.values()].some(d => typeof d.name !== 'string')) { fixingCpa = true; setTimeout(fixCpaNames, 0); }
+  const dids = dayIds();
+  [...box.children].forEach(sec => { if (!cpaDays.has(sec.dataset.did)) sec.remove(); });
+  dids.forEach((did, n) => {
+    let sec = box.querySelector(`.stage[data-did="${CSS.escape(did)}"]`);
+    if (!sec) {
+      sec = document.createElement('section'); sec.className = 'stage'; sec.dataset.did = did;
+      sec.innerHTML = `
+        <div class="shead">
+          <input class="sname cname" maxlength="80" aria-label="Stage name" placeholder="Stage name">
+          <span class="scount"></span>
+          <span class="sp"></span>
+          <button type="button" class="add cadd">${svg.plus}New row</button>
+          <button type="button" class="x ddel" aria-label="Delete stage">${svg.trash}</button>
+        </div>
+        <table class="cpa"><thead><tr>
+          <th class="c-sn c">S.N.</th><th class="c-id">ID</th><th class="c-date">Start date</th><th class="c-date">Finish date</th>
+          <th class="c-amt">Deposit amount</th><th class="c-hmt c">Deposit HMT</th><th class="c-amt">Withdrawal amount</th><th class="c-hmt c">Withdrawal HMT</th>
+          <th class="c">Approved</th><th class="c">Declined</th><th class="c">Paid</th><th class="c">Unpaid</th><th aria-label="Delete"></th>
+        </tr></thead><tbody></tbody></table>
+        <div class="tempty">No entries in this stage yet</div>`;
+    }
+    if (box.children[n] !== sec) box.insertBefore(sec, box.children[n] || null);
+    const ni = sec.querySelector('.cname'), nv = cpaDays.get(did).name || '';
+    if (ni !== document.activeElement && ni.value !== nv) ni.value = nv;
+  });
+  document.querySelectorAll('#days tr[data-id]').forEach(tr => { if (!cpaRows.has(tr.dataset.id)) tr.remove(); });
+  for (const id of cpaRows.keys()) drawCpaRow(id);
+  if (!box.contains(document.activeElement)) sortCpa();
+  markDupes();
+  cpaFilter();
+}
+function drawCpaRow(id) {
+  const r = cpaRows.get(id); if (!r) return;
+  const tb = document.querySelector(`#days .stage[data-did="${CSS.escape(r.day)}"] tbody`); if (!tb) return;
+  let tr = cpaTr(id);
+  if (!tr) {
+    tr = document.createElement('tr'); tr.dataset.id = id;
+    tr.innerHTML = `
+      <td><input type="text" data-c="sn" maxlength="12" inputmode="numeric" aria-label="S.N."></td>
+      <td class="idc"><input type="text" data-c="cid" maxlength="15" inputmode="numeric" pattern="[0-9]*" aria-label="ID" placeholder="8 to 15 digits"></td>
+      <td><input type="date" data-c="start" aria-label="Start date"></td>
+      <td><input type="date" data-c="finish" aria-label="Finish date"></td>
+      <td class="amt"><input type="number" data-c="dep" min="0" step="any" inputmode="decimal" aria-label="Deposit amount"></td>
+      <td class="amt hmt"><input type="number" data-c="depN" min="0" step="1" inputmode="numeric" aria-label="Deposit how many times"></td>
+      <td class="amt"><input type="number" data-c="wd" min="0" step="any" inputmode="decimal" aria-label="Withdrawal amount"></td>
+      <td class="amt hmt"><input type="number" data-c="wdN" min="0" step="1" inputmode="numeric" aria-label="Withdrawal how many times"></td>
+      <td class="tick"><button type="button" class="chk ap" data-g="ap" data-v="approved" aria-label="Approved">${svg.check}</button></td>
+      <td class="tick"><button type="button" class="chk rj" data-g="ap" data-v="declined" aria-label="Declined">${svg.check}</button></td>
+      <td class="tick"><button type="button" class="chk ap" data-g="pay" data-v="paid" aria-label="Paid">${svg.check}</button></td>
+      <td class="tick"><button type="button" class="chk rj" data-g="pay" data-v="unpaid" aria-label="Unpaid">${svg.check}</button></td>
+      <td class="del"><button type="button" class="x" aria-label="Delete entry">${svg.trash}</button></td>`;
+  }
+  if (tr.parentElement !== tb && !tr.contains(document.activeElement)) tb.appendChild(tr);
+  for (const f of CPA_F) {
+    const i = tr.querySelector(`[data-c="${f}"]`); if (i === document.activeElement) continue;
+    let v = r[f] ?? '';
+    if (CPA_NUM.includes(f) && Number(v) === 0) v = '';
+    if (i.value !== String(v)) i.value = String(v);
+  }
+  const idIn = tr.querySelector('[data-c=cid]');
+  if (idIn !== document.activeElement) idIn.closest('td').classList.toggle('bad', !idOk(idIn.value));
+  tr.className = r.ap === 'approved' ? 'approved' : r.ap === 'declined' ? 'rejected' : '';
+  tr.querySelectorAll('.chk').forEach(b => { const on = r[b.dataset.g] === b.dataset.v; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
+}
+const cpaSn = id => { const n = parseFloat(cpaRows.get(id).sn); return isNaN(n) ? Infinity : n; };
+function sortCpa() {
+  for (const did of cpaDays.keys()) {
+    const tb = document.querySelector(`#days .stage[data-did="${CSS.escape(did)}"] tbody`); if (!tb) continue;
+    const ids = [...cpaRows.keys()].filter(id => cpaRows.get(id).day === did).sort((a, b) => cpaSn(a) - cpaSn(b) || (cpaRows.get(a).createdAt || 0) - (cpaRows.get(b).createdAt || 0));
+    ids.forEach((id, i) => { const tr = cpaTr(id); if (tr && tb.children[i] !== tr) tb.insertBefore(tr, tb.children[i] || null); });
+  }
+}
+// the same ID twice: mark both
+function markDupes() {
+  const seen = {};
+  document.querySelectorAll('#days [data-c=cid]').forEach(i => { const v = i.value; if (v.length >= 8) (seen[v] = seen[v] || []).push(i); });
+  document.querySelectorAll('#days [data-c=cid]').forEach(i => {
+    const d = (seen[i.value] || []).length > 1;
+    i.closest('td').classList.toggle('dup', d);
+    if (d) i.title = 'This ID is entered more than once'; else if (!i.closest('td').classList.contains('bad')) i.title = '';
+  });
+}
+const blank = () => ({ n: 0, hit: 0, approved: 0, declined: 0, paid: 0, unpaid: 0, dep: 0, wd: 0 });
+function cpaFilter() {
+  const tot = { ...blank(), shown: 0 }, per = {};
+  for (const [id, r] of cpaRows) {
+    const hit = !cq || String(r.cid || '').includes(cq) || String(r.sn || '').toLowerCase() === cq;
+    const tr = cpaTr(id); if (tr) tr.hidden = !hit;
+    const c = per[r.day] || (per[r.day] = blank());
+    c.n++; tot.n++; if (hit) { c.hit++; tot.shown++; }
+    for (const k of [r.ap, r.pay]) if (k) { c[k]++; tot[k]++; }
+    c.dep += Number(r.dep) || 0; tot.dep += Number(r.dep) || 0;
+    c.wd += Number(r.wd) || 0; tot.wd += Number(r.wd) || 0;
+  }
+  document.querySelectorAll('#days .stage').forEach(sec => {
+    const c = per[sec.dataset.did] || blank();
+    sec.querySelector('.scount').textContent = `${c.n} ${c.n === 1 ? 'entry' : 'entries'}${c.n ? ` · Deposit ${rs(c.dep)} · Withdrawal ${rs(c.wd)} · Approved ${c.approved} · Declined ${c.declined} · Paid ${c.paid} · Unpaid ${c.unpaid}` : ''}`;
+    sec.querySelector('.tempty').hidden = c.n > 0;
+    sec.hidden = !!cq && !c.hit && !sec.contains(document.activeElement);
+  });
+  const e = $('#cempty');
+  e.hidden = cpaDays.size > 0 && (!cq || tot.shown > 0);
+  e.textContent = cpaDays.size ? `Nothing matches "${$('#cq').value.trim()}"` : 'No stages yet';
+  $('#csum').innerHTML = `${cq ? `<b>${tot.shown}</b> of ${tot.n} shown · ` : ''}<b>${cpaDays.size}</b> ${cpaDays.size === 1 ? 'stage' : 'stages'} · <b>${tot.n}</b> ${tot.n === 1 ? 'entry' : 'entries'} · Deposit <b>${rs(tot.dep)}</b> · Withdrawal <b>${rs(tot.wd)}</b> · Approved <b>${tot.approved}</b> · Declined <b>${tot.declined}</b> · Paid <b>${tot.paid}</b> · Unpaid <b>${tot.unpaid}</b>`;
+}
+async function addCpaStage() {
+  const ref = db.ref('rec/cpaDays').push();
+  ref.set({ name: 'Stage ' + (cpaDays.size + 1), createdAt: TS() }).catch(x => toast(friendly(x)));
+  if (cq) { $('#cq').value = ''; cq = ''; cpaFilter(); }
+  const sec = await waitFor(`#days .stage[data-did="${CSS.escape(ref.key)}"]`);
+  if (sec) { sec.scrollIntoView({ block: 'nearest' }); const i = sec.querySelector('.cname'); i.focus(); i.select(); }
+}
+async function addCpaRow(did, field) {
+  if (!cpaDays.has(did)) return;
+  const max = Math.max(0, ...[...cpaRows.keys()].filter(id => cpaRows.get(id).day === did).map(cpaSn).filter(isFinite));
+  const ref = db.ref('rec/cpa').push();
+  ref.set({ day: did, sn: String(Math.floor(max) + 1), cid: '', start: '', finish: '', dep: 0, depN: 0, wd: 0, wdN: 0, ap: '', pay: '', createdAt: TS(), updatedAt: TS() }).catch(x => toast(friendly(x)));
+  if (cq) { $('#cq').value = ''; cq = ''; cpaFilter(); }
+  const tr = await waitFor(`#days tr[data-id="${CSS.escape(ref.key)}"]`);
+  if (tr) { sortCpa(); tr.scrollIntoView({ block: 'nearest' }); tr.querySelector(`[data-c="${typeof field === 'string' ? field : 'cid'}"]`).focus(); }
+}
+function cpaDownload() {
+  const cell = v => /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
+  const lines = [['Stage', 'S.N.', 'ID', 'Start date', 'Finish date', 'Deposit amount', 'Deposit HMT', 'Withdrawal amount', 'Withdrawal HMT', 'Approved', 'Declined', 'Paid', 'Unpaid']];
+  dayIds().forEach(did => {
+    const name = cpaDays.get(did).name || '';
+    [...cpaRows.keys()].filter(id => cpaRows.get(id).day === did).sort((a, b) => cpaSn(a) - cpaSn(b)).forEach(id => {
+      const r = cpaRows.get(id);
+      // ="..." keeps long IDs as text in Excel (no 1.23E+14)
+      lines.push([name, r.sn || '', r.cid ? `="${r.cid}"` : '', r.start || '', r.finish || '', r.dep || 0, r.depN || 0, r.wd || 0, r.wdN || 0,
+        r.ap === 'approved' ? 'Yes' : '', r.ap === 'declined' ? 'Yes' : '', r.pay === 'paid' ? 'Yes' : '', r.pay === 'unpaid' ? 'Yes' : '']);
+    });
+  });
+  const csv = '﻿' + lines.map(l => l.map(x => String(x).startsWith('="') ? x : cell(String(x))).join(',')).join('\r\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+  a.download = `cpa-${today()}.csv`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
 // ---------- See records (grouped in topics) ----------
 const recTopics = new Map();
 let fixingTopics = false;
@@ -1182,9 +1446,7 @@ async function addRow(tid, focusField) {
   if (!tid) return;
   const max = Math.max(0, ...[...rows.values()].filter(r => topicOf(r) === tid).map(snNum).filter(isFinite));
   const ref = db.ref('rec/rows').push();
-  try {
-    await ref.set({ sn: String(Math.floor(max) + 1), name: '', forDate: '', sent: '', reply: '', status: '', topic: tid, createdAt: TS(), updatedAt: TS() });
-  } catch (x) { return toast(friendly(x)); }
+  ref.set({ sn: String(Math.floor(max) + 1), name: '', forDate: '', sent: '', reply: '', status: '', topic: tid, createdAt: TS(), updatedAt: TS() }).catch(x => toast(friendly(x)));
   if (q) { $('#q').value = ''; q = ''; filter(); }
   let tr = trOf(ref.key);
   for (let i = 0; !tr && i < 40; i++) { await new Promise(r => setTimeout(r, 50)); tr = trOf(ref.key); }
@@ -1192,7 +1454,7 @@ async function addRow(tid, focusField) {
 }
 async function addTopic() {
   const ref = db.ref('rec/topics').push();
-  try { await ref.set({ name: 'Topic ' + (recTopics.size + 1), createdAt: TS() }); } catch (x) { return toast(friendly(x)); }
+  ref.set({ name: 'Topic ' + (recTopics.size + 1), createdAt: TS() }).catch(x => toast(friendly(x))); // cursor moves as soon as the row shows, not after the server answers
   if (q) { $('#q').value = ''; q = ''; filter(); }
   const sec = await waitFor(`#topics .stage[data-tid="${CSS.escape(ref.key)}"]`);
   if (sec) { sec.scrollIntoView({ block: 'nearest' }); const i = sec.querySelector('.tname'); i.focus(); i.select(); }
