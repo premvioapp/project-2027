@@ -1216,12 +1216,12 @@ function drawExpBody(reset) {
         <select id="ecat" aria-label="Category"><option value="">All categories</option>${CATS.map(([k, v]) => `<option value="${k}">${esc(v)}</option>`).join('')}<option value="none">No category</option></select>
       </div>
       <table class="etable" data-kind="expense">
-        <thead><tr><th class="c-sn c">S.N.</th><th class="c-date">Date</th><th class="c-en">Expense name</th><th class="c-amt">Cost (Rs.)</th><th class="c-tx">Where</th><th class="c-cat">Category</th><th class="c-mon">Money used</th><th aria-label="Delete"></th></tr></thead>
+        <thead><tr><th class="c-sn c">S.N.</th><th class="c-date">Date</th><th class="c-en">Expense</th><th class="c-amt">Cost</th><th class="c-tx">Where</th><th class="c-cat">Category</th><th class="c-mon">Paid with</th><th aria-label="Delete"></th></tr></thead>
         <tbody id="erows"></tbody>
       </table>`;
     else if (expTab === 'got') body.innerHTML = `
       <table class="etable" data-kind="income">
-        <thead><tr><th class="c-sn c">S.N.</th><th class="c-date">Date</th><th class="c-en">From whom</th><th class="c-amt">Amount (Rs.)</th><th class="c-tx">Note</th><th class="c-amt">Spent</th><th class="c-amt">Left</th><th aria-label="Delete"></th></tr></thead>
+        <thead><tr><th class="c-sn c">S.N.</th><th class="c-date">Date</th><th class="c-en">From</th><th class="c-amt">Amount</th><th class="c-tx">Note</th><th class="c-amt">Spent</th><th class="c-amt">Left</th><th aria-label="Delete"></th></tr></thead>
         <tbody id="irows"></tbody>
       </table>`;
     else if (expTab === 'months') body.innerHTML = `<div id="months"></div>`;
@@ -1478,7 +1478,7 @@ function drawMonths() {
 }
 function expDownload() {
   const cell = v => /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
-  const lines = [['Type', 'Date', 'Name / From whom', 'Amount (Rs.)', 'Where / Note', 'Category', 'Money used']];
+  const lines = [['Type', 'Date', 'Expense / From', 'Amount', 'Where / Note', 'Category', 'Paid with']];
   incomeIds().filter(id => inPer(exDate(income.get(id)), eP)).forEach(id => { const x = income.get(id); lines.push(['Received', x.date || '', x.from || '', x.amount || 0, x.note || '', '', '']); });
   expIds().filter(id => inPer(exDate(expenses.get(id)), eP)).forEach(id => { const x = expenses.get(id); lines.push(['Spent', x.date || '', x.name || '', x.cost || 0, x.where || '', catName(x.cat), moneyLabel(x.money)]); });
   const csv = '﻿' + lines.map(l => l.map(x => cell(String(x))).join(',')).join('\r\n');
@@ -1624,8 +1624,8 @@ function drawCpa() {
         </div>
         <label class="pnote snote">${svg.alert}<textarea class="stnote" rows="1" maxlength="300" aria-label="Stage note" placeholder="Add note"></textarea></label>
         <table class="cpa"><thead><tr>
-          <th class="c-sn c">S.N.</th><th class="c-id">ID</th><th class="c-date">Start date</th><th class="c-date">Finish date</th>
-          <th class="c-amt">Deposit Rs.</th><th class="c-amt">WD Rs.</th><th class="c-amt" title="Got from deal">GFD</th><th class="c-amt" title="Paid to worker">PTW</th><th class="c-amt" title="GFD minus PTW">Profit</th>
+          <th class="c-sn c">S.N.</th><th class="c-id">ID</th><th class="c-date">Start</th><th class="c-date">Finish</th>
+          <th class="c-amt">Deposit</th><th class="c-amt">WD</th><th class="c-amt" title="Got from deal">GFD</th><th class="c-amt" title="Paid to worker">PTW</th><th class="c-amt" title="GFD minus PTW">Profit</th>
           <th class="c">Approved</th><th class="c">Declined</th><th class="c">Paid</th><th class="c">Unpaid</th><th class="c-from">Paid from</th><th aria-label="Delete"></th>
         </tr></thead><tbody></tbody></table>
         <div class="tempty">No entries in this stage yet</div>`;
@@ -1762,7 +1762,7 @@ async function addCpaRow(did, field) {
 }
 function cpaDownload() {
   const cell = v => /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
-  const lines = [['Stage', 'S.N.', 'ID', 'Start date', 'Finish date', 'Deposit Rs.', 'WD Rs.', 'Got from deal', 'Paid to worker', 'Profit', 'Approved', 'Declined', 'Paid', 'Unpaid', 'Paid from']];
+  const lines = [['Stage', 'S.N.', 'ID', 'Start', 'Finish', 'Deposit', 'WD', 'Got from deal', 'Paid to worker', 'Profit', 'Approved', 'Declined', 'Paid', 'Unpaid', 'Paid from']];
   dayIds().forEach(did => {
     const name = cpaDays.get(did).name || '';
     [...cpaRows.keys()].filter(id => cpaRows.get(id).day === did && inPer(cpaDate(cpaRows.get(id)), cP)).sort((a, b) => cpaSn(a) - cpaSn(b)).forEach(id => {
@@ -1801,7 +1801,7 @@ function showProfit() {
         <button class="tb" id="prCsv">${svg.down}<span>Download Excel</span></button>
       </div>
       <div class="wrap">
-        <table class="prof"><thead><tr><th class="c-sn c">S.N.</th><th class="c-date">Date received</th><th class="c-amt">How much</th><th class="c-en">Expense name</th><th>How</th><th aria-label="Delete"></th></tr></thead><tbody id="prows"></tbody></table>
+        <table class="prof"><thead><tr><th class="c-sn c">S.N.</th><th class="c-date">Received</th><th class="c-amt">Amount</th><th class="c-en">Expense</th><th>How</th><th aria-label="Delete"></th></tr></thead><tbody id="prows"></tbody></table>
         <div class="empty" id="prempty" hidden></div>
       </div>
       <div class="foot"><button class="add" id="addPr">${svg.plus}New row</button><span id="prsum"></span></div>
@@ -1906,7 +1906,7 @@ async function addPrRow(field) {
 }
 function prDownload() {
   const cell = v => /[",\n\r]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
-  const lines = [['S.N.', 'Date received', 'How much', 'Expense name', 'How']];
+  const lines = [['S.N.', 'Received', 'Amount', 'Expense', 'How']];
   [...prRows.keys()].filter(id => inPer(prDate(prRows.get(id)), prP)).sort((a, b) => prSn(a) - prSn(b)).forEach(id => { const r = prRows.get(id); lines.push([r.sn || '', r.date || '', r.amt || 0, r.ename || '', r.how || '']); });
   const csv = '﻿' + lines.map(l => l.map(x => cell(String(x))).join(',')).join('\r\n');
   const a = document.createElement('a');
@@ -1939,8 +1939,8 @@ function showWork() {
       </div>
       <div class="wrap">
         <table class="wk"><thead><tr>
-          <th class="c-sn c">S.N.</th><th class="c-nm">Name</th><th class="c-date">Start date</th><th class="c-date">Finish date</th>
-          <th class="c-amt c-money" title="Money" aria-label="Money">${svg.cash}</th><th class="c-amt">T-depo</th><th class="c-amt">T-wd</th><th class="c-amt">Profit</th><th class="c-amt">Loss</th>
+          <th class="c-sn c">S.N.</th><th class="c-nm">Name</th><th class="c-date">Start</th><th class="c-date">Finish</th>
+          <th class="c-amt c-money">Staff cost</th><th class="c-amt">T-depo</th><th class="c-amt">T-wd</th><th class="c-amt">Profit</th><th class="c-amt">Loss</th>
           <th class="c">Finished</th><th class="c">Not finished</th><th aria-label="Delete"></th>
         </tr></thead><tbody id="wrows"></tbody></table>
         <div class="empty" id="wempty" hidden></div>
@@ -2014,7 +2014,7 @@ function drawWkRow(id) {
       <td><input type="text" data-w="name" maxlength="120" aria-label="Name"></td>
       <td><input type="date" data-w="start" aria-label="Start date"></td>
       <td><input type="date" data-w="finish" aria-label="Finish date"></td>
-      <td class="amt"><input type="number" data-w="money" min="0" step="any" inputmode="decimal" aria-label="Money"></td>
+      <td class="amt"><input type="number" data-w="money" min="0" step="any" inputmode="decimal" aria-label="Staff cost"></td>
       <td class="amt"><input type="number" data-w="tdep" min="0" step="any" inputmode="decimal" aria-label="T-depo"></td>
       <td class="amt"><input type="number" data-w="twd" min="0" step="any" inputmode="decimal" aria-label="T-wd"></td>
       <td class="amt wpro"><input type="number" data-w="profit" min="0" step="any" inputmode="decimal" aria-label="Profit"></td>
@@ -2054,7 +2054,7 @@ function wkFilter() {
   const e = $('#wempty'); if (!e) return;
   e.hidden = t.shown > 0;
   e.textContent = wq ? `Nothing matches "${$('#wq').value.trim()}"` : wf !== 'all' ? 'Nothing to show for this filter' : wkRows.size ? `No entries in ${wP.k === 'cur' ? 'this month' : perLabel(wP)}` : 'No entries yet';
-  $('#wsum').innerHTML = `<b>${esc(perLabel(wP))}</b> · ${wq || wf !== 'all' ? `<b>${t.shown}</b> of ${t.n} shown · ` : ''}<b>${t.n}</b> ${t.n === 1 ? 'entry' : 'entries'} · Money <b>${rs(t.money)}</b> · T-depo <b>${rs(t.tdep)}</b> · T-wd <b>${rs(t.twd)}</b> · Profit <b class="post">${rs(t.profit)}</b> · Loss <b class="negt">${rs(t.loss)}</b> · Finished <b>${t.finished}</b> · Not finished <b>${t.notfinished}</b>`;
+  $('#wsum').innerHTML = `<b>${esc(perLabel(wP))}</b> · ${wq || wf !== 'all' ? `<b>${t.shown}</b> of ${t.n} shown · ` : ''}<b>${t.n}</b> ${t.n === 1 ? 'entry' : 'entries'} · Staff cost <b>${rs(t.money)}</b> · T-depo <b>${rs(t.tdep)}</b> · T-wd <b>${rs(t.twd)}</b> · Profit <b class="post">${rs(t.profit)}</b> · Loss <b class="negt">${rs(t.loss)}</b> · Finished <b>${t.finished}</b> · Not finished <b>${t.notfinished}</b>`;
   perFill('wper', wP, [...wkRows.values()].map(wkDate));
   selSync();
 }
@@ -2069,7 +2069,7 @@ async function addWkRow(field) {
 }
 function wkDownload() {
   const cell = v => /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
-  const lines = [['S.N.', 'Name', 'Start date', 'Finish date', 'Money', 'T-depo', 'T-wd', 'Profit', 'Loss', 'Finished', 'Not finished']];
+  const lines = [['S.N.', 'Name', 'Start', 'Finish', 'Staff cost', 'T-depo', 'T-wd', 'Profit', 'Loss', 'Finished', 'Not finished']];
   [...wkRows.keys()].filter(id => inPer(wkDate(wkRows.get(id)), wP)).sort((a, b) => wkSn(a) - wkSn(b)).forEach(id => {
     const r = wkRows.get(id);
     lines.push([r.sn || '', r.name || '', r.start || '', r.finish || '', r.money || 0, r.tdep || 0, r.twd || 0, r.profit || 0, r.loss || 0, r.fin === 'finished' ? 'Yes' : '', r.fin === 'notfinished' ? 'Yes' : '']);
@@ -2092,8 +2092,8 @@ const LD_NUM = ['amt', 'gave'];
 const LD_F = LD_TXT.concat(LD_NUM);
 // two lists share this code: Leihen (money I got, rec/ld) and Ausleihen (money I lent, rec/al)
 const LDM = {
-  ld: { node: 'ld', st: 'ldStages', hash: '#leihen', title: 'Leihen', section: 'Leiden', file: 'leihen', date: true, who: 'From whom', back: 'How much I gave', got: 'Got', gave: 'Gave', tip: 'Gave more than you got' },
-  al: { node: 'al', st: 'alStages', hash: '#ausleihen', title: 'Ausleihen', section: 'Ausleihen', file: 'ausleihen', date: false, give: true, who: 'To whom', back: 'How much I take', got: 'Lent', gave: 'Took back', tip: 'Took back more than you lent' },
+  ld: { node: 'ld', st: 'ldStages', hash: '#leihen', title: 'Leihen', section: 'Leiden', file: 'leihen', date: true, who: 'From', back: 'Gave', got: 'Got', gave: 'Gave', tip: 'Gave more than you got' },
+  al: { node: 'al', st: 'alStages', hash: '#ausleihen', title: 'Ausleihen', section: 'Ausleihen', file: 'ausleihen', date: false, give: true, who: 'To', back: 'Took back', got: 'Lent', gave: 'Took back', tip: 'Took back more than you lent' },
 };
 let LM = LDM.ld, LD_FS = LD_F;
 // Leiden tile: choose Leihen or Ausleihen
@@ -2234,8 +2234,8 @@ function drawLd() {
         </div>
         <label class="pnote snote">${svg.alert}<textarea class="stnote" rows="1" maxlength="300" aria-label="Stage note" placeholder="Add note"></textarea></label>
         <table class="ld"><thead><tr>
-          <th class="c-sn c">S.N.</th>${LM.date ? '<th class="c-date">Date</th>' : ''}<th class="c-en">${LM.who}</th><th class="c-amt">How much</th><th class="c-amt">${LM.back}</th><th class="c-amt">How much remaining</th>
-          ${LM.give ? '<th class="c-sp">Where did I give</th>' : ''}<th class="c-sp">Where did I spend</th><th class="c">Cleared</th><th class="c">Not cleared</th><th aria-label="Delete"></th>
+          <th class="c-sn c">S.N.</th>${LM.date ? '<th class="c-date">Date</th>' : ''}<th class="c-en">${LM.who}</th><th class="c-amt">Amount</th><th class="c-amt">${LM.back}</th><th class="c-amt">Remaining</th>
+          ${LM.give ? '<th class="c-sp">Given at</th>' : ''}<th class="c-sp">Spent on</th><th class="c">Cleared</th><th class="c">Not cleared</th><th aria-label="Delete"></th>
         </tr></thead><tbody></tbody></table>
         <div class="tempty">No entries in this stage yet</div>`;
     }
@@ -2366,7 +2366,7 @@ function drawPeople() {
         <div class="card"><span>Entries</span><b>${p.n}</b></div>
         <div class="card"><span>Cleared / Not cleared</span><b>${p.cleared} / ${p.notcleared}</b></div>
       </div>
-      <table class="plist"><thead><tr><th class="c-date">${LM.date ? 'Date' : 'Added'}</th><th>Stage</th><th class="c-amt">How much</th><th class="c-amt">${LM.gave}</th><th class="c-amt">Remaining</th><th>Where did I spend</th><th class="c-st">Status</th></tr></thead>
+      <table class="plist"><thead><tr><th class="c-date">${LM.date ? 'Date' : 'Added'}</th><th>Stage</th><th class="c-amt">Amount</th><th class="c-amt">${LM.gave}</th><th class="c-amt">Remaining</th><th>Spent on</th><th class="c-st">Status</th></tr></thead>
       <tbody>${ids.map(id => { const r = ldRows.get(id), v = remainOf(r); return `<tr class="click" data-entry="${esc(id)}" title="Open in Entries"><td>${ldDate(r) ? esc(niceDateY(ldDate(r))) : ''}</td><td>${esc((ldStages.get(r.stage) || {}).name || '')}</td><td class="num2">${rs(r.amt)}</td><td class="num2">${rs(r.gave)}</td><td class="num2 ${v ? 'negt' : 'post'}">${rs(v)}</td><td>${esc(r.spent || '')}</td><td>${r.clr === 'cleared' ? '<span class="tag ok">Cleared</span>' : r.clr === 'notcleared' ? '<span class="tag no">Not cleared</span>' : ''}</td></tr>`; }).join('')}</tbody></table>`;
     return;
   }
@@ -2413,7 +2413,7 @@ async function addLdRow(sid, field) {
 }
 function ldDownload() {
   const cell = v => /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
-  const lines = [['Stage', 'S.N.', ...(LM.date ? ['Date'] : []), LM.who, 'How much', LM.back, 'How much remaining', ...(LM.give ? ['Where did I give'] : []), 'Where did I spend', 'Cleared', 'Not cleared']];
+  const lines = [['Stage', 'S.N.', ...(LM.date ? ['Date'] : []), LM.who, 'Amount', LM.back, 'Remaining', ...(LM.give ? ['Given at'] : []), 'Spent on', 'Cleared', 'Not cleared']];
   ldStageIds().forEach(sid => {
     const name = ldStages.get(sid).name || '';
     [...ldRows.keys()].filter(id => ldRows.get(id).stage === sid && inPer(ldDate(ldRows.get(id)), lP)).sort((a, b) => ldSn(a) - ldSn(b)).forEach(id => {
