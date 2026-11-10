@@ -192,15 +192,19 @@
   td.tk.filled{background:var(--redbg)!important;box-shadow:inset 3px 0 0 var(--nod)}
   td.tk.filled input{color:var(--nod);font-weight:700}
   .stage{margin:0 0 18px}
-  /* CPA and Leiden stages: pink and purple in turn */
-  #days .stage:nth-child(odd) .shead,#ldst .stage:nth-child(odd) .shead{background:#fce4ef;border-color:#f3b6d0;box-shadow:inset 5px 0 0 #e0609a}
-  #days .stage:nth-child(even) .shead,#ldst .stage:nth-child(even) .shead{background:#ede4fb;border-color:#cdb8f0;box-shadow:inset 5px 0 0 #8a5cd6}
-  #days .stage:nth-child(odd) .sname,#ldst .stage:nth-child(odd) .sname{color:#b0306c}
-  #days .stage:nth-child(even) .sname,#ldst .stage:nth-child(even) .sname{color:#6a3cb5}
-  html.dark #days .stage:nth-child(odd) .shead,html.dark #ldst .stage:nth-child(odd) .shead{background:#3b2230;border-color:#5a3449}
-  html.dark #days .stage:nth-child(even) .shead,html.dark #ldst .stage:nth-child(even) .shead{background:#2d2440;border-color:#46385f}
-  html.dark #days .stage:nth-child(odd) .sname,html.dark #ldst .stage:nth-child(odd) .sname{color:#f08bbb}
-  html.dark #days .stage:nth-child(even) .sname,html.dark #ldst .stage:nth-child(even) .sname{color:#b89af0}
+  /* CPA and Leiden stages: each stage its own colour (--h = hue, set in drawStageNote; 18 colours, then they repeat) */
+  #days .stage,#ldst .stage{--h:330;border:2px solid hsl(var(--h) 65% 55%);border-radius:4px;overflow:hidden;background:hsl(var(--h) 80% 97%)}
+  #days .stage .shead,#ldst .stage .shead{background:hsl(var(--h) 75% 82%);border-color:hsl(var(--h) 65% 55%);box-shadow:inset 6px 0 0 hsl(var(--h) 70% 42%)}
+  #days .stage .sname,#ldst .stage .sname{color:hsl(var(--h) 75% 24%)}
+  #days .stage .scount,#ldst .stage .scount{color:#33292e}
+  #days .stage th,#ldst .stage th{background:hsl(var(--h) 70% 91%);border-color:hsl(var(--h) 55% 78%)}
+  #days .stage td:first-child,#ldst .stage td:first-child{background:hsl(var(--h) 75% 95%)}
+  html.dark #days .stage,html.dark #ldst .stage{border-color:hsl(var(--h) 45% 45%);background:hsl(var(--h) 25% 11%)}
+  html.dark #days .stage .shead,html.dark #ldst .stage .shead{background:hsl(var(--h) 40% 27%);border-color:hsl(var(--h) 45% 45%);box-shadow:inset 6px 0 0 hsl(var(--h) 55% 55%)}
+  html.dark #days .stage .sname,html.dark #ldst .stage .sname{color:hsl(var(--h) 85% 86%)}
+  html.dark #days .stage .scount,html.dark #ldst .stage .scount{color:#e6dde2}
+  html.dark #days .stage th,html.dark #ldst .stage th{background:hsl(var(--h) 30% 20%);border-color:hsl(var(--h) 35% 30%)}
+  html.dark #days .stage td:first-child,html.dark #ldst .stage td:first-child{background:hsl(var(--h) 25% 15%)}
   .snote{position:sticky;left:0;padding:4px 10px;font-size:13px;color:#e8a0a0;border-bottom:1px solid var(--grid)}
   .snote textarea{min-height:20px;color:var(--nod);font-weight:600}
   .snote.filled textarea{font-size:13px}
@@ -488,7 +492,7 @@ function searchAll(H, q) {
   for (const [id, r] of E('cpa')) if (has(r.cid, r.sn, r.name, r.pfrom)) out.push({ section: 'CPA', title: r.cid ? 'ID ' + r.cid : 'S.N. ' + (r.sn || ''), sub: `${nm('cpaDays', r.day)} · S.N. ${r.sn || ''}${r.ap ? ' · ' + r.ap : ''}${r.pay ? ' · ' + r.pay : ''}`, hash: '#cpa', sel: `#days tr[data-id="${id}"]` });
   for (const [node, st, sec, hash, got, gave] of [['ld', 'ldStages', 'Leihen', '#leihen', 'got', 'gave'], ['al', 'alStages', 'Ausleihen', '#ausleihen', 'lent', 'took back']]) {
     for (const [id, s] of E(st)) if (has(s.name, s.note)) out.push({ section: sec, title: s.name, sub: 'Stage' + (s.note ? ' · ' + s.note : ''), hash, sel: `#ldst .stage[data-sid="${id}"]` });
-    for (const [id, r] of E(node)) if (has(r.from, r.spent, r.sn)) out.push({ section: sec, title: r.from || '(no name)', sub: `${nm(st, r.stage)} · ${got} ${rs(r.amt)}, ${gave} ${rs(r.gave)}, remaining ${rs((Number(r.amt) || 0) - (Number(r.gave) || 0))}${r.spent ? ' · ' + r.spent : ''}`, hash, sel: `#ldst tr[data-id="${id}"]` });
+    for (const [id, r] of E(node)) if (has(r.from, r.spent, r.gplace, r.sn)) out.push({ section: sec, title: r.from || '(no name)', sub: `${nm(st, r.stage)} · ${got} ${rs(r.amt)}, ${gave} ${rs(r.gave)}, remaining ${rs((Number(r.amt) || 0) - (Number(r.gave) || 0))}${r.gplace ? ' · gave at ' + r.gplace : ''}${r.spent ? ' · ' + r.spent : ''}`, hash, sel: `#ldst tr[data-id="${id}"]` });
   }
   for (const [id, r] of E('profit')) if (has(r.how, r.sn, r.ename)) out.push({ section: 'Profit', title: rs(r.amt) + (r.ename ? ' · ' + r.ename : '') + (r.how ? ' · ' + String(r.how).slice(0, 80) : ''), sub: `S.N. ${r.sn || ''}${r.date ? ' · ' + niceDateY(r.date) : ''}`, hash: '#profit', sel: `#prows tr[data-id="${id}"]` });
   for (const [id, r] of E('work')) if (has(r.name, r.sn)) out.push({ section: 'Work money', title: r.name || '(no name)', sub: `S.N. ${r.sn || ''} · profit ${rs(r.profit)}, loss ${rs(r.loss)}${r.fin === 'finished' ? ' · finished' : r.fin === 'notfinished' ? ' · not finished' : ''}`, hash: '#work', sel: `#wrows tr[data-id="${id}"]` });
@@ -798,6 +802,9 @@ async function addStage() {
 
 // ---------- saving helper ----------
 // small red note under a stage name (CPA, Leihen, Ausleihen)
+// stage colours: pink, purple, then 16 more; stage 19 starts again at pink
+const STAGE_HUES = [330, 270, 210, 160, 30, 0, 235, 188, 95, 45, 300, 120, 15, 250, 350, 200, 60, 285];
+const stageColour = (sec, n) => sec.style.setProperty('--h', STAGE_HUES[n % STAGE_HUES.length]);
 function drawStageNote(sec, note) {
   const t = sec.querySelector('.stnote'); if (!t) return;
   if (t !== document.activeElement && t.value !== (note || '')) t.value = note || '';
@@ -1626,7 +1633,7 @@ function drawCpa() {
     if (box.children[n] !== sec) box.insertBefore(sec, box.children[n] || null);
     const ni = sec.querySelector('.cname'), nv = cpaDays.get(did).name || '';
     if (ni !== document.activeElement && ni.value !== nv) ni.value = nv;
-    drawStageNote(sec, cpaDays.get(did).note);
+    drawStageNote(sec, cpaDays.get(did).note); stageColour(sec, n);
   });
   document.querySelectorAll('#days tr[data-id]').forEach(tr => { if (!cpaRows.has(tr.dataset.id)) tr.remove(); });
   for (const id of cpaRows.keys()) drawCpaRow(id);
@@ -2086,7 +2093,7 @@ const LD_F = LD_TXT.concat(LD_NUM);
 // two lists share this code: Leihen (money I got, rec/ld) and Ausleihen (money I lent, rec/al)
 const LDM = {
   ld: { node: 'ld', st: 'ldStages', hash: '#leihen', title: 'Leihen', section: 'Leiden', file: 'leihen', date: true, who: 'From whom', back: 'How much I gave', got: 'Got', gave: 'Gave', tip: 'Gave more than you got' },
-  al: { node: 'al', st: 'alStages', hash: '#ausleihen', title: 'Ausleihen', section: 'Ausleihen', file: 'ausleihen', date: false, who: 'To whom', back: 'How much I take', got: 'Lent', gave: 'Took back', tip: 'Took back more than you lent' },
+  al: { node: 'al', st: 'alStages', hash: '#ausleihen', title: 'Ausleihen', section: 'Ausleihen', file: 'ausleihen', date: false, give: true, who: 'To whom', back: 'How much I take', got: 'Lent', gave: 'Took back', tip: 'Took back more than you lent' },
 };
 let LM = LDM.ld, LD_FS = LD_F;
 // Leiden tile: choose Leihen or Ausleihen
@@ -2107,7 +2114,7 @@ function showLdChoice() {
   unsub = () => { a.off('value', onA); b.off('value', onB); };
 }
 function showLeiden(mode) {
-  LM = LDM[mode] || LDM.ld; LD_FS = LM.date ? LD_F : LD_F.filter(f => f !== 'date');
+  LM = LDM[mode] || LDM.ld; LD_FS = LM.date ? LD_F : LD_F.filter(f => f !== 'date').concat(LM.give ? ['gplace'] : []);
   $('#root').innerHTML = `
     <div class="app">
       <div class="bar">
@@ -2173,7 +2180,7 @@ function showLeiden(mode) {
       const inIt = [...ldRows.entries()].filter(([, r]) => r.stage === sid).map(([id]) => id);
       if (!confirm(`Move "${st.name || 'this stage'}"${inIt.length ? ` and its ${inIt.length} ${inIt.length === 1 ? 'entry' : 'entries'}` : ''} to the Archive?`)) return;
       const items = { [LM.st + '/' + sid]: pickData(st) };
-      inIt.forEach(id => { items[LM.node + '/' + id] = pickData(ldRows.get(id)); LD_F.forEach(f => clearTimeout(timers['l' + id + f])); });
+      inIt.forEach(id => { items[LM.node + '/' + id] = pickData(ldRows.get(id)); LD_FS.forEach(f => clearTimeout(timers['l' + id + f])); });
       toArchive(LM.section, `Stage: ${st.name || '(no name)'}${inIt.length ? ` (${inIt.length} ${inIt.length === 1 ? 'entry' : 'entries'})` : ''}`, items);
       return;
     }
@@ -2228,14 +2235,14 @@ function drawLd() {
         <label class="pnote snote">${svg.alert}<textarea class="stnote" rows="1" maxlength="300" aria-label="Stage note" placeholder="Add note"></textarea></label>
         <table class="ld"><thead><tr>
           <th class="c-sn c">S.N.</th>${LM.date ? '<th class="c-date">Date</th>' : ''}<th class="c-en">${LM.who}</th><th class="c-amt">How much</th><th class="c-amt">${LM.back}</th><th class="c-amt">How much remaining</th>
-          <th class="c-sp">Where did I spend</th><th class="c">Cleared</th><th class="c">Not cleared</th><th aria-label="Delete"></th>
+          ${LM.give ? '<th class="c-sp">Where did I give</th>' : ''}<th class="c-sp">Where did I spend</th><th class="c">Cleared</th><th class="c">Not cleared</th><th aria-label="Delete"></th>
         </tr></thead><tbody></tbody></table>
         <div class="tempty">No entries in this stage yet</div>`;
     }
     if (box.children[n] !== sec) box.insertBefore(sec, box.children[n] || null);
     const ni = sec.querySelector('.lname'), nv = ldStages.get(sid).name || '';
     if (ni !== document.activeElement && ni.value !== nv) ni.value = nv;
-    drawStageNote(sec, ldStages.get(sid).note);
+    drawStageNote(sec, ldStages.get(sid).note); stageColour(sec, n);
   });
   document.querySelectorAll('#ldst tr[data-id]').forEach(tr => { if (!ldRows.has(tr.dataset.id)) tr.remove(); });
   for (const id of ldRows.keys()) drawLdRow(id);
@@ -2263,6 +2270,7 @@ function drawLdRow(id) {
       <td class="amt"><input type="number" data-l="amt" min="0" step="any" inputmode="decimal" aria-label="How much"></td>
       <td class="amt"><input type="number" data-l="gave" min="0" step="any" inputmode="decimal" aria-label="${LM.back}"></td>
       <td class="calc rem"></td>
+      ${LM.give ? '<td><input type="text" data-l="gplace" maxlength="300" aria-label="Where did I give"></td>' : ''}
       <td><input type="text" data-l="spent" maxlength="300" aria-label="Where did I spend"></td>
       <td class="tick"><button type="button" class="chk ap" data-v="cleared" aria-label="Cleared">${svg.check}</button></td>
       <td class="tick"><button type="button" class="chk rj" data-v="notcleared" aria-label="Not cleared">${svg.check}</button></td>
@@ -2293,7 +2301,7 @@ function ldFilter() {
   for (const [id, r] of ldRows) {
     all[r.stage] = (all[r.stage] || 0) + 1;
     const inP = inPer(ldDate(r), lP);
-    const hit = inP && (!lq || String(r.from || '').toLowerCase().includes(lq) || String(r.spent || '').toLowerCase().includes(lq) || String(r.sn || '').toLowerCase() === lq)
+    const hit = inP && (!lq || String(r.from || '').toLowerCase().includes(lq) || String(r.spent || '').toLowerCase().includes(lq) || String(r.gplace || '').toLowerCase().includes(lq) || String(r.sn || '').toLowerCase() === lq)
       && (lf === 'all' || (lf === 'none' ? !r.clr : lf === 'remaining' ? remainOf(r) !== 0 : r.clr === lf));
     const tr = ldTr(id); if (tr) tr.hidden = !hit && !tr.contains(document.activeElement);
     if (!inP) continue; // totals are for the period shown
@@ -2398,19 +2406,19 @@ async function addLdRow(sid, field) {
   const max = Math.max(0, ...[...ldRows.keys()].filter(id => ldRows.get(id).stage === sid).map(ldSn).filter(isFinite));
   const ref = db.ref('rec/' + LM.node).push();
   if (!inPer(today(), lP)) Object.assign(lP, newPer()); // a new entry is dated today: show it
-  ref.set({ stage: sid, sn: String(Math.floor(max) + 1), ...(LM.date ? { date: today() } : {}), from: '', amt: 0, gave: 0, spent: '', clr: '', createdAt: TS(), updatedAt: TS() }).catch(x => toast(friendly(x)));
+  ref.set({ stage: sid, sn: String(Math.floor(max) + 1), ...(LM.date ? { date: today() } : {}), ...(LM.give ? { gplace: '' } : {}), from: '', amt: 0, gave: 0, spent: '', clr: '', createdAt: TS(), updatedAt: TS() }).catch(x => toast(friendly(x)));
   if (lq) { $('#lq').value = ''; lq = ''; ldFilter(); }
   const tr = await waitFor(`#ldst tr[data-id="${CSS.escape(ref.key)}"]`);
   if (tr) { sortLd(); tr.scrollIntoView({ block: 'nearest' }); tr.querySelector(`[data-l="${typeof field === 'string' ? field : 'from'}"]`).focus(); }
 }
 function ldDownload() {
   const cell = v => /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
-  const lines = [['Stage', 'S.N.', ...(LM.date ? ['Date'] : []), LM.who, 'How much', LM.back, 'How much remaining', 'Where did I spend', 'Cleared', 'Not cleared']];
+  const lines = [['Stage', 'S.N.', ...(LM.date ? ['Date'] : []), LM.who, 'How much', LM.back, 'How much remaining', ...(LM.give ? ['Where did I give'] : []), 'Where did I spend', 'Cleared', 'Not cleared']];
   ldStageIds().forEach(sid => {
     const name = ldStages.get(sid).name || '';
     [...ldRows.keys()].filter(id => ldRows.get(id).stage === sid && inPer(ldDate(ldRows.get(id)), lP)).sort((a, b) => ldSn(a) - ldSn(b)).forEach(id => {
       const r = ldRows.get(id);
-      lines.push([name, r.sn || '', ...(LM.date ? [r.date || ''] : []), r.from || '', r.amt || 0, r.gave || 0, remainOf(r), r.spent || '', r.clr === 'cleared' ? 'Yes' : '', r.clr === 'notcleared' ? 'Yes' : '']);
+      lines.push([name, r.sn || '', ...(LM.date ? [r.date || ''] : []), r.from || '', r.amt || 0, r.gave || 0, remainOf(r), ...(LM.give ? [r.gplace || ''] : []), r.spent || '', r.clr === 'cleared' ? 'Yes' : '', r.clr === 'notcleared' ? 'Yes' : '']);
     });
   });
   const csv = '﻿' + lines.map(l => l.map(x => cell(String(x))).join(',')).join('\r\n');
