@@ -71,6 +71,21 @@
   .chk.on svg{opacity:1}
   tr.approved td:not(:first-child){background:var(--ok)}
   tr.rejected td:not(:first-child){background:var(--no)}
+  .selbtn{display:none;width:22px;height:22px;border:1.5px solid #8a8a8a;background:var(--card);border-radius:3px;place-items:center;padding:0;vertical-align:middle;color:#fff}
+  .selbtn svg{opacity:0} .selbtn.on{background:var(--okd);border-color:var(--okd)} .selbtn.on svg{opacity:1} html.dark .selbtn{border-color:#777}
+  .selmode tr[data-id] td:first-child .selbtn{display:inline-grid;margin:0 auto}
+  .selmode tr[data-id] td:first-child{text-align:center;cursor:pointer}
+  .selmode tr[data-id] td:first-child > input,.selmode tr[data-id] td:first-child > .n{display:none}
+  tr.picked td{box-shadow:inset 0 0 0 999px rgba(33,115,70,.13)}
+  html.dark tr.picked td{box-shadow:inset 0 0 0 999px rgba(95,191,134,.18)}
+  .selbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:6px 12px;background:var(--sh);border-bottom:1px solid var(--shb);font-size:13px}
+  .selbar button.add{display:inline-flex;align-items:center;gap:5px;height:30px;padding:0 11px;border:1px solid var(--bd);background:var(--card);border-radius:3px;font:inherit;font-size:13px;font-weight:600;color:var(--text);cursor:pointer;white-space:nowrap}
+  .selbar button.add:hover{border-color:var(--green)} .selbar button.sdel{color:var(--nod)} .selbar button.sdone{background:var(--green);border-color:var(--green);color:#fff}
+  .selbar .sall{cursor:pointer;color:var(--muted)} .selbar #selN{margin-left:6px}
+  #selBtn.on{background:rgba(255,255,255,.28)}
+  .prange{display:inline-flex;align-items:center;gap:6px;color:#fff;font-size:13px}
+  .prange input{height:34px;border:0;border-radius:3px;padding:0 6px;font:inherit;color:#222;background:#fff}
+  .psel{max-width:260px}
   td.del{width:40px;text-align:center}
   .x{border:0;background:transparent;color:#9a9a9a;width:32px;height:32px;display:inline-grid;place-items:center;border-radius:2px}
   .x:hover{color:var(--nod);background:var(--redbg2)}
@@ -100,6 +115,9 @@
   .negt{color:var(--nod)} .post{color:var(--okd)}
   table.wk{min-width:1150px} table.wk .c-date{width:142px} table.wk .c-amt{width:118px} table.wk .c-nm{min-width:200px} th.c-money svg{vertical-align:middle}
   td.wpro input{color:var(--okd);font-weight:600} td.wlos input{color:var(--nod);font-weight:600}
+  table.prof{min-width:700px} table.prof .c-amt{width:140px}
+  td.phow textarea{display:block;width:100%;border:0;outline:none;resize:none;background:transparent;font:inherit;line-height:1.5;padding:7px 8px;min-height:34px;overflow:hidden;color:var(--text)}
+  td.phow textarea:focus{background:var(--card);box-shadow:inset 0 0 0 2px var(--green)}
   td.cprof{text-align:right;padding:0 8px;white-space:nowrap}
   table.cpa{min-width:1300px} table.cpa .c-from{min-width:180px}
   table.cpa .c-date{width:142px}
@@ -288,6 +306,7 @@ const svg = {
   tasks: '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m4 6 1.5 1.5L8 5M4 12l1.5 1.5L8 11M4 18l1.5 1.5L8 17M11 6h9M11 12h9M11 18h9"/></svg>',
   cash: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="19" height="12" rx="1.5"/><circle cx="12" cy="12" r="2.8"/><path d="M6 9.5v.01M18 14.5v.01"/></svg>',
   cashL: '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="19" height="12" rx="1.5"/><circle cx="12" cy="12" r="2.8"/><path d="M6 9.5v.01M18 14.5v.01"/></svg>',
+  trend: '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg>',
   out: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10"/></svg>',
 };
 const domain = window.CK_STAFF_EMAIL_DOMAIN || 'staff.cloudkitchen.app';
@@ -311,8 +330,9 @@ function stop() { if (unsub) { unsub(); unsub = null; } }
 function route() {
   if (!signedIn) return;
   stop();
+  SEL.on = false; SEL.ids.clear(); SEL.cfg = null; // selecting ends when the page changes
   const h = location.hash;
-  if (h === '#records') showSheet(); else if (h === '#needs') showDocs(); else if (h === '#where') showWhere(); else if (h === '#expenses') showExpenses(); else if (h === '#cpa') showCpa(); else if (h === '#leiden') showLeiden(); else if (h === '#work') showWork(); else if (h === '#archive') showArchive(); else showHome();
+  if (h === '#records') showSheet(); else if (h === '#needs') showDocs(); else if (h === '#where') showWhere(); else if (h === '#expenses') showExpenses(); else if (h === '#cpa') showCpa(); else if (h === '#leiden') showLeiden(); else if (h === '#work') showWork(); else if (h === '#profit') showProfit(); else if (h === '#archive') showArchive(); else showHome();
 }
 window.addEventListener('hashchange', route);
 auth.onAuthStateChanged(async user => {
@@ -384,13 +404,14 @@ function showHome() {
         <a class="tile" href="#cpa" id="goCpa">${svg.idcard}<b>CPA</b><span id="nCpa"></span></a>
         <a class="tile" href="#leiden" id="goLd">${svg.swap}<b>Leiden</b><span id="nLd"></span></a>
         <a class="tile" href="#work" id="goWork">${svg.cashL}<b>Work money</b><span id="nWork"></span></a>
+        <a class="tile" href="#profit" id="goProfit">${svg.trend}<b>Profit</b><span id="nProfit"></span></a>
       </div>
     </div>`;
   $('#out').onclick = () => auth.signOut();
   drawThemeBtn(); $('#theme').onclick = toggleTheme;
   // one copy of everything: tile counts + search
   const H = {};
-  const nodes = ['rows', 'topics', 'docs', 'stages', 'places', 'income', 'expenses', 'cpa', 'cpaDays', 'ld', 'ldStages', 'work', 'archive'];
+  const nodes = ['rows', 'topics', 'docs', 'stages', 'places', 'income', 'expenses', 'cpa', 'cpaDays', 'ld', 'ldStages', 'work', 'profit', 'archive'];
   const set = (id, t) => { const e = $(id); if (e) e.textContent = t; };
   const counts = () => {
     const v = k => Object.values(H[k] || {}), n = (k, one, many) => { const c = v(k).length; return c === 1 ? '1 ' + one : c + ' ' + many; };
@@ -401,6 +422,7 @@ function showHome() {
     set('#nCpa', n('cpa', 'entry', 'entries'));
     set('#nLd', `Remaining ${rs(v('ld').reduce((t, r) => t + (Number(r.amt) || 0) - (Number(r.gave) || 0), 0))}`);
     set('#nWork', n('work', 'entry', 'entries'));
+    set('#nProfit', `Total ${rs(v('profit').reduce((t, r) => t + (Number(r.amt) || 0), 0))}`);
     archive.clear(); Object.entries(H.archive || {}).forEach(([k, a]) => archive.set(k, a));
     set('#nArch', archive.size ? String(archive.size) : '');
   };
@@ -453,13 +475,15 @@ function searchAll(H, q) {
   for (const [id, r] of E('cpa')) if (has(r.cid, r.sn, r.name, r.pfrom)) out.push({ section: 'CPA', title: r.cid ? 'ID ' + r.cid : 'S.N. ' + (r.sn || ''), sub: `${nm('cpaDays', r.day)} · S.N. ${r.sn || ''}${r.ap ? ' · ' + r.ap : ''}${r.pay ? ' · ' + r.pay : ''}`, hash: '#cpa', sel: `#days tr[data-id="${id}"]` });
   for (const [id, s] of E('ldStages')) if (has(s.name)) out.push({ section: 'Leiden', title: s.name, sub: 'Stage', hash: '#leiden', sel: `#ldst .stage[data-sid="${id}"]` });
   for (const [id, r] of E('ld')) if (has(r.from, r.spent, r.sn)) out.push({ section: 'Leiden', title: r.from || '(no name)', sub: `${nm('ldStages', r.stage)} · got ${rs(r.amt)}, gave ${rs(r.gave)}, remaining ${rs((Number(r.amt) || 0) - (Number(r.gave) || 0))}${r.spent ? ' · ' + r.spent : ''}`, hash: '#leiden', sel: `#ldst tr[data-id="${id}"]` });
+  for (const [id, r] of E('profit')) if (has(r.how, r.sn)) out.push({ section: 'Profit', title: rs(r.amt) + (r.how ? ' · ' + String(r.how).slice(0, 80) : ''), sub: `S.N. ${r.sn || ''}`, hash: '#profit', sel: `#prows tr[data-id="${id}"]` });
   for (const [id, r] of E('work')) if (has(r.name, r.sn)) out.push({ section: 'Work money', title: r.name || '(no name)', sub: `S.N. ${r.sn || ''} · profit ${rs(r.profit)}, loss ${rs(r.loss)}${r.fin === 'finished' ? ' · finished' : r.fin === 'notfinished' ? ' · not finished' : ''}`, hash: '#work', sel: `#wrows tr[data-id="${id}"]` });
   return out;
 }
 // open the section and light up the line
 async function goToResult(r) {
   if (!r) return;
-  if (r.tab) { expTab = r.tab; expPeriod = 'all'; }
+  pendingAll = r.hash;
+  if (r.tab) expTab = r.tab;
   if (r.hash === '#leiden') { ldView = 'entries'; ldPerson = ''; if (location.hash === '#leiden') ldViews(); }
   location.hash = r.hash;
   let el = null;
@@ -929,7 +953,126 @@ const weekStart = s => { const d = parseYmd(s); d.setDate(d.getDate() - d.getDay
 const addDays = (s, n) => { const d = parseYmd(s); d.setDate(d.getDate() + n); return ymd(d); };
 const niceDate = s => parseYmd(s).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
 const niceDateY = s => parseYmd(s).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-let expTab = 'spent', expPeriod = 'all', expCat = '', eq = '', pendingExp = null;
+
+// ---------- periods: a month runs from the 5th to the 4th of the next month ("2026-11" = 5 Nov to 4 Dec 2026) ----------
+const MDAY = 5;
+let pendingAll = ''; // opened from Search everything: show all time so the line is there
+const monthKeyOf = s => { if (!s) return ''; const d = parseYmd(s); if (d.getDate() < MDAY) d.setMonth(d.getMonth() - 1, 1); return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}`; };
+const monthRange = k => { const [y, m] = k.split('-').map(Number); return [ymd(new Date(y, m - 1, MDAY)), ymd(new Date(y, m, MDAY - 1))]; };
+const curMonthKey = () => monthKeyOf(today());
+const dayOfTs = t => typeof t === 'number' && t > 0 ? ymd(new Date(t)) : '';
+const monthSpan = k => { const [a, b] = monthRange(k); return `${niceDate(a)} – ${niceDateY(b)}`; };
+// P = { k: 'cur' | 'm' | 'week' | 'lastweek' | 'all' | 'range', m: 'YYYY-MM', from, to }
+const newPer = () => ({ k: 'cur', m: '', from: '', to: '' });
+function inPer(date, P) {
+  if (P.k === 'all') return true;
+  if (!date) return false;
+  if (P.k === 'cur') return monthKeyOf(date) === curMonthKey();
+  if (P.k === 'm') return monthKeyOf(date) === P.m;
+  if (P.k === 'range') return (!P.from || date >= P.from) && (!P.to || date <= P.to);
+  return inPeriod(date, P.k); // week / lastweek
+}
+const perLabel = P => P.k === 'cur' ? 'This month' : P.k === 'm' ? monthName(P.m) : P.k === 'all' ? 'All time' : P.k === 'week' ? 'This week' : P.k === 'lastweek' ? 'Last week' : `${P.from ? niceDateY(P.from) : 'Start'} to ${P.to ? niceDateY(P.to) : 'today'}`;
+const perFile = P => P.k === 'cur' ? curMonthKey() : P.k === 'm' ? P.m : P.k === 'range' ? `${P.from || 'start'}-to-${P.to || 'today'}` : P.k;
+const perHtml = id => `<select id="${id}" class="fsel psel" aria-label="Period"></select><span class="prange" id="${id}R" hidden><input type="date" id="${id}F" aria-label="From date"><span>to</span><input type="date" id="${id}T" aria-label="To date"></span>`;
+// options: this month, every other month that has entries (newest first), week, all time, exact dates
+function perFill(id, P, dates) {
+  const s = $('#' + id); if (!s) return;
+  const cur = curMonthKey();
+  const ms = [...new Set(dates.filter(Boolean).map(monthKeyOf))].filter(k => k && k !== cur);
+  if (P.k === 'm' && P.m !== cur && !ms.includes(P.m)) ms.push(P.m);
+  ms.sort().reverse();
+  const sig = cur + '|' + ms.join(',');
+  if (s.dataset.sig !== sig && s !== document.activeElement) {
+    s.innerHTML = `<option value="cur">This month (${monthSpan(cur)})</option>` + ms.map(k => `<option value="m:${k}">${monthName(k)} (${monthSpan(k)})</option>`).join('')
+      + `<option value="week">This week</option><option value="lastweek">Last week</option><option value="all">All time</option><option value="range">Exact dates</option>`;
+    s.dataset.sig = sig;
+  }
+  if (s !== document.activeElement) s.value = P.k === 'm' ? 'm:' + P.m : P.k;
+  $('#' + id + 'R').hidden = P.k !== 'range';
+}
+function perBind(id, P, onChange) {
+  $('#' + id).onchange = e => {
+    const v = e.target.value;
+    P.k = v.startsWith('m:') ? 'm' : v; P.m = v.startsWith('m:') ? v.slice(2) : '';
+    if (P.k === 'range' && !P.from && !P.to) { P.from = monthRange(curMonthKey())[0]; P.to = today(); }
+    $('#' + id + 'F').value = P.from; $('#' + id + 'T').value = P.to;
+    $('#' + id + 'R').hidden = P.k !== 'range';
+    onChange();
+  };
+  $('#' + id + 'F').onchange = e => { P.from = e.target.value; onChange(); };
+  $('#' + id + 'T').onchange = e => { P.to = e.target.value; onChange(); };
+}
+
+// ---------- select many rows: Select button, ticks in the S.N. column, act on all ticked ----------
+// cfg: { box, map, node, section, what: [one, many], marks: [[field, value, label]], stamp (has updatedAt), del(ids) (optional) }
+const SEL = { on: false, ids: new Set(), cfg: null };
+function selSetup(cfg) {
+  SEL.on = false; SEL.ids.clear(); SEL.cfg = cfg;
+  const btn = $('#selBtn'); if (!btn) return;
+  btn.onclick = () => selMode(!SEL.on);
+}
+function selMode(on) {
+  SEL.on = on; SEL.ids.clear();
+  const app = $('.app'), btn = $('#selBtn'), cfg = SEL.cfg;
+  app.classList.toggle('selmode', on);
+  btn.classList.toggle('on', on);
+  let bar = $('#selbar');
+  if (on && !bar) {
+    bar = document.createElement('div'); bar.className = 'selbar'; bar.id = 'selbar';
+    bar.innerHTML = `<button type="button" class="chk ap" id="selAll" aria-label="Select all shown">${svg.check}</button><label for="selAll" class="sall">All shown</label><b id="selN"></b><span class="sp"></span>`
+      + cfg.marks.map(([f, v, l]) => `<button type="button" class="add smark" data-f="${f}" data-v="${v}">${esc(l)}</button>`).join('')
+      + `<button type="button" class="add sdel">${svg.trash}Delete</button><button type="button" class="add sdone">Done</button>`;
+    $('.bar').after(bar);
+    bar.onclick = e => {
+      const b = e.target.closest('button'); if (!b) return;
+      if (b.id === 'selAll') { const vis = selVisible(), all = vis.length && vis.every(id => SEL.ids.has(id)); vis.forEach(id => all ? SEL.ids.delete(id) : SEL.ids.add(id)); return selSync(); }
+      if (b.classList.contains('sdone')) return selMode(false);
+      const ids = [...SEL.ids].filter(id => cfg.map().has(id));
+      if (!ids.length) return toast('Nothing selected');
+      if (b.classList.contains('smark')) {
+        const up = {};
+        ids.forEach(id => { up[`${cfg.node}/${id}/${b.dataset.f}`] = b.dataset.v; if (cfg.stamp) up[`${cfg.node}/${id}/updatedAt`] = TS(); });
+        db.ref('rec').update(up).then(() => toast(`${ids.length} marked ${b.textContent}`)).catch(x => toast(friendly(x)));
+        return;
+      }
+      if (b.classList.contains('sdel')) {
+        const n = `${ids.length} ${ids.length === 1 ? cfg.what[0] : cfg.what[1]}`;
+        if (!confirm(`Move ${n} to the Archive?`)) return;
+        if (cfg.del) cfg.del(ids, n);
+        else { const items = {}; ids.forEach(id => { items[`${cfg.node}/${id}`] = pickData(cfg.map().get(id)); Object.keys(timers).forEach(k => { if (k.includes(id)) clearTimeout(timers[k]); }); }); toArchive(cfg.section, `${n} (selected together)`, items); }
+        SEL.ids.clear(); selSync();
+      }
+    };
+  } else if (!on && bar) bar.remove();
+  selSync();
+}
+const selVisible = () => [...document.querySelectorAll(`${SEL.cfg.box} tr[data-id]`)].filter(tr => !tr.hidden && !tr.closest('[hidden]')).map(tr => tr.dataset.id);
+// call after every redraw: puts the tick boxes in, shows what is ticked and the count
+function selSync() {
+  const cfg = SEL.cfg; if (!cfg || !$(cfg.box)) return;
+  const m = cfg.map();
+  for (const id of [...SEL.ids]) if (!m.has(id)) SEL.ids.delete(id);
+  document.querySelectorAll(`${cfg.box} tr[data-id]`).forEach(tr => {
+    const td = tr.firstElementChild; let b = td.querySelector('.selbtn');
+    if (!b) { b = document.createElement('button'); b.type = 'button'; b.className = 'selbtn'; b.setAttribute('aria-label', 'Select'); b.innerHTML = svg.check; td.prepend(b); }
+    const on = SEL.ids.has(tr.dataset.id); b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); tr.classList.toggle('picked', SEL.on && on);
+  });
+  if (!SEL.on) return;
+  const vis = selVisible(), n = SEL.ids.size;
+  $('#selN').textContent = `${n} selected`;
+  const a = $('#selAll'), all = vis.length > 0 && vis.every(id => SEL.ids.has(id)); a.classList.toggle('on', all); a.setAttribute('aria-pressed', all);
+}
+document.addEventListener('click', e => {
+  const td = e.target.closest('tr[data-id] > td:first-child'); if (!td || !SEL.on || !td.closest(SEL.cfg.box)) return;
+  const id = td.parentElement.dataset.id;
+  if (SEL.ids.has(id)) SEL.ids.delete(id); else SEL.ids.add(id);
+  selSync();
+});
+const selBtnHtml = () => `<button class="tb" id="selBtn">${svg.tasks.replace('width="40" height="40"', 'width="16" height="16"').replace('stroke-width="1.7"', 'stroke-width="2.2"')}<span>Select</span></button>`;
+let expTab = 'spent', expCat = '', eq = '', pendingExp = null;
+const eP = newPer();
+const exDate = x => x.date || dayOfTs(x.createdAt);
 
 const spentFrom = id => [...expenses.values()].filter(e => e.money === id).reduce((a, e) => a + (Number(e.cost) || 0), 0);
 function inPeriod(date, p) {
@@ -948,7 +1091,9 @@ function showExpenses() {
       <div class="bar">
         ${homeBtn()}
         <h1 class="ttl">Expenses</h1>
+        <span id="eperW">${perHtml('eper')}</span>
         <span class="sp"></span>
+        ${selBtnHtml()}
         <button class="tb" id="expCsv">${svg.down}<span>Download Excel</span></button>
       </div>
       <div class="wrap" id="expWrap">
@@ -963,7 +1108,8 @@ function showExpenses() {
       </div>
       <div class="foot"><span id="esum"></span></div>
     </div>`;
-  eq = ''; expPeriod = 'all'; expCat = '';
+  eq = ''; expCat = ''; Object.assign(eP, newPer()); if (pendingAll === '#expenses') eP.k = 'all'; pendingAll = '';
+  perBind('eper', eP, () => { drawCards(); drawExpBody(); });
   $('.etabs').onclick = e => { const b = e.target.closest('[data-tab]'); if (!b) return; expTab = b.dataset.tab; drawExpBody(true); };
   $('#expCsv').onclick = expDownload;
   const body = $('#expBody');
@@ -1017,18 +1163,17 @@ function showExpenses() {
 
 function drawCards() {
   const el = $('#expCards'); if (!el) return;
-  const got = [...income.values()].reduce((a, x) => a + (Number(x.amount) || 0), 0);
-  const all = [...expenses.values()];
-  const spent = all.reduce((a, x) => a + (Number(x.cost) || 0), 0);
-  const wk = all.filter(x => inPeriod(x.date, 'week')).reduce((a, x) => a + (Number(x.cost) || 0), 0);
-  const mo = all.filter(x => inPeriod(x.date, 'month')).reduce((a, x) => a + (Number(x.cost) || 0), 0);
-  const left = got - spent;
+  const sum = (m, f, P) => [...m.values()].filter(x => !P || inPer(exDate(x), P)).reduce((a, x) => a + (Number(x[f]) || 0), 0);
+  const got = sum(income, 'amount', eP), spent = sum(expenses, 'cost', eP), left = got - spent;
+  const wk = [...expenses.values()].filter(x => inPeriod(x.date, 'week')).reduce((a, x) => a + (Number(x.cost) || 0), 0);
+  const allLeft = sum(income, 'amount') - sum(expenses, 'cost');
+  const lbl = eP.k === 'all' ? '' : ` (${perLabel(eP).toLowerCase() === 'this month' ? 'this month' : perLabel(eP)})`;
   el.innerHTML = `
-    <div class="card"><span>Received</span><b>${rs(got)}</b></div>
-    <div class="card"><span>Spent</span><b>${rs(spent)}</b></div>
-    <div class="card ${left < 0 ? 'neg' : 'pos'}"><span>Left</span><b>${rs(left)}</b></div>
+    <div class="card"><span>Received${esc(lbl)}</span><b>${rs(got)}</b></div>
+    <div class="card"><span>Spent${esc(lbl)}</span><b>${rs(spent)}</b></div>
+    <div class="card ${left < 0 ? 'neg' : 'pos'}"><span>Left${esc(lbl)}</span><b>${rs(left)}</b></div>
     <div class="card"><span>This week</span><b>${rs(wk)}</b></div>
-    <div class="card"><span>This month</span><b>${rs(mo)}</b></div>`;
+    <div class="card ${allLeft < 0 ? 'neg' : 'pos'}"><span>Left (all time)</span><b>${rs(allLeft)}</b></div>`;
 }
 
 function drawExpBody(reset) {
@@ -1039,9 +1184,6 @@ function drawExpBody(reset) {
     if (expTab === 'spent') body.innerHTML = `
       <div class="etools">
         <label class="search light">${svg.search}<input id="eq" type="search" placeholder="Search expense or place" aria-label="Search expenses"></label>
-        <select id="eper" aria-label="Show">
-          <option value="all">All</option><option value="week">This week</option><option value="lastweek">Last week</option><option value="month">This month</option>
-        </select>
         <select id="ecat" aria-label="Category"><option value="">All categories</option>${CATS.map(([k, v]) => `<option value="${k}">${esc(v)}</option>`).join('')}<option value="none">No category</option></select>
       </div>
       <table class="etable" data-kind="expense">
@@ -1056,13 +1198,30 @@ function drawExpBody(reset) {
     else if (expTab === 'months') body.innerHTML = `<div id="months"></div>`;
     else body.innerHTML = `<div id="weeks"></div>`;
     if (expTab === 'spent') {
-      $('#eq').value = eq; $('#eper').value = expPeriod;
+      $('#eq').value = eq;
       $('#eq').oninput = () => { eq = $('#eq').value.trim().toLowerCase(); drawExpRows(); };
-      $('#eper').onchange = () => { expPeriod = $('#eper').value; drawExpRows(); };
       $('#ecat').value = expCat; $('#ecat').onchange = () => { expCat = $('#ecat').value; drawExpRows(); };
     }
   }
+  if (reset || $('#selBtn').dataset.etab !== expTab) {
+    $('#selBtn').dataset.etab = expTab;
+    const sb = $('#selbar'); if (sb) sb.remove(); $('.app').classList.remove('selmode'); $('#selBtn').classList.remove('on');
+    $('#selBtn').hidden = $('#eperW').hidden = expTab === 'weeks' || expTab === 'months';
+    if (expTab === 'got') selSetup({ box: '#irows', map: () => income, node: 'income', section: 'Expenses', what: ['money received', 'money received'], marks: [], del: delIncomes });
+    else selSetup({ box: '#erows', map: () => expenses, node: 'expenses', section: 'Expenses', what: ['expense', 'expenses'], marks: [] });
+  }
+  perFill('eper', eP, [...expenses.values(), ...income.values()].map(exDate));
   if (expTab === 'spent') drawExpRows(); else if (expTab === 'got') drawIncomeRows(); else if (expTab === 'months') drawMonths(); else drawWeeks();
+  selSync();
+}
+// several money received at once: expenses using them keep their line, without "Money used" (comes back on restore)
+function delIncomes(ids, n) {
+  const items = {}, extra = {}, back = {};
+  ids.forEach(id => {
+    items['income/' + id] = pickData(income.get(id));
+    for (const [eid, ex] of expenses) if (ex.money === id) { extra[`expenses/${eid}/money`] = ''; back[`expenses/${eid}/money`] = id; }
+  });
+  toArchive('Expenses', `${n} (selected together)`, items, extra, back);
 }
 
 const incomeIds = () => [...income.keys()].sort((a, b) => String(income.get(a).date || '').localeCompare(String(income.get(b).date || '')) || byTime(income)(a, b));
@@ -1096,16 +1255,16 @@ function drawExpRows() {
     let tr = tb.querySelector(`tr[data-id="${CSS.escape(id)}"]`);
     if (!tr) {
       tr = document.createElement('tr'); tr.dataset.id = id;
-      tr.innerHTML = `<td class="num"></td><td><input type="date" data-x="date" aria-label="Date"></td><td><input type="text" data-x="name" maxlength="120" aria-label="Expense name"></td><td class="amt"><input type="number" data-x="cost" min="0" step="any" inputmode="decimal" aria-label="Cost"></td><td><input type="text" data-x="where" maxlength="120" aria-label="Where"></td><td><select data-x="cat" aria-label="Category">${catOptions(ex.cat)}</select></td><td><select data-x="money" aria-label="Money used"></select></td><td class="del"><button type="button" class="x" aria-label="Delete expense">${svg.trash}</button></td>`;
+      tr.innerHTML = `<td class="num"><span class="n"></span></td><td><input type="date" data-x="date" aria-label="Date"></td><td><input type="text" data-x="name" maxlength="120" aria-label="Expense name"></td><td class="amt"><input type="number" data-x="cost" min="0" step="any" inputmode="decimal" aria-label="Cost"></td><td><input type="text" data-x="where" maxlength="120" aria-label="Where"></td><td><select data-x="cat" aria-label="Category">${catOptions(ex.cat)}</select></td><td><select data-x="money" aria-label="Money used"></select></td><td class="del"><button type="button" class="x" aria-label="Delete expense">${svg.trash}</button></td>`;
     }
     const ms = tr.querySelector('[data-x=money]');
     if (ms.dataset.sig !== sig && ms !== document.activeElement) { ms.innerHTML = moneyOptions(ex.money); ms.dataset.sig = sig; }
     fillRow(tr, ex);
-    const hit = inPeriod(ex.date, expPeriod) && (!expCat || (expCat === 'none' ? !ex.cat : ex.cat === expCat)) && (!eq || String(ex.name || '').toLowerCase().includes(eq) || String(ex.where || '').toLowerCase().includes(eq));
+    const hit = inPer(exDate(ex), eP) && (!expCat || (expCat === 'none' ? !ex.cat : ex.cat === expCat)) && (!eq || String(ex.name || '').toLowerCase().includes(eq) || String(ex.where || '').toLowerCase().includes(eq));
     tr.hidden = !hit && !tr.contains(document.activeElement);
     if (tb.children[k] !== tr) tb.insertBefore(tr, tb.children[k] || null);
     k++;
-    tr.querySelector('.num').textContent = k;
+    tr.querySelector('.num .n').textContent = k;
   });
   let nr = tb.querySelector('tr.newrow');
   if (!nr) {
@@ -1127,11 +1286,12 @@ function drawIncomeRows() {
     let tr = tb.querySelector(`tr[data-id="${CSS.escape(id)}"]`);
     if (!tr) {
       tr = document.createElement('tr'); tr.dataset.id = id;
-      tr.innerHTML = `<td class="num"></td><td><input type="date" data-x="date" aria-label="Date"></td><td><input type="text" data-x="from" maxlength="120" aria-label="From whom"></td><td class="amt"><input type="number" data-x="amount" min="0" step="any" inputmode="decimal" aria-label="Amount"></td><td><input type="text" data-x="note" maxlength="200" aria-label="Note"></td><td class="calc sp-c"></td><td class="calc left-c"></td><td class="del"><button type="button" class="x" aria-label="Delete money received">${svg.trash}</button></td>`;
+      tr.innerHTML = `<td class="num"><span class="n"></span></td><td><input type="date" data-x="date" aria-label="Date"></td><td><input type="text" data-x="from" maxlength="120" aria-label="From whom"></td><td class="amt"><input type="number" data-x="amount" min="0" step="any" inputmode="decimal" aria-label="Amount"></td><td><input type="text" data-x="note" maxlength="200" aria-label="Note"></td><td class="calc sp-c"></td><td class="calc left-c"></td><td class="del"><button type="button" class="x" aria-label="Delete money received">${svg.trash}</button></td>`;
     }
     fillRow(tr, income.get(id));
+    tr.hidden = !inPer(exDate(income.get(id)), eP) && !tr.contains(document.activeElement);
     if (tb.children[k] !== tr) tb.insertBefore(tr, tb.children[k] || null);
-    tr.querySelector('.num').textContent = k + 1;
+    tr.querySelector('.num .n').textContent = k + 1;
   });
   let nr = tb.querySelector('tr.newrow');
   if (!nr) {
@@ -1156,12 +1316,12 @@ function drawExpTotals() {
   if (expTab === 'spent') {
     const shown = expIds().filter(id => { const tr = document.querySelector(`#erows tr[data-id="${CSS.escape(id)}"]`); return tr && !tr.hidden; });
     const tot = shown.reduce((a, id) => a + (Number(expenses.get(id).cost) || 0), 0);
-    e.innerHTML = `<b>${shown.length}</b> ${shown.length === 1 ? 'expense' : 'expenses'} shown · Total <b>${rs(tot)}</b>`;
+    e.innerHTML = `<b>${esc(perLabel(eP))}</b> · <b>${shown.length}</b> ${shown.length === 1 ? 'expense' : 'expenses'} shown · Total <b>${rs(tot)}</b>`;
   } else if (expTab === 'got') {
-    const tot = [...income.values()].reduce((a, x) => a + (Number(x.amount) || 0), 0);
-    e.innerHTML = `<b>${income.size}</b> ${income.size === 1 ? 'entry' : 'entries'} · Total received <b>${rs(tot)}</b>`;
+    const shown = [...income.values()].filter(x => inPer(exDate(x), eP)), tot = shown.reduce((a, x) => a + (Number(x.amount) || 0), 0);
+    e.innerHTML = `<b>${esc(perLabel(eP))}</b> · <b>${shown.length}</b> ${shown.length === 1 ? 'entry' : 'entries'} · Total received <b>${rs(tot)}</b>`;
   } else if (expTab === 'months') {
-    e.innerHTML = `Money received and spent in each month.`;
+    e.innerHTML = `Money received and spent in each month (5th to 4th of the next month).`;
   } else {
     e.innerHTML = `Weeks run Sunday to Saturday. Each finished week is saved.`;
   }
@@ -1177,7 +1337,7 @@ function newExpRow(kind, f, val) {
     : { date: today(), name: '', cost: 0, where: '', cat: '', money: '', createdAt: TS() };
   row[f] = typeof val === 'string' ? cleanTxt(val) : val;
   pendingExp = { id: ref.key, kind, f };
-  if (kind === 'expense' && expPeriod !== 'all' && !inPeriod(row.date, expPeriod)) { expPeriod = 'all'; const p = $('#eper'); if (p) p.value = 'all'; }
+  if (!inPer(row.date, eP)) { Object.assign(eP, newPer()); perFill('eper', eP, [row.date]); drawCards(); } // a new line is dated today: show it
   ref.set(row).catch(x => { pendingExp = null; toast(friendly(x)); });
 }
 function takePending(tb, nr, kind) {
@@ -1258,13 +1418,13 @@ function drawMonths() {
   const el = $('#months'); if (!el) return;
   const M = new Map();
   const G = k => { if (!M.has(k)) M.set(k, { received: 0, spent: 0, count: 0, cats: {}, items: [] }); return M.get(k); };
-  for (const it of income.values()) if (it.date) G(it.date.slice(0, 7)).received += Number(it.amount) || 0;
-  for (const ex of expenses.values()) if (ex.date) { const m = G(ex.date.slice(0, 7)), c = Number(ex.cost) || 0; m.spent += c; m.count++; m.items.push(ex); const k = ex.cat || 'none'; m.cats[k] = (m.cats[k] || 0) + c; }
+  for (const it of income.values()) if (it.date) G(monthKeyOf(it.date)).received += Number(it.amount) || 0;
+  for (const ex of expenses.values()) if (ex.date) { const m = G(monthKeyOf(ex.date)), c = Number(ex.cost) || 0; m.spent += c; m.count++; m.items.push(ex); const k = ex.cat || 'none'; m.cats[k] = (m.cats[k] || 0) + c; }
   const keys = [...M.keys()].sort();
   if (!keys.length) { el.innerHTML = '<div class="empty">No entries yet</div>'; drawExpTotals(); return; }
   let run = 0; const leftAt = {}; keys.forEach(k => { run += M.get(k).received - M.get(k).spent; leftAt[k] = run; });
   const last = keys.slice(-12), cmax = Math.max(1, ...last.flatMap(k => [M.get(k).received, M.get(k).spent]));
-  const cur = today().slice(0, 7);
+  const cur = curMonthKey();
   el.innerHTML = `
     <section class="week chartbox"><div class="whead"><b>Received and spent by month</b><span class="legend"><i class="lg-in"></i>Received <i class="lg-out"></i>Spent</span></div>
       <div class="vchart">${last.map(k => { const m = M.get(k); return `<div class="vcol" title="${esc(monthName(k))}: received ${rs(m.received)}, spent ${rs(m.spent)}"><div class="vbars"><i class="in" style="height:${Math.round(m.received / cmax * 100)}%"></i><i class="out" style="height:${Math.round(m.spent / cmax * 100)}%"></i></div><span>${esc(monthName(k).split(' ')[0].slice(0, 3))}</span></div>`; }).join('')}</div>
@@ -1273,7 +1433,7 @@ function drawMonths() {
     const top = [...m.items].sort((a, b) => (Number(b.cost) || 0) - (Number(a.cost) || 0)).slice(0, 3);
     return `
       <section class="week ${k === cur ? 'now' : ''}" data-month="${k}">
-        <div class="whead"><b>${monthName(k)}</b><span class="wtag">${k === cur ? 'This month, so far' : ''}</span></div>
+        <div class="whead"><b>${monthName(k)}</b><span class="wtag">${k === cur ? 'This month, so far · ' : ''}${monthSpan(k)}</span></div>
         <div class="wstats">
           <div><span>Received</span><b>${rs(m.received)}</b></div>
           <div><span>Spent</span><b>${rs(m.spent)}</b></div>
@@ -1290,12 +1450,12 @@ function drawMonths() {
 function expDownload() {
   const cell = v => /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
   const lines = [['Type', 'Date', 'Name / From whom', 'Amount (Rs.)', 'Where / Note', 'Category', 'Money used']];
-  incomeIds().forEach(id => { const x = income.get(id); lines.push(['Received', x.date || '', x.from || '', x.amount || 0, x.note || '', '', '']); });
-  expIds().forEach(id => { const x = expenses.get(id); lines.push(['Spent', x.date || '', x.name || '', x.cost || 0, x.where || '', catName(x.cat), moneyLabel(x.money)]); });
+  incomeIds().filter(id => inPer(exDate(income.get(id)), eP)).forEach(id => { const x = income.get(id); lines.push(['Received', x.date || '', x.from || '', x.amount || 0, x.note || '', '', '']); });
+  expIds().filter(id => inPer(exDate(expenses.get(id)), eP)).forEach(id => { const x = expenses.get(id); lines.push(['Spent', x.date || '', x.name || '', x.cost || 0, x.where || '', catName(x.cat), moneyLabel(x.money)]); });
   const csv = '﻿' + lines.map(l => l.map(x => cell(String(x))).join(',')).join('\r\n');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
-  a.download = `expenses-${today()}.csv`;
+  a.download = `expenses-${perFile(eP)}.csv`;
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
@@ -1303,6 +1463,8 @@ function expDownload() {
 // ---------- CPA: entries grouped in named stages ----------
 const cpaDays = new Map(), cpaRows = new Map(); // cpaDays = the stages (node name kept from the first version)
 let cq = '', cf = 'all', fixingCpa = false;
+const cP = newPer(); // period shown
+const cpaDate = r => r.start || dayOfTs(r.createdAt);
 const CPA_TXT = ['sn', 'cid', 'start', 'finish', 'pfrom'];
 const CPA_NUM = ['dep', 'wd', 'got', 'pw']; // depN / wdN (how many times) are no longer shown; old values stay saved
 const CPA_F = CPA_TXT.concat(CPA_NUM);
@@ -1315,7 +1477,9 @@ function showCpa() {
         <h1 class="ttl">CPA</h1>
         <label class="search">${svg.search}<input id="cq" type="search" placeholder="Search ID, S.N. or paid from" aria-label="Search"></label>
         <select id="cf" class="fsel" aria-label="Show"><option value="all">All</option><option value="approved">Approved</option><option value="declined">Declined</option><option value="paid">Paid</option><option value="unpaid">Unpaid</option><option value="none">Not marked</option></select>
+        ${perHtml('cper')}
         <span class="sp"></span>
+        ${selBtnHtml()}
         <button class="tb" id="addDay">${svg.plus}<span>Add stage</span></button>
         <button class="tb" id="cpaCsv">${svg.down}<span>Download Excel</span></button>
       </div>
@@ -1325,7 +1489,9 @@ function showCpa() {
       </div>
       <div class="foot"><button class="add" id="addDay2">${svg.plus}Add stage</button><span id="csum"></span></div>
     </div>`;
-  cq = ''; cf = 'all';
+  cq = ''; cf = 'all'; Object.assign(cP, newPer()); if (pendingAll === '#cpa') cP.k = 'all'; pendingAll = '';
+  perBind('cper', cP, cpaFilter);
+  selSetup({ box: '#days', map: () => cpaRows, node: 'cpa', section: 'CPA', what: ['entry', 'entries'], stamp: true, marks: [['ap', 'approved', 'Approved'], ['ap', 'declined', 'Declined'], ['pay', 'paid', 'Paid'], ['pay', 'unpaid', 'Unpaid']] });
   $('#cq').oninput = () => { cq = $('#cq').value.trim().toLowerCase(); cpaFilter(); };
   $('#cf').onchange = () => { cf = $('#cf').value; cpaFilter(); };
   $('#addDay').onclick = $('#addDay2').onclick = addCpaStage;
@@ -1504,11 +1670,14 @@ function markDupes() {
 }
 const blank = () => ({ n: 0, hit: 0, approved: 0, declined: 0, paid: 0, unpaid: 0, dep: 0, wd: 0, got: 0, pw: 0 });
 function cpaFilter() {
-  const tot = { ...blank(), shown: 0 }, per = {};
+  const tot = { ...blank(), shown: 0 }, per = {}, all = {};
   for (const [id, r] of cpaRows) {
-    const hit = (!cq || String(r.cid || '').includes(cq) || String(r.sn || '').toLowerCase() === cq || String(r.pfrom || '').toLowerCase().includes(cq))
+    all[r.day] = (all[r.day] || 0) + 1;
+    const inP = inPer(cpaDate(r), cP);
+    const hit = inP && (!cq || String(r.cid || '').includes(cq) || String(r.sn || '').toLowerCase() === cq || String(r.pfrom || '').toLowerCase().includes(cq))
       && (cf === 'all' || (cf === 'none' ? !r.ap && !r.pay : r.ap === cf || r.pay === cf));
-    const tr = cpaTr(id); if (tr) tr.hidden = !hit;
+    const tr = cpaTr(id); if (tr) tr.hidden = !hit && !tr.contains(document.activeElement);
+    if (!inP) continue; // totals are for the period shown
     const c = per[r.day] || (per[r.day] = blank());
     c.n++; tot.n++; if (hit) { c.hit++; tot.shown++; }
     for (const k of [r.ap, r.pay]) if (k) { c[k]++; tot[k]++; }
@@ -1517,24 +1686,29 @@ function cpaFilter() {
     c.got += Number(r.got) || 0; tot.got += Number(r.got) || 0;
     c.pw += Number(r.pw) || 0; tot.pw += Number(r.pw) || 0;
   }
+  let vis = 0;
   document.querySelectorAll('#days .stage').forEach(sec => {
-    const c = per[sec.dataset.did] || blank();
+    const c = per[sec.dataset.did] || blank(), n = all[sec.dataset.did] || 0;
     sec.querySelector('.scount').textContent = `${c.n} ${c.n === 1 ? 'entry' : 'entries'}${c.n ? ` · Deposit ${rs(c.dep)} · WD ${rs(c.wd)} · GFD ${rs(c.got)} · PTW ${rs(c.pw)} · Profit ${rs(c.got - c.pw)} · Approved ${c.approved} · Declined ${c.declined} · Paid ${c.paid} · Unpaid ${c.unpaid}` : ''}`;
-    sec.querySelector('.tempty').hidden = c.n > 0;
-    sec.hidden = (!!cq || cf !== 'all') && !c.hit && !sec.contains(document.activeElement);
+    sec.querySelector('.tempty').hidden = n > 0;
+    // a stage with no entries at all stays (just made); otherwise it shows only with entries in this period
+    sec.hidden = !c.hit && !sec.contains(document.activeElement) && (n > 0 || !!cq || cf !== 'all');
+    if (!sec.hidden) vis++;
   });
   const e = $('#cempty');
-  e.hidden = cpaDays.size > 0 && ((!cq && cf === 'all') || tot.shown > 0);
-  e.textContent = cpaDays.size ? (cq ? `Nothing matches "${$('#cq').value.trim()}"` : 'Nothing to show for this filter') : 'No stages yet';
+  e.hidden = cpaDays.size > 0 && vis > 0;
+  e.textContent = !cpaDays.size ? 'No stages yet' : cq ? `Nothing matches "${$('#cq').value.trim()}"` : cf !== 'all' ? 'Nothing to show for this filter' : `No entries in ${perLabel(cP).toLowerCase() === 'this month' ? 'this month' : perLabel(cP)}`;
   const cb = $('#cbars');
   if (cb) {
-    const st = dayIds().map(did => ({ name: (cpaDays.get(did) || {}).name || '', ...(per[did] || blank()) }));
+    const st = dayIds().map(did => ({ name: (cpaDays.get(did) || {}).name || '', ...(per[did] || blank()) })).filter(x => x.n);
     const mx = Math.max(1, ...st.flatMap(x => [x.dep, x.wd, x.got, x.pw]));
     cb.innerHTML = st.length ? `<span class="legend"><i class="lg-out"></i>Deposit <i class="lg-wd"></i>WD <i class="lg-in"></i>GFD <i class="lg-pw"></i>PTW</span>` + st.map(x => `
       <div class="cgroup"><span>${esc(x.name)}</span><div class="cline"><i class="dep" style="width:${Math.round(x.dep / mx * 100)}%"></i><b>${rs(x.dep)}</b></div><div class="cline"><i class="wdr" style="width:${Math.round(x.wd / mx * 100)}%"></i><b>${rs(x.wd)}</b></div><div class="cline"><i class="wd" style="width:${Math.round(x.got / mx * 100)}%"></i><b>${rs(x.got)}</b></div><div class="cline"><i class="pw" style="width:${Math.round(x.pw / mx * 100)}%"></i><b>${rs(x.pw)}</b></div></div>`).join('') : '';
     $('#cchart').hidden = !st.length;
   }
-  $('#csum').innerHTML = `${cq || cf !== 'all' ? `<b>${tot.shown}</b> of ${tot.n} shown · ` : ''}<b>${cpaDays.size}</b> ${cpaDays.size === 1 ? 'stage' : 'stages'} · <b>${tot.n}</b> ${tot.n === 1 ? 'entry' : 'entries'} · Deposit <b>${rs(tot.dep)}</b> · WD <b>${rs(tot.wd)}</b> · GFD <b>${rs(tot.got)}</b> · PTW <b>${rs(tot.pw)}</b> · Profit <b>${rs(tot.got - tot.pw)}</b> · Approved <b>${tot.approved}</b> · Declined <b>${tot.declined}</b> · Paid <b>${tot.paid}</b> · Unpaid <b>${tot.unpaid}</b>`;
+  $('#csum').innerHTML = `<b>${esc(perLabel(cP))}</b> · ${cq || cf !== 'all' ? `<b>${tot.shown}</b> of ${tot.n} shown · ` : ''}<b>${tot.n}</b> ${tot.n === 1 ? 'entry' : 'entries'} · Deposit <b>${rs(tot.dep)}</b> · WD <b>${rs(tot.wd)}</b> · GFD <b>${rs(tot.got)}</b> · PTW <b>${rs(tot.pw)}</b> · Profit <b>${rs(tot.got - tot.pw)}</b> · Approved <b>${tot.approved}</b> · Declined <b>${tot.declined}</b> · Paid <b>${tot.paid}</b> · Unpaid <b>${tot.unpaid}</b>`;
+  perFill('cper', cP, [...cpaRows.values()].map(cpaDate));
+  selSync();
 }
 async function addCpaStage() {
   const ref = db.ref('rec/cpaDays').push();
@@ -1547,6 +1721,7 @@ async function addCpaRow(did, field) {
   if (!cpaDays.has(did)) return;
   const max = Math.max(0, ...[...cpaRows.keys()].filter(id => cpaRows.get(id).day === did).map(cpaSn).filter(isFinite));
   const ref = db.ref('rec/cpa').push();
+  if (!inPer(today(), cP)) Object.assign(cP, newPer()); // a new entry belongs to this month: show it
   ref.set({ day: did, sn: String(Math.floor(max) + 1), cid: '', start: '', finish: '', dep: 0, depN: 0, wd: 0, wdN: 0, got: 0, pw: 0, pfrom: '', ap: '', pay: '', createdAt: TS(), updatedAt: TS() }).catch(x => toast(friendly(x)));
   if (cq) { $('#cq').value = ''; cq = ''; cpaFilter(); }
   const tr = await waitFor(`#days tr[data-id="${CSS.escape(ref.key)}"]`);
@@ -1557,7 +1732,7 @@ function cpaDownload() {
   const lines = [['Stage', 'S.N.', 'ID', 'Start date', 'Finish date', 'Deposit Rs.', 'WD Rs.', 'Got from deal', 'Paid to worker', 'Profit', 'Approved', 'Declined', 'Paid', 'Unpaid', 'Paid from']];
   dayIds().forEach(did => {
     const name = cpaDays.get(did).name || '';
-    [...cpaRows.keys()].filter(id => cpaRows.get(id).day === did).sort((a, b) => cpaSn(a) - cpaSn(b)).forEach(id => {
+    [...cpaRows.keys()].filter(id => cpaRows.get(id).day === did && inPer(cpaDate(cpaRows.get(id)), cP)).sort((a, b) => cpaSn(a) - cpaSn(b)).forEach(id => {
       const r = cpaRows.get(id);
       // ="..." keeps long IDs as text in Excel (no 1.23E+14)
       lines.push([name, r.sn || '', r.cid ? `="${r.cid}"` : '', r.start || '', r.finish || '', r.dep || 0, r.wd || 0, r.got || 0, r.pw || 0, (Number(r.got) || 0) - (Number(r.pw) || 0),
@@ -1567,7 +1742,132 @@ function cpaDownload() {
   const csv = '﻿' + lines.map(l => l.map(x => String(x).startsWith('="') ? x : cell(String(x))).join(',')).join('\r\n');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
-  a.download = `cpa-${today()}.csv`;
+  a.download = `cpa-${perFile(cP)}.csv`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+// ---------- Profit: one list, no stages (S.N., how much, how) ----------
+const prRows = new Map();
+let prq = '';
+const prTr = id => document.querySelector(`#prows tr[data-id="${CSS.escape(id)}"]`);
+const prSn = id => { const n = parseFloat(prRows.get(id).sn); return isNaN(n) ? Infinity : n; };
+function showProfit() {
+  $('#root').innerHTML = `
+    <div class="app">
+      <div class="bar">
+        ${homeBtn()}
+        <h1 class="ttl">Profit</h1>
+        <label class="search">${svg.search}<input id="prq" type="search" placeholder="Search how or S.N." aria-label="Search"></label>
+        <span class="sp"></span>
+        ${selBtnHtml()}
+        <button class="tb" id="prCsv">${svg.down}<span>Download Excel</span></button>
+      </div>
+      <div class="wrap">
+        <table class="prof"><thead><tr><th class="c-sn c">S.N.</th><th class="c-amt">How much</th><th>How</th><th aria-label="Delete"></th></tr></thead><tbody id="prows"></tbody></table>
+        <div class="empty" id="prempty" hidden></div>
+      </div>
+      <div class="foot"><button class="add" id="addPr">${svg.plus}New row</button><span id="prsum"></span></div>
+    </div>`;
+  prq = '';
+  $('#prq').oninput = () => { prq = $('#prq').value.trim().toLowerCase(); prFilter(); };
+  $('#addPr').onclick = () => addPrRow();
+  $('#prCsv').onclick = prDownload;
+  selSetup({ box: '#prows', map: () => prRows, node: 'profit', section: 'Profit', what: ['entry', 'entries'], stamp: true, marks: [] });
+  const box = $('#prows');
+  const onEdit = e => {
+    const i = e.target.closest('[data-p]'); if (!i) return;
+    const id = i.closest('tr').dataset.id, f = i.dataset.p, r = prRows.get(id);
+    if (f === 'how') grow(i);
+    let v = i.value;
+    if (f === 'amt') v = v === '' ? 0 : Math.max(0, Number(v) || 0);
+    if (r) r[f] = v;
+    clearTimeout(timers['p' + id + f]);
+    const save = () => { if (gone.has(id)) return; db.ref('rec/profit/' + id).update({ [f]: f === 'amt' ? v : f === 'how' ? String(v).trim() : cleanTxt(v), updatedAt: TS() }).catch(x => { if (!gone.has(id)) toast(friendly(x)); }); };
+    if (e.type === 'change') save(); else timers['p' + id + f] = setTimeout(save, 500);
+    prFilter();
+  };
+  box.addEventListener('input', onEdit);
+  box.addEventListener('change', onEdit);
+  box.addEventListener('click', e => {
+    const b = e.target.closest('tr .x'); if (!b) return;
+    const id = b.closest('tr').dataset.id, r = prRows.get(id); if (!r) return;
+    ['sn', 'amt', 'how'].forEach(f => clearTimeout(timers['p' + id + f]));
+    toArchive('Profit', `S.N. ${r.sn || ''} ${rs(r.amt)}${r.how ? ', ' + r.how.slice(0, 60) : ''}`, { ['profit/' + id]: pickData(r) });
+  });
+  box.addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    const i = e.target.closest('[data-p]'); if (!i || i.tagName === 'TEXTAREA') return; // Enter in How = new line
+    e.preventDefault();
+    let tr = i.closest('tr').nextElementSibling;
+    while (tr && tr.hidden) tr = tr.nextElementSibling;
+    if (tr) tr.querySelector(`[data-p="${i.dataset.p}"]`).focus();
+    else if (!prq) addPrRow(i.dataset.p);
+  });
+  box.addEventListener('focusout', e => { const i = e.target.closest('[data-p]'); if (i) onEdit({ type: 'change', target: i }); setTimeout(() => { if (!box.contains(document.activeElement)) sortPr(); }, 0); });
+  const ref = db.ref('rec/profit');
+  const on = s => { prRows.clear(); s.forEach(c => { prRows.set(c.key, c.val()); }); drawPr(); };
+  ref.on('value', on, e => toast(friendly(e)));
+  unsub = () => { ref.off('value', on); prRows.clear(); };
+}
+function drawPr() {
+  const box = $('#prows'); if (!box) return;
+  box.querySelectorAll('tr[data-id]').forEach(tr => { if (!prRows.has(tr.dataset.id)) tr.remove(); });
+  for (const [id, r] of prRows) {
+    let tr = prTr(id);
+    if (!tr) {
+      tr = document.createElement('tr'); tr.dataset.id = id;
+      tr.innerHTML = `
+        <td><input type="text" data-p="sn" maxlength="12" inputmode="numeric" aria-label="S.N."></td>
+        <td class="amt"><input type="number" data-p="amt" min="0" step="any" inputmode="decimal" aria-label="How much"></td>
+        <td class="phow"><textarea data-p="how" rows="1" maxlength="5000" aria-label="How"></textarea></td>
+        <td class="del"><button type="button" class="x" aria-label="Delete entry">${svg.trash}</button></td>`;
+      box.appendChild(tr);
+    }
+    for (const f of ['sn', 'amt', 'how']) {
+      const i = tr.querySelector(`[data-p="${f}"]`); if (i === document.activeElement) continue;
+      let v = r[f] ?? ''; if (f === 'amt' && Number(v) === 0) v = '';
+      if (i.value !== String(v)) i.value = String(v);
+    }
+    grow(tr.querySelector('textarea'));
+  }
+  if (!box.contains(document.activeElement)) sortPr();
+  prFilter();
+}
+function sortPr() {
+  const tb = $('#prows'); if (!tb) return;
+  [...prRows.keys()].sort((a, b) => prSn(a) - prSn(b) || (prRows.get(a).createdAt || 0) - (prRows.get(b).createdAt || 0))
+    .forEach((id, i) => { const tr = prTr(id); if (tr && tb.children[i] !== tr) tb.insertBefore(tr, tb.children[i] || null); });
+}
+function prFilter() {
+  let n = 0, shown = 0, tot = 0, totShown = 0;
+  for (const [id, r] of prRows) {
+    const hit = !prq || String(r.how || '').toLowerCase().includes(prq) || String(r.sn || '').toLowerCase() === prq;
+    const tr = prTr(id); if (tr) tr.hidden = !hit && !tr.contains(document.activeElement);
+    n++; tot += Number(r.amt) || 0; if (hit) { shown++; totShown += Number(r.amt) || 0; }
+  }
+  const e = $('#prempty'); if (!e) return;
+  e.hidden = shown > 0;
+  e.textContent = prq ? `Nothing matches "${$('#prq').value.trim()}"` : 'No entries yet';
+  $('#prsum').innerHTML = prq ? `<b>${shown}</b> of ${n} shown · Total shown <b class="post">${rs(totShown)}</b> · All <b>${rs(tot)}</b>` : `<b>${n}</b> ${n === 1 ? 'entry' : 'entries'} · Total profit <b class="post">${rs(tot)}</b>`;
+  selSync();
+}
+async function addPrRow(field) {
+  const max = Math.max(0, ...[...prRows.keys()].map(prSn).filter(isFinite));
+  const ref = db.ref('rec/profit').push();
+  ref.set({ sn: String(Math.floor(max) + 1), amt: 0, how: '', createdAt: TS(), updatedAt: TS() }).catch(x => toast(friendly(x)));
+  if (prq) { $('#prq').value = ''; prq = ''; prFilter(); }
+  const tr = await waitFor(`#prows tr[data-id="${CSS.escape(ref.key)}"]`);
+  if (tr) { sortPr(); tr.scrollIntoView({ block: 'nearest' }); tr.querySelector(`[data-p="${typeof field === 'string' ? field : 'amt'}"]`).focus(); }
+}
+function prDownload() {
+  const cell = v => /[",\n\r]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
+  const lines = [['S.N.', 'How much', 'How']];
+  [...prRows.keys()].sort((a, b) => prSn(a) - prSn(b)).forEach(id => { const r = prRows.get(id); lines.push([r.sn || '', r.amt || 0, r.how || '']); });
+  const csv = '﻿' + lines.map(l => l.map(x => cell(String(x))).join(',')).join('\r\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+  a.download = `profit-${today()}.csv`;
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
@@ -1575,6 +1875,8 @@ function cpaDownload() {
 // ---------- Work money: one list, no stages ----------
 const wkRows = new Map();
 let wq = '', wf = 'all';
+const wP = newPer();
+const wkDate = r => r.start || dayOfTs(r.createdAt);
 const WK_TXT = ['sn', 'name', 'start', 'finish'];
 const WK_NUM = ['money', 'tdep', 'twd', 'profit', 'loss'];
 const WK_F = WK_TXT.concat(WK_NUM);
@@ -1586,7 +1888,9 @@ function showWork() {
         <h1 class="ttl">Work money</h1>
         <label class="search">${svg.search}<input id="wq" type="search" placeholder="Search name or S.N." aria-label="Search"></label>
         <select id="wf" class="fsel" aria-label="Show"><option value="all">All</option><option value="finished">Finished</option><option value="notfinished">Not finished</option><option value="none">Not marked</option></select>
+        ${perHtml('wper')}
         <span class="sp"></span>
+        ${selBtnHtml()}
         <button class="tb" id="wkCsv">${svg.down}<span>Download Excel</span></button>
       </div>
       <div class="wrap">
@@ -1599,7 +1903,9 @@ function showWork() {
       </div>
       <div class="foot"><button class="add" id="addWk">${svg.plus}New row</button><span id="wsum"></span></div>
     </div>`;
-  wq = ''; wf = 'all';
+  wq = ''; wf = 'all'; Object.assign(wP, newPer()); if (pendingAll === '#work') wP.k = 'all'; pendingAll = '';
+  perBind('wper', wP, wkFilter);
+  selSetup({ box: '#wrows', map: () => wkRows, node: 'work', section: 'Work money', what: ['entry', 'entries'], stamp: true, marks: [['fin', 'finished', 'Finished'], ['fin', 'notfinished', 'Not finished']] });
   $('#wq').oninput = () => { wq = $('#wq').value.trim().toLowerCase(); wkFilter(); };
   $('#wf').onchange = () => { wf = $('#wf').value; wkFilter(); };
   $('#addWk').onclick = () => addWkRow();
@@ -1692,21 +1998,26 @@ function sortWk() {
 function wkFilter() {
   const t = { n: 0, shown: 0, money: 0, tdep: 0, twd: 0, profit: 0, loss: 0, finished: 0, notfinished: 0 };
   for (const [id, r] of wkRows) {
-    const hit = (!wq || String(r.name || '').toLowerCase().includes(wq) || String(r.sn || '').toLowerCase() === wq)
+    const inP = inPer(wkDate(r), wP);
+    const hit = inP && (!wq || String(r.name || '').toLowerCase().includes(wq) || String(r.sn || '').toLowerCase() === wq)
       && (wf === 'all' || (wf === 'none' ? !r.fin : r.fin === wf));
     const tr = wkTr(id); if (tr) tr.hidden = !hit && !tr.contains(document.activeElement);
+    if (!inP) continue; // totals are for the period shown
     t.n++; if (hit) t.shown++;
     for (const k of WK_NUM) t[k] += Number(r[k]) || 0;
     if (r.fin) t[r.fin]++;
   }
   const e = $('#wempty'); if (!e) return;
-  e.hidden = t.n > 0 && ((!wq && wf === 'all') || t.shown > 0);
-  e.textContent = t.n ? (wq ? `Nothing matches "${$('#wq').value.trim()}"` : 'Nothing to show for this filter') : 'No entries yet';
-  $('#wsum').innerHTML = `${wq || wf !== 'all' ? `<b>${t.shown}</b> of ${t.n} shown · ` : ''}<b>${t.n}</b> ${t.n === 1 ? 'entry' : 'entries'} · Money <b>${rs(t.money)}</b> · T-depo <b>${rs(t.tdep)}</b> · T-wd <b>${rs(t.twd)}</b> · Profit <b class="post">${rs(t.profit)}</b> · Loss <b class="negt">${rs(t.loss)}</b> · Finished <b>${t.finished}</b> · Not finished <b>${t.notfinished}</b>`;
+  e.hidden = t.shown > 0;
+  e.textContent = wq ? `Nothing matches "${$('#wq').value.trim()}"` : wf !== 'all' ? 'Nothing to show for this filter' : wkRows.size ? `No entries in ${wP.k === 'cur' ? 'this month' : perLabel(wP)}` : 'No entries yet';
+  $('#wsum').innerHTML = `<b>${esc(perLabel(wP))}</b> · ${wq || wf !== 'all' ? `<b>${t.shown}</b> of ${t.n} shown · ` : ''}<b>${t.n}</b> ${t.n === 1 ? 'entry' : 'entries'} · Money <b>${rs(t.money)}</b> · T-depo <b>${rs(t.tdep)}</b> · T-wd <b>${rs(t.twd)}</b> · Profit <b class="post">${rs(t.profit)}</b> · Loss <b class="negt">${rs(t.loss)}</b> · Finished <b>${t.finished}</b> · Not finished <b>${t.notfinished}</b>`;
+  perFill('wper', wP, [...wkRows.values()].map(wkDate));
+  selSync();
 }
 async function addWkRow(field) {
   const max = Math.max(0, ...[...wkRows.keys()].map(wkSn).filter(isFinite));
   const ref = db.ref('rec/work').push();
+  if (!inPer(today(), wP)) Object.assign(wP, newPer()); // a new entry belongs to this month: show it
   ref.set({ sn: String(Math.floor(max) + 1), name: '', start: '', finish: '', money: 0, tdep: 0, twd: 0, profit: 0, loss: 0, fin: '', createdAt: TS(), updatedAt: TS() }).catch(x => toast(friendly(x)));
   if (wq || wf !== 'all') { $('#wq').value = ''; wq = ''; $('#wf').value = 'all'; wf = 'all'; wkFilter(); }
   const tr = await waitFor(`#wrows tr[data-id="${CSS.escape(ref.key)}"]`);
@@ -1715,14 +2026,14 @@ async function addWkRow(field) {
 function wkDownload() {
   const cell = v => /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
   const lines = [['S.N.', 'Name', 'Start date', 'Finish date', 'Money', 'T-depo', 'T-wd', 'Profit', 'Loss', 'Finished', 'Not finished']];
-  [...wkRows.keys()].sort((a, b) => wkSn(a) - wkSn(b)).forEach(id => {
+  [...wkRows.keys()].filter(id => inPer(wkDate(wkRows.get(id)), wP)).sort((a, b) => wkSn(a) - wkSn(b)).forEach(id => {
     const r = wkRows.get(id);
     lines.push([r.sn || '', r.name || '', r.start || '', r.finish || '', r.money || 0, r.tdep || 0, r.twd || 0, r.profit || 0, r.loss || 0, r.fin === 'finished' ? 'Yes' : '', r.fin === 'notfinished' ? 'Yes' : '']);
   });
   const csv = '﻿' + lines.map(l => l.map(x => cell(String(x))).join(',')).join('\r\n');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
-  a.download = `work-money-${today()}.csv`;
+  a.download = `work-money-${perFile(wP)}.csv`;
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
@@ -1730,6 +2041,8 @@ function wkDownload() {
 // ---------- Leiden: money from whom, given back, remaining; grouped in named stages ----------
 const ldStages = new Map(), ldRows = new Map();
 let lq = '', lf = 'all', ldView = 'entries', ldPerson = '';
+const lP = newPer();
+const ldDate = r => r.date || dayOfTs(r.createdAt);
 const LD_TXT = ['sn', 'date', 'from', 'spent'];
 const LD_NUM = ['amt', 'gave'];
 const LD_F = LD_TXT.concat(LD_NUM);
@@ -1741,7 +2054,9 @@ function showLeiden() {
         <h1 class="ttl">Leiden</h1>
         <label class="search">${svg.search}<input id="lq" type="search" placeholder="Search name, place or S.N." aria-label="Search"></label>
         <select id="lf" class="fsel" aria-label="Show"><option value="all">All</option><option value="cleared">Cleared</option><option value="notcleared">Not cleared</option><option value="none">Not marked</option><option value="remaining">Still remaining</option></select>
+        <span id="lperW">${perHtml('lper')}</span>
         <span class="sp"></span>
+        ${selBtnHtml()}
         <button class="tb" id="addLdStage">${svg.plus}<span>Add stage</span></button>
         <button class="tb" id="ldCsv">${svg.down}<span>Download Excel</span></button>
       </div>
@@ -1753,7 +2068,9 @@ function showLeiden() {
       </div>
       <div class="foot"><button class="add" id="addLdStage2">${svg.plus}Add stage</button><span id="lsum"></span></div>
     </div>`;
-  lq = ''; lf = 'all'; ldPerson = ''; ldView = 'entries';
+  lq = ''; lf = 'all'; ldPerson = ''; ldView = 'entries'; Object.assign(lP, newPer()); if (pendingAll === '#leiden') lP.k = 'all'; pendingAll = '';
+  perBind('lper', lP, () => { ldFilter(); ldViews(); });
+  selSetup({ box: '#ldst', map: () => ldRows, node: 'ld', section: 'Leiden', what: ['entry', 'entries'], stamp: true, marks: [['clr', 'cleared', 'Cleared'], ['clr', 'notcleared', 'Not cleared']] });
   $('#lq').oninput = () => { lq = $('#lq').value.trim().toLowerCase(); ldFilter(); ldViews(); };
   $('#lf').onchange = () => { lf = $('#lf').value; ldFilter(); };
   $('.etabs').onclick = e => { const b = e.target.closest('[data-lv]'); if (!b) return; ldView = b.dataset.lv; ldPerson = ''; ldViews(); };
@@ -1906,27 +2223,34 @@ function sortLd() {
 }
 const ldBlank = () => ({ n: 0, hit: 0, amt: 0, gave: 0, cleared: 0, notcleared: 0 });
 function ldFilter() {
-  const tot = { ...ldBlank(), shown: 0 }, per = {};
+  const tot = { ...ldBlank(), shown: 0 }, per = {}, all = {};
   for (const [id, r] of ldRows) {
-    const hit = (!lq || String(r.from || '').toLowerCase().includes(lq) || String(r.spent || '').toLowerCase().includes(lq) || String(r.sn || '').toLowerCase() === lq)
+    all[r.stage] = (all[r.stage] || 0) + 1;
+    const inP = inPer(ldDate(r), lP);
+    const hit = inP && (!lq || String(r.from || '').toLowerCase().includes(lq) || String(r.spent || '').toLowerCase().includes(lq) || String(r.sn || '').toLowerCase() === lq)
       && (lf === 'all' || (lf === 'none' ? !r.clr : lf === 'remaining' ? remainOf(r) !== 0 : r.clr === lf));
-    const tr = ldTr(id); if (tr) tr.hidden = !hit;
+    const tr = ldTr(id); if (tr) tr.hidden = !hit && !tr.contains(document.activeElement);
+    if (!inP) continue; // totals are for the period shown
     const c = per[r.stage] || (per[r.stage] = ldBlank());
     c.n++; tot.n++; if (hit) { c.hit++; tot.shown++; }
     if (r.clr) { c[r.clr]++; tot[r.clr]++; }
     c.amt += Number(r.amt) || 0; tot.amt += Number(r.amt) || 0;
     c.gave += Number(r.gave) || 0; tot.gave += Number(r.gave) || 0;
   }
+  let vis = 0;
   document.querySelectorAll('#ldst .stage').forEach(sec => {
-    const c = per[sec.dataset.sid] || ldBlank();
+    const c = per[sec.dataset.sid] || ldBlank(), n = all[sec.dataset.sid] || 0;
     sec.querySelector('.scount').textContent = `${c.n} ${c.n === 1 ? 'entry' : 'entries'}${c.n ? ` · Got ${rs(c.amt)} · Gave ${rs(c.gave)} · Remaining ${rs(c.amt - c.gave)} · Cleared ${c.cleared} · Not cleared ${c.notcleared}` : ''}`;
-    sec.querySelector('.tempty').hidden = c.n > 0;
-    sec.hidden = (!!lq || lf !== 'all') && !c.hit && !sec.contains(document.activeElement);
+    sec.querySelector('.tempty').hidden = n > 0;
+    sec.hidden = !c.hit && !sec.contains(document.activeElement) && (n > 0 || !!lq || lf !== 'all');
+    if (!sec.hidden) vis++;
   });
   const e = $('#lempty');
-  e.hidden = ldStages.size > 0 && ((!lq && lf === 'all') || tot.shown > 0);
-  e.textContent = ldStages.size ? (lq ? `Nothing matches "${$('#lq').value.trim()}"` : 'Nothing to show for this filter') : 'No stages yet';
-  $('#lsum').innerHTML = `${lq || lf !== 'all' ? `<b>${tot.shown}</b> of ${tot.n} shown · ` : ''}<b>${ldStages.size}</b> ${ldStages.size === 1 ? 'stage' : 'stages'} · <b>${tot.n}</b> ${tot.n === 1 ? 'entry' : 'entries'} · Got <b>${rs(tot.amt)}</b> · Gave <b>${rs(tot.gave)}</b> · Remaining <b class="${tot.amt - tot.gave ? 'negt' : ''}">${rs(tot.amt - tot.gave)}</b> · Cleared <b>${tot.cleared}</b> · Not cleared <b>${tot.notcleared}</b>`;
+  e.hidden = ldStages.size > 0 && vis > 0;
+  e.textContent = !ldStages.size ? 'No stages yet' : lq ? `Nothing matches "${$('#lq').value.trim()}"` : lf !== 'all' ? 'Nothing to show for this filter' : `No entries in ${lP.k === 'cur' ? 'this month' : perLabel(lP)}`;
+  $('#lsum').innerHTML = `<b>${esc(perLabel(lP))}</b> · ${lq || lf !== 'all' ? `<b>${tot.shown}</b> of ${tot.n} shown · ` : ''}<b>${tot.n}</b> ${tot.n === 1 ? 'entry' : 'entries'} · Got <b>${rs(tot.amt)}</b> · Gave <b>${rs(tot.gave)}</b> · Remaining <b class="${tot.amt - tot.gave ? 'negt' : ''}">${rs(tot.amt - tot.gave)}</b> · Cleared <b>${tot.cleared}</b> · Not cleared <b>${tot.notcleared}</b>`;
+  perFill('lper', lP, [...ldRows.values()].map(ldDate));
+  selSync();
 }
 // ---------- Leiden: People and Monthly views ----------
 const pKey = n => String(n || '').trim().replace(/\s+/g, ' ').toLowerCase();
@@ -1936,12 +2260,15 @@ function ldViews() {
   $('#ldEntries').hidden = ldView !== 'entries';
   $('#ldPeople').hidden = ldView !== 'people';
   $('#ldMonths').hidden = ldView !== 'months';
-  ['#addLdStage', '#addLdStage2', '#lf'].forEach(s => { const e = $(s); if (e) e.hidden = ldView !== 'entries'; });
+  ['#addLdStage', '#addLdStage2', '#lf', '#selBtn'].forEach(s => { const e = $(s); if (e) e.hidden = ldView !== 'entries'; });
+  $('#lperW').hidden = ldView === 'months';
+  if (ldView !== 'entries' && SEL.on) selMode(false);
   if (ldView === 'people') drawPeople(); else if (ldView === 'months') drawLdMonths();
 }
 function peopleList() {
   const P = new Map();
   for (const [id, r] of ldRows) {
+    if (!inPer(ldDate(r), lP)) continue; // people: only the period shown
     const k = pKey(r.from) || '(no name)';
     if (!P.has(k)) P.set(k, { key: k, name: String(r.from || '').trim() || '(no name)', n: 0, amt: 0, gave: 0, cleared: 0, notcleared: 0, ids: [] });
     const p = P.get(k); p.n++; p.amt += Number(r.amt) || 0; p.gave += Number(r.gave) || 0; if (r.clr) p[r.clr]++; p.ids.push(id);
@@ -1980,14 +2307,14 @@ function drawLdMonths() {
   const box = $('#ldMonths'); if (!box) return;
   const M = new Map();
   for (const r of ldRows.values()) {
-    const k = r.date ? r.date.slice(0, 7) : 'none';
+    const k = r.date ? monthKeyOf(r.date) : 'none';
     if (!M.has(k)) M.set(k, { amt: 0, gave: 0, n: 0, people: new Set() });
     const m = M.get(k); m.amt += Number(r.amt) || 0; m.gave += Number(r.gave) || 0; m.n++; if (pKey(r.from)) m.people.add(pKey(r.from));
   }
   const keys = [...M.keys()].sort().reverse();
   const max = Math.max(1, ...[...M.values()].flatMap(m => [m.amt, m.gave]));
   box.innerHTML = keys.length ? `<div class="months">${keys.map(k => { const m = M.get(k); return `
-    <section class="week"><div class="whead"><b>${k === 'none' ? 'No date' : monthName(k)}</b></div>
+    <section class="week"><div class="whead"><b>${k === 'none' ? 'No date' : monthName(k)}</b>${k === 'none' ? '' : `<span class="wtag">${monthSpan(k)}</span>`}</div>
       <div class="wstats"><div><span>Got</span><b>${rs(m.amt)}</b></div><div><span>Gave</span><b>${rs(m.gave)}</b></div><div><span>Difference</span><b class="${m.amt - m.gave ? 'neg' : 'pos'}">${rs(m.amt - m.gave)}</b></div><div><span>Entries / people</span><b>${m.n} / ${m.people.size}</b></div></div>
       <div class="wcats"><div class="wcat"><span>Got</span><i style="width:${Math.max(2, Math.round(m.amt / max * 100))}%"></i><b>${rs(m.amt)}</b></div><div class="wcat"><span>Gave</span><i class="gave" style="width:${Math.max(2, Math.round(m.gave / max * 100))}%"></i><b>${rs(m.gave)}</b></div></div>
     </section>`; }).join('')}</div>` : '<div class="empty">No entries yet</div>';
@@ -2004,6 +2331,7 @@ async function addLdRow(sid, field) {
   if (!ldStages.has(sid)) return;
   const max = Math.max(0, ...[...ldRows.keys()].filter(id => ldRows.get(id).stage === sid).map(ldSn).filter(isFinite));
   const ref = db.ref('rec/ld').push();
+  if (!inPer(today(), lP)) Object.assign(lP, newPer()); // a new entry is dated today: show it
   ref.set({ stage: sid, sn: String(Math.floor(max) + 1), date: today(), from: '', amt: 0, gave: 0, spent: '', clr: '', createdAt: TS(), updatedAt: TS() }).catch(x => toast(friendly(x)));
   if (lq) { $('#lq').value = ''; lq = ''; ldFilter(); }
   const tr = await waitFor(`#ldst tr[data-id="${CSS.escape(ref.key)}"]`);
@@ -2014,7 +2342,7 @@ function ldDownload() {
   const lines = [['Stage', 'S.N.', 'Date', 'From whom', 'How much', 'How much I gave', 'How much remaining', 'Where did I spend', 'Cleared', 'Not cleared']];
   ldStageIds().forEach(sid => {
     const name = ldStages.get(sid).name || '';
-    [...ldRows.keys()].filter(id => ldRows.get(id).stage === sid).sort((a, b) => ldSn(a) - ldSn(b)).forEach(id => {
+    [...ldRows.keys()].filter(id => ldRows.get(id).stage === sid && inPer(ldDate(ldRows.get(id)), lP)).sort((a, b) => ldSn(a) - ldSn(b)).forEach(id => {
       const r = ldRows.get(id);
       lines.push([name, r.sn || '', r.date || '', r.from || '', r.amt || 0, r.gave || 0, remainOf(r), r.spent || '', r.clr === 'cleared' ? 'Yes' : '', r.clr === 'notcleared' ? 'Yes' : '']);
     });
@@ -2022,7 +2350,7 @@ function ldDownload() {
   const csv = '﻿' + lines.map(l => l.map(x => cell(String(x))).join(',')).join('\r\n');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
-  a.download = `leiden-${today()}.csv`;
+  a.download = `leiden-${perFile(lP)}.csv`;
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
