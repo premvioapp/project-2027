@@ -81,6 +81,12 @@
   .c-wk{width:130px}
   td.wk input{text-align:center}
   table.pdocs{min-width:420px}
+  table.ld{min-width:1150px}
+  table.ld .c-date{width:142px}
+  table.ld .c-amt{width:130px}
+  .c-sp{min-width:200px}
+  td.rem{font-weight:700}
+  .negt{color:var(--nod)}
   table.cpa{min-width:1200px}
   table.cpa .c-date{width:142px}
   table.cpa .c-id{width:160px;min-width:150px}
@@ -185,6 +191,7 @@ const svg = {
   list: '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4h6v3H9zM7 5.5H5V21h14V5.5h-2"/><path d="m8.5 12 1.5 1.5 3-3M8.5 17.5h7"/></svg>',
   grid: '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="1"/><path d="M3 9h18M3 14.5h18M9 4v16"/></svg>',
   alert: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.5v.01"/></svg>',
+  swap: '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h13l-3.5-3.5M20 16H7l3.5 3.5"/></svg>',
   idcard: '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="1.5"/><circle cx="8.5" cy="11" r="2"/><path d="M5.8 16c.6-1.4 1.6-2 2.7-2s2.1.6 2.7 2M14 10h4.5M14 13.5h3"/></svg>',
   wallet: '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7.5V18a2 2 0 0 0 2 2h14V9H6a2 2 0 0 1-2-2 2 2 0 0 1 2-2h12v4"/><circle cx="16" cy="14.5" r="1.2"/></svg>',
   pin: '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>',
@@ -213,7 +220,7 @@ function route() {
   if (!signedIn) return;
   stop();
   const h = location.hash;
-  if (h === '#records') showSheet(); else if (h === '#needs') showDocs(); else if (h === '#where') showWhere(); else if (h === '#expenses') showExpenses(); else if (h === '#cpa') showCpa(); else showHome();
+  if (h === '#records') showSheet(); else if (h === '#needs') showDocs(); else if (h === '#where') showWhere(); else if (h === '#expenses') showExpenses(); else if (h === '#cpa') showCpa(); else if (h === '#leiden') showLeiden(); else showHome();
 }
 window.addEventListener('hashchange', route);
 auth.onAuthStateChanged(async user => {
@@ -279,6 +286,7 @@ function showHome() {
         <a class="tile" href="#where" id="goWhere">${svg.pin}<b>Where to what</b><span id="nPlaces"></span></a>
         <a class="tile" href="#expenses" id="goExp">${svg.wallet}<b>Expenses</b><span id="nExp"></span></a>
         <a class="tile" href="#cpa" id="goCpa">${svg.idcard}<b>CPA</b><span id="nCpa"></span></a>
+        <a class="tile" href="#leiden" id="goLd">${svg.swap}<b>Leiden</b><span id="nLd"></span></a>
       </div>
     </div>`;
   $('#out').onclick = () => auth.signOut();
@@ -291,12 +299,15 @@ function showHome() {
   const cp = db.ref('rec/cpa');
   const fcp = s => { const n = Object.keys(s.val() || {}).length; const e = $('#nCpa'); if (e) e.textContent = n === 1 ? '1 entry' : n + ' entries'; };
   cp.on('value', fcp, () => {});
+  const ldr = db.ref('rec/ld');
+  const fld = s => { const v = Object.values(s.val() || {}), rem = v.reduce((t, r) => t + (Number(r.amt) || 0) - (Number(r.gave) || 0), 0); const e = $('#nLd'); if (e) e.textContent = `Remaining ${rs(rem)}`; };
+  ldr.on('value', fld, () => {});
   const fc = s => { const n = Object.keys(s.val() || {}).length; const e = $('#nPlaces'); if (e) e.textContent = n === 1 ? '1 name' : n + ' names'; };
   c.on('value', fc, () => {});
   const fa = s => { const v = Object.values(s.val() || {}), n = v.length, y = v.filter(d => d.have === 'yes').length; const e = $('#nDocs'); if (e) e.textContent = (n === 1 ? '1 document' : n + ' documents') + (n ? ` · I have ${y}` : ''); };
   const fb = s => { const n = Object.keys(s.val() || {}).length; const e = $('#nRecs'); if (e) e.textContent = n === 1 ? '1 record' : n + ' records'; };
   a.on('value', fa, () => {}); b.on('value', fb, () => {});
-  unsub = () => { a.off('value', fa); b.off('value', fb); c.off('value', fc); ei.off('value', fi); ee.off('value', fx); cp.off('value', fcp); };
+  unsub = () => { a.off('value', fa); b.off('value', fb); c.off('value', fc); ei.off('value', fi); ee.off('value', fx); cp.off('value', fcp); ldr.off('value', fld); };
 }
 const homeBtn = () => `<a class="tb" href="#" id="home">${svg.home}<span>Home</span></a>`;
 
@@ -1237,6 +1248,228 @@ function cpaDownload() {
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
   a.download = `cpa-${today()}.csv`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+// ---------- Leiden: money from whom, given back, remaining; grouped in named stages ----------
+const ldStages = new Map(), ldRows = new Map();
+let lq = '';
+const LD_TXT = ['sn', 'date', 'from', 'spent'];
+const LD_NUM = ['amt', 'gave'];
+const LD_F = LD_TXT.concat(LD_NUM);
+function showLeiden() {
+  $('#root').innerHTML = `
+    <div class="app">
+      <div class="bar">
+        ${homeBtn()}
+        <h1 class="ttl">Leiden</h1>
+        <label class="search">${svg.search}<input id="lq" type="search" placeholder="Search name, place or S.N." aria-label="Search"></label>
+        <span class="sp"></span>
+        <button class="tb" id="addLdStage">${svg.plus}<span>Add stage</span></button>
+        <button class="tb" id="ldCsv">${svg.down}<span>Download Excel</span></button>
+      </div>
+      <div class="wrap"><div id="ldst"></div><div class="empty" id="lempty" hidden></div></div>
+      <div class="foot"><button class="add" id="addLdStage2">${svg.plus}Add stage</button><span id="lsum"></span></div>
+    </div>`;
+  lq = '';
+  $('#lq').oninput = () => { lq = $('#lq').value.trim().toLowerCase(); ldFilter(); };
+  $('#addLdStage').onclick = $('#addLdStage2').onclick = addLdStage;
+  $('#ldCsv').onclick = ldDownload;
+  const box = $('#ldst');
+  const onEdit = e => {
+    const sn = e.target.closest('.lname');
+    if (sn) { const sid = sn.closest('.stage').dataset.sid, st = ldStages.get(sid); if (st) st.name = sn.value; saveAt(`rec/ldStages/${sid}/name`, cleanTxt(sn.value), e.type === 'change'); return; }
+    const i = e.target.closest('[data-l]'); if (!i) return;
+    const tr = i.closest('tr'), id = tr.dataset.id, f = i.dataset.l, r = ldRows.get(id);
+    const isNum = LD_NUM.includes(f), isDate = f === 'date';
+    let v = i.value;
+    if (isNum) v = v === '' ? 0 : Math.max(0, Number(v) || 0);
+    if (r) r[f] = v;
+    if (isNum) drawRemain(tr);
+    clearTimeout(timers['l' + id + f]);
+    const save = () => { if (gone.has(id)) return; db.ref('rec/ld/' + id).update({ [f]: isNum || isDate ? v : cleanTxt(v), updatedAt: TS() }).catch(x => { if (!gone.has(id)) toast(friendly(x)); }); };
+    if (e.type === 'change' || isDate) save(); else timers['l' + id + f] = setTimeout(save, 500);
+    ldFilter();
+  };
+  box.addEventListener('input', onEdit);
+  box.addEventListener('change', onEdit);
+  box.addEventListener('click', e => {
+    const ra = e.target.closest('.ladd');
+    if (ra) return addLdRow(ra.closest('.stage').dataset.sid);
+    const dd = e.target.closest('.ldel');
+    if (dd) {
+      const sid = dd.closest('.stage').dataset.sid, st = ldStages.get(sid); if (!st) return;
+      const inIt = [...ldRows.entries()].filter(([, r]) => r.stage === sid).map(([id]) => id);
+      if (!confirm(`Delete "${st.name || 'this stage'}"${inIt.length ? ` and its ${inIt.length} ${inIt.length === 1 ? 'entry' : 'entries'}` : ''}?`)) return;
+      const up = { ['ldStages/' + sid]: null };
+      inIt.forEach(id => { up['ld/' + id] = null; LD_F.forEach(f => clearTimeout(timers['l' + id + f])); gone.add(id); });
+      cancelSaves('rec/ldStages/' + sid + '/'); gone.add(sid);
+      db.ref('rec').update(up).catch(x => toast(friendly(x)));
+      return;
+    }
+    const b = e.target.closest('tr .chk, tr .x'); if (!b) return;
+    const tr = b.closest('tr'), id = tr.dataset.id, r = ldRows.get(id); if (!r) return;
+    if (b.classList.contains('x')) {
+      if (!confirm(`Delete S.N. ${r.sn || ''}${r.from ? ' (' + r.from + ')' : ''}?`)) return;
+      LD_F.forEach(f => clearTimeout(timers['l' + id + f])); gone.add(id);
+      db.ref('rec/ld/' + id).remove().catch(x => toast(friendly(x)));
+      return;
+    }
+    const v = r.clr === b.dataset.v ? '' : b.dataset.v; // tap again to clear
+    r.clr = v; drawLdRow(id); ldFilter();
+    db.ref('rec/ld/' + id).update({ clr: v, updatedAt: TS() }).catch(x => toast(friendly(x)));
+  });
+  box.addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    if (e.target.closest('.lname')) { e.preventDefault(); e.target.blur(); return; }
+    const i = e.target.closest('[data-l]'); if (!i) return;
+    e.preventDefault();
+    let tr = i.closest('tr').nextElementSibling;
+    while (tr && tr.hidden) tr = tr.nextElementSibling;
+    if (tr) tr.querySelector(`[data-l="${i.dataset.l}"]`).focus();
+    else if (!lq) addLdRow(i.closest('.stage').dataset.sid, i.dataset.l);
+  });
+  box.addEventListener('focusout', () => setTimeout(() => { if (!box.contains(document.activeElement)) sortLd(); }, 0));
+  let gs = false, gr = false;
+  const sref = db.ref('rec/ldStages'), rref = db.ref('rec/ld');
+  const onS = s => { ldStages.clear(); s.forEach(c => { ldStages.set(c.key, c.val()); }); gs = true; if (gr) drawLd(); };
+  const onR = s => { ldRows.clear(); s.forEach(c => { ldRows.set(c.key, c.val()); }); gr = true; if (gs) drawLd(); };
+  sref.on('value', onS, e => toast(friendly(e)));
+  rref.on('value', onR, e => toast(friendly(e)));
+  unsub = () => { sref.off('value', onS); rref.off('value', onR); ldStages.clear(); ldRows.clear(); };
+}
+const ldStageIds = () => [...ldStages.keys()].sort(byTime(ldStages));
+const ldTr = id => document.querySelector(`#ldst tr[data-id="${CSS.escape(id)}"]`);
+const remainOf = r => (Number(r.amt) || 0) - (Number(r.gave) || 0);
+function drawLd() {
+  const box = $('#ldst'); if (!box) return;
+  [...box.children].forEach(sec => { if (!ldStages.has(sec.dataset.sid)) sec.remove(); });
+  ldStageIds().forEach((sid, n) => {
+    let sec = box.querySelector(`.stage[data-sid="${CSS.escape(sid)}"]`);
+    if (!sec) {
+      sec = document.createElement('section'); sec.className = 'stage'; sec.dataset.sid = sid;
+      sec.innerHTML = `
+        <div class="shead">
+          <input class="sname lname" maxlength="80" aria-label="Stage name" placeholder="Stage name">
+          <span class="scount"></span>
+          <span class="sp"></span>
+          <button type="button" class="add ladd">${svg.plus}New row</button>
+          <button type="button" class="x ldel" aria-label="Delete stage">${svg.trash}</button>
+        </div>
+        <table class="ld"><thead><tr>
+          <th class="c-sn c">S.N.</th><th class="c-date">Date</th><th class="c-en">From whom</th><th class="c-amt">How much</th><th class="c-amt">How much I gave</th><th class="c-amt">How much remaining</th>
+          <th class="c-sp">Where did I spend</th><th class="c">Cleared</th><th class="c">Not cleared</th><th aria-label="Delete"></th>
+        </tr></thead><tbody></tbody></table>
+        <div class="tempty">No entries in this stage yet</div>`;
+    }
+    if (box.children[n] !== sec) box.insertBefore(sec, box.children[n] || null);
+    const ni = sec.querySelector('.lname'), nv = ldStages.get(sid).name || '';
+    if (ni !== document.activeElement && ni.value !== nv) ni.value = nv;
+  });
+  document.querySelectorAll('#ldst tr[data-id]').forEach(tr => { if (!ldRows.has(tr.dataset.id)) tr.remove(); });
+  for (const id of ldRows.keys()) drawLdRow(id);
+  if (!box.contains(document.activeElement)) sortLd();
+  ldFilter();
+}
+function drawRemain(tr) {
+  // from what is in the boxes right now (also while a change is still being saved)
+  const amt = Number(tr.querySelector('[data-l=amt]').value) || 0, gave = Number(tr.querySelector('[data-l=gave]').value) || 0;
+  const c = tr.querySelector('.rem'), v = amt - gave;
+  c.textContent = rs(v);
+  c.classList.toggle('neg', v !== 0); c.classList.toggle('pos', v === 0 && amt > 0);
+  c.title = v < 0 ? 'Gave more than you got' : '';
+}
+function drawLdRow(id) {
+  const r = ldRows.get(id); if (!r) return;
+  const tb = document.querySelector(`#ldst .stage[data-sid="${CSS.escape(r.stage)}"] tbody`); if (!tb) return;
+  let tr = ldTr(id);
+  if (!tr) {
+    tr = document.createElement('tr'); tr.dataset.id = id;
+    tr.innerHTML = `
+      <td><input type="text" data-l="sn" maxlength="12" inputmode="numeric" aria-label="S.N."></td>
+      <td><input type="date" data-l="date" aria-label="Date"></td>
+      <td><input type="text" data-l="from" maxlength="120" aria-label="From whom"></td>
+      <td class="amt"><input type="number" data-l="amt" min="0" step="any" inputmode="decimal" aria-label="How much"></td>
+      <td class="amt"><input type="number" data-l="gave" min="0" step="any" inputmode="decimal" aria-label="How much I gave"></td>
+      <td class="calc rem"></td>
+      <td><input type="text" data-l="spent" maxlength="300" aria-label="Where did I spend"></td>
+      <td class="tick"><button type="button" class="chk ap" data-v="cleared" aria-label="Cleared">${svg.check}</button></td>
+      <td class="tick"><button type="button" class="chk rj" data-v="notcleared" aria-label="Not cleared">${svg.check}</button></td>
+      <td class="del"><button type="button" class="x" aria-label="Delete entry">${svg.trash}</button></td>`;
+  }
+  if (tr.parentElement !== tb && !tr.contains(document.activeElement)) tb.appendChild(tr);
+  for (const f of LD_F) {
+    const i = tr.querySelector(`[data-l="${f}"]`); if (i === document.activeElement) continue;
+    let v = r[f] ?? '';
+    if (LD_NUM.includes(f) && Number(v) === 0) v = '';
+    if (i.value !== String(v)) i.value = String(v);
+  }
+  drawRemain(tr);
+  tr.className = r.clr === 'cleared' ? 'approved' : r.clr === 'notcleared' ? 'rejected' : '';
+  tr.querySelectorAll('.chk').forEach(b => { const on = r.clr === b.dataset.v; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
+}
+const ldSn = id => { const n = parseFloat(ldRows.get(id).sn); return isNaN(n) ? Infinity : n; };
+function sortLd() {
+  for (const sid of ldStages.keys()) {
+    const tb = document.querySelector(`#ldst .stage[data-sid="${CSS.escape(sid)}"] tbody`); if (!tb) continue;
+    const ids = [...ldRows.keys()].filter(id => ldRows.get(id).stage === sid).sort((a, b) => ldSn(a) - ldSn(b) || (ldRows.get(a).createdAt || 0) - (ldRows.get(b).createdAt || 0));
+    ids.forEach((id, i) => { const tr = ldTr(id); if (tr && tb.children[i] !== tr) tb.insertBefore(tr, tb.children[i] || null); });
+  }
+}
+const ldBlank = () => ({ n: 0, hit: 0, amt: 0, gave: 0, cleared: 0, notcleared: 0 });
+function ldFilter() {
+  const tot = { ...ldBlank(), shown: 0 }, per = {};
+  for (const [id, r] of ldRows) {
+    const hit = !lq || String(r.from || '').toLowerCase().includes(lq) || String(r.spent || '').toLowerCase().includes(lq) || String(r.sn || '').toLowerCase() === lq;
+    const tr = ldTr(id); if (tr) tr.hidden = !hit;
+    const c = per[r.stage] || (per[r.stage] = ldBlank());
+    c.n++; tot.n++; if (hit) { c.hit++; tot.shown++; }
+    if (r.clr) { c[r.clr]++; tot[r.clr]++; }
+    c.amt += Number(r.amt) || 0; tot.amt += Number(r.amt) || 0;
+    c.gave += Number(r.gave) || 0; tot.gave += Number(r.gave) || 0;
+  }
+  document.querySelectorAll('#ldst .stage').forEach(sec => {
+    const c = per[sec.dataset.sid] || ldBlank();
+    sec.querySelector('.scount').textContent = `${c.n} ${c.n === 1 ? 'entry' : 'entries'}${c.n ? ` · Got ${rs(c.amt)} · Gave ${rs(c.gave)} · Remaining ${rs(c.amt - c.gave)} · Cleared ${c.cleared} · Not cleared ${c.notcleared}` : ''}`;
+    sec.querySelector('.tempty').hidden = c.n > 0;
+    sec.hidden = !!lq && !c.hit && !sec.contains(document.activeElement);
+  });
+  const e = $('#lempty');
+  e.hidden = ldStages.size > 0 && (!lq || tot.shown > 0);
+  e.textContent = ldStages.size ? `Nothing matches "${$('#lq').value.trim()}"` : 'No stages yet';
+  $('#lsum').innerHTML = `${lq ? `<b>${tot.shown}</b> of ${tot.n} shown · ` : ''}<b>${ldStages.size}</b> ${ldStages.size === 1 ? 'stage' : 'stages'} · <b>${tot.n}</b> ${tot.n === 1 ? 'entry' : 'entries'} · Got <b>${rs(tot.amt)}</b> · Gave <b>${rs(tot.gave)}</b> · Remaining <b class="${tot.amt - tot.gave ? 'negt' : ''}">${rs(tot.amt - tot.gave)}</b> · Cleared <b>${tot.cleared}</b> · Not cleared <b>${tot.notcleared}</b>`;
+}
+async function addLdStage() {
+  const ref = db.ref('rec/ldStages').push();
+  ref.set({ name: 'Stage ' + (ldStages.size + 1), createdAt: TS() }).catch(x => toast(friendly(x)));
+  if (lq) { $('#lq').value = ''; lq = ''; ldFilter(); }
+  const sec = await waitFor(`#ldst .stage[data-sid="${CSS.escape(ref.key)}"]`);
+  if (sec) { sec.scrollIntoView({ block: 'nearest' }); const i = sec.querySelector('.lname'); i.focus(); i.select(); }
+}
+async function addLdRow(sid, field) {
+  if (!ldStages.has(sid)) return;
+  const max = Math.max(0, ...[...ldRows.keys()].filter(id => ldRows.get(id).stage === sid).map(ldSn).filter(isFinite));
+  const ref = db.ref('rec/ld').push();
+  ref.set({ stage: sid, sn: String(Math.floor(max) + 1), date: today(), from: '', amt: 0, gave: 0, spent: '', clr: '', createdAt: TS(), updatedAt: TS() }).catch(x => toast(friendly(x)));
+  if (lq) { $('#lq').value = ''; lq = ''; ldFilter(); }
+  const tr = await waitFor(`#ldst tr[data-id="${CSS.escape(ref.key)}"]`);
+  if (tr) { sortLd(); tr.scrollIntoView({ block: 'nearest' }); tr.querySelector(`[data-l="${typeof field === 'string' ? field : 'from'}"]`).focus(); }
+}
+function ldDownload() {
+  const cell = v => /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
+  const lines = [['Stage', 'S.N.', 'Date', 'From whom', 'How much', 'How much I gave', 'How much remaining', 'Where did I spend', 'Cleared', 'Not cleared']];
+  ldStageIds().forEach(sid => {
+    const name = ldStages.get(sid).name || '';
+    [...ldRows.keys()].filter(id => ldRows.get(id).stage === sid).sort((a, b) => ldSn(a) - ldSn(b)).forEach(id => {
+      const r = ldRows.get(id);
+      lines.push([name, r.sn || '', r.date || '', r.from || '', r.amt || 0, r.gave || 0, remainOf(r), r.spent || '', r.clr === 'cleared' ? 'Yes' : '', r.clr === 'notcleared' ? 'Yes' : '']);
+    });
+  });
+  const csv = '﻿' + lines.map(l => l.map(x => cell(String(x))).join(',')).join('\r\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+  a.download = `leiden-${today()}.csv`;
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
