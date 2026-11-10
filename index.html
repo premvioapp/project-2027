@@ -7,21 +7,32 @@
 <title>Records</title>
 <link rel="icon" href="data:,">
 <style>
-  :root{--green:#217346;--green-d:#185c37;--grid:#d4d4d4;--head:#f3f3f3;--text:#1f1f1f;--muted:#6b6b6b;--ok:#e2f0d9;--okd:#1e7b34;--no:#fbe0e0;--nod:#c42b1c}
+  :root{--green:#217346;--green-d:#185c37;--grid:#d4d4d4;--head:#f3f3f3;--text:#1f1f1f;--muted:#6b6b6b;--ok:#e2f0d9;--okd:#1e7b34;--no:#fbe0e0;--nod:#c42b1c;--bg:#fff;--card:#fff;--soft:#f5f5f5;--soft2:#fafafa;--sh:#e8f2ec;--shb:#bcd8c6;--redbg:#fde2e2;--redbg2:#fff6f6;--hov:#f3f9f5;--bd:#bdbdbd;--orbg:#fff1d6;--mark:#fff0a8;color-scheme:light}
+  html.dark{--bg:#1b1c1f;--card:#24262a;--soft:#18191c;--soft2:#202226;--head:#2c2f33;--grid:#3a3d42;--text:#e7e7e7;--muted:#a3a7ad;--sh:#1d3127;--shb:#2e4c3b;--redbg:#4b2326;--redbg2:#352023;--ok:#1d3826;--no:#3d2124;--hov:#22342a;--bd:#4b4e54;--orbg:#4a391b;--mark:#6b5a12;--green-d:#8fd1a8;color-scheme:dark}
+  html.dark .bar{background:#16492d}
+  html.dark .tile svg{color:#5fbf86}
+  html.dark .login{background:var(--soft)} html.dark .login form{background:var(--card);border-color:var(--grid)}
+  html.dark .login input,html.dark .etools select{background:var(--card);color:var(--text);border-color:var(--bd)}
+  html.dark .search{background:var(--card);color:var(--text)}
+  html.dark .chk{background:var(--card);border-color:#777}
+  html.dark .net{background:#4a391b;color:#ffd98a}
+  html.dark td input:focus,html.dark td select:focus{background:var(--card)}
+  html.dark .toast{background:#e7e7e7;color:#1b1c1f} html.dark .toast.act button{color:#1b1c1f;border-color:#1b1c1f55}
+  html.dark #nArch{background:#e7e7e7}
   *{box-sizing:border-box}
   html,body,#root{margin:0;height:100%}
-  body{font:14px/1.4 Calibri,"Segoe UI",Carlito,Arial,sans-serif;color:var(--text);background:#fff}
+  body{font:14px/1.4 Calibri,"Segoe UI",Carlito,Arial,sans-serif;color:var(--text);background:var(--bg)}
   button,input{font:inherit;color:inherit}
   button{cursor:pointer}
   [hidden]{display:none!important}
   svg{display:block}
 
   /* login */
-  .login{min-height:100%;display:grid;place-items:center;background:#f5f5f5;padding:20px}
-  .login form{background:#fff;border:1px solid var(--grid);width:100%;max-width:340px;padding:24px;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+  .login{min-height:100%;display:grid;place-items:center;background:var(--soft);padding:20px}
+  .login form{background:var(--card);border:1px solid var(--grid);width:100%;max-width:340px;padding:24px;box-shadow:0 2px 10px rgba(0,0,0,.06)}
   .login h1{font-size:20px;margin:0 0 18px;font-weight:600}
   .login label{display:block;font-size:13px;color:var(--muted);margin:0 0 4px}
-  .login input{width:100%;border:1px solid #bdbdbd;padding:9px 10px;margin:0 0 14px;outline:none;border-radius:2px}
+  .login input{width:100%;border:1px solid var(--bd);padding:9px 10px;margin:0 0 14px;outline:none;border-radius:2px}
   .login input:focus{border-color:var(--green);box-shadow:0 0 0 1px var(--green)}
   .btn{background:var(--green);color:#fff;border:0;padding:9px 14px;border-radius:2px;font-weight:600;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
   .btn:hover{background:var(--green-d)}
@@ -32,17 +43,17 @@
   /* sheet */
   .app{display:flex;flex-direction:column;height:100%}
   .bar{background:var(--green);color:#fff;display:flex;align-items:center;gap:8px;padding:8px 12px;flex-wrap:wrap}
-  .search{display:flex;align-items:center;gap:6px;background:#fff;color:var(--text);border-radius:2px;padding:0 8px;flex:1 1 220px;max-width:380px}
+  .search{display:flex;align-items:center;gap:6px;background:var(--card);color:var(--text);border-radius:2px;padding:0 8px;flex:1 1 220px;max-width:380px}
   .search svg{color:var(--muted);flex:none}
   .search input{border:0;outline:none;padding:8px 0;width:100%;background:transparent}
   .bar .tb{background:transparent;border:1px solid rgba(255,255,255,.55);color:#fff;padding:7px 11px;border-radius:2px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
   .bar .tb:hover{background:rgba(255,255,255,.14)}
   .bar .sp{flex:1}
   .net{font-size:12px;background:#fff3cd;color:#7a5a00;padding:3px 8px;border-radius:2px}
-  .wrap{flex:1;overflow:auto;background:#fff}
+  .wrap{flex:1;overflow:auto;background:var(--card)}
   table{border-collapse:separate;border-spacing:0;min-width:930px;width:100%}
   th,td{border-right:1px solid var(--grid);border-bottom:1px solid var(--grid);padding:0;height:34px}
-  th{background:var(--head);font-weight:600;font-size:13px;text-align:left;padding:0 8px;position:sticky;top:0;z-index:2;color:#333;border-bottom-color:#bdbdbd}
+  th{background:var(--head);font-weight:600;font-size:13px;text-align:left;padding:0 8px;position:sticky;top:0;z-index:2;color:var(--text);border-bottom-color:var(--bd)}
   th:first-child,td:first-child{position:sticky;left:0;z-index:1;background:var(--head)}
   th:first-child{z-index:3}
   td:first-child input{text-align:center;font-weight:600}
@@ -50,9 +61,9 @@
   td input[type=number]{-moz-appearance:textfield}
   td input::-webkit-outer-spin-button,td input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
   td input[type=text],td input[type=date],td input[type=number]{width:100%;height:33px;border:0;padding:0 8px;background:transparent;outline:none;border-radius:0}
-  td input:focus{box-shadow:inset 0 0 0 2px var(--green);background:#fff}
+  td input:focus{box-shadow:inset 0 0 0 2px var(--green);background:var(--card)}
   td.tick{text-align:center;width:96px}
-  .chk{width:22px;height:22px;border:1.5px solid #8a8a8a;background:#fff;border-radius:3px;display:inline-grid;place-items:center;padding:0;vertical-align:middle}
+  .chk{width:22px;height:22px;border:1.5px solid #8a8a8a;background:var(--card);border-radius:3px;display:inline-grid;place-items:center;padding:0;vertical-align:middle}
   .chk svg{opacity:0}
   .chk:focus-visible{outline:2px solid var(--green);outline-offset:2px}
   .chk.ap.on{background:var(--okd);border-color:var(--okd);color:#fff}
@@ -62,17 +73,17 @@
   tr.rejected td:not(:first-child){background:var(--no)}
   td.del{width:40px;text-align:center}
   .x{border:0;background:transparent;color:#9a9a9a;width:32px;height:32px;display:inline-grid;place-items:center;border-radius:2px}
-  .x:hover{color:var(--nod);background:#fde7e7}
+  .x:hover{color:var(--nod);background:var(--redbg2)}
   .c-sn{width:72px}.c-name{min-width:220px}.c-date{width:170px}
   .empty{padding:28px 12px;color:var(--muted);text-align:center}
   .foot{border-top:1px solid var(--grid);background:var(--head);display:flex;align-items:center;gap:14px;padding:6px 12px;font-size:13px;flex-wrap:wrap}
-  .foot .add{background:#fff;border:1px solid #bdbdbd;padding:5px 10px;border-radius:2px;font-weight:600;display:inline-flex;align-items:center;gap:6px}
+  .foot .add{background:var(--card);border:1px solid var(--bd);padding:5px 10px;border-radius:2px;font-weight:600;display:inline-flex;align-items:center;gap:6px}
   .foot .add:hover{border-color:var(--green);color:var(--green)}
   .foot b{font-weight:600}
   a.tb{text-decoration:none}
   .bar .ttl{font-size:16px;font-weight:600;margin:0 4px}
-  .home{flex:1;display:flex;align-items:center;justify-content:center;gap:20px;padding:24px;flex-wrap:wrap;background:#f5f5f5}
-  .tile{width:260px;height:180px;background:#fff;border:1px solid var(--grid);border-top:4px solid var(--green);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-decoration:none;color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.06)}
+  .home{flex:1;display:flex;align-items:center;align-content:safe center;justify-content:center;gap:20px;padding:24px;flex-wrap:wrap;overflow:auto;background:var(--soft)}
+  .tile{width:260px;height:180px;background:var(--card);border:1px solid var(--grid);border-top:4px solid var(--green);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-decoration:none;color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.06)}
   .tile:hover,.tile:focus-visible{border-color:var(--green);box-shadow:0 2px 12px rgba(33,115,70,.18);outline:none}
   .tile svg{color:var(--green)}
   .tile b{font-size:20px;font-weight:600}
@@ -96,36 +107,44 @@
   td.hmt input{text-align:center}
   .c-id{width:190px;min-width:170px}
   td.idc input{font-variant-numeric:tabular-nums;letter-spacing:.02em}
-  td.idc.bad{background:#fde2e2!important;box-shadow:inset 0 0 0 2px var(--nod)}
-  td.idc.dup:not(.bad){background:#fff1d6!important;box-shadow:inset 3px 0 0 #e8a33d}
+  td.idc.bad{background:var(--redbg)!important;box-shadow:inset 0 0 0 2px var(--nod)}
+  td.idc.dup:not(.bad){background:var(--orbg)!important;box-shadow:inset 3px 0 0 #e8a33d}
   .tempty{padding:12px;color:var(--muted);font-size:13px;border-bottom:1px solid var(--grid)}
   /* expenses */
-  .cards{display:grid;grid-template-columns:repeat(5,minmax(120px,1fr));gap:10px;padding:12px;background:#f5f5f5;border-bottom:1px solid var(--grid)}
-  .cards .card{background:#fff;border:1px solid var(--grid);border-top:3px solid var(--green);padding:8px 12px}
+  .cards{display:grid;grid-template-columns:repeat(5,minmax(120px,1fr));gap:10px;padding:12px;background:var(--soft);border-bottom:1px solid var(--grid)}
+  .cards .card{background:var(--card);border:1px solid var(--grid);border-top:3px solid var(--green);padding:8px 12px}
   .cards .card span{display:block;font-size:12px;color:var(--muted)}
   .cards .card b{font-size:18px;font-weight:700}
   .cards .card.neg{border-top-color:var(--nod)} .cards .card.neg b{color:var(--nod)}
   .cards .card.pos b{color:var(--okd)}
-  .etabs{display:flex;gap:0;border-bottom:1px solid var(--grid);background:#fff;position:sticky;left:0}
+  .etabs{display:flex;gap:0;border-bottom:1px solid var(--grid);background:var(--card);position:sticky;left:0}
   .etabs button{border:0;background:transparent;padding:10px 16px;font-weight:600;color:var(--muted);border-bottom:3px solid transparent}
   .etabs button.on{color:var(--green-d);border-bottom-color:var(--green)}
   .etools{display:flex;gap:8px;padding:8px 10px;align-items:center;flex-wrap:wrap;border-bottom:1px solid var(--grid)}
-  .search.light{border:1px solid #bdbdbd;flex:0 1 300px}
-  .etools select{border:1px solid #bdbdbd;padding:7px 8px;border-radius:2px;background:#fff}
+  .search.light{border:1px solid var(--bd);flex:0 1 300px}
+  .etools select{border:1px solid var(--bd);padding:7px 8px;border-radius:2px;background:var(--card)}
   table.etable{min-width:1000px}
   td select{width:100%;height:33px;border:0;background:transparent;padding:0 6px;outline:none}
-  td select:focus{box-shadow:inset 0 0 0 2px var(--green);background:#fff}
+  td select:focus{box-shadow:inset 0 0 0 2px var(--green);background:var(--card)}
   td.amt input{text-align:right}
   .c-amt{width:120px}.c-en{min-width:180px}.c-cat{width:150px}.c-mon{min-width:200px}
   td.calc{text-align:right;padding:0 8px;white-space:nowrap;color:var(--muted)}
   td.calc.pos,.wstats .pos{color:var(--okd);font-weight:700}
   td.calc.neg,.wstats .neg{color:var(--nod);font-weight:700}
-  #weeks{padding:12px;display:grid;gap:12px;background:#f5f5f5;min-height:100%}
-  .week{background:#fff;border:1px solid var(--grid);padding:12px 14px}
+  #months{padding:12px;display:grid;gap:12px;background:var(--soft);min-height:100%}
+  .legend{font-size:12px;color:var(--muted);display:inline-flex;align-items:center;gap:6px;margin-left:auto}
+  .legend i{display:inline-block;width:10px;height:10px;border-radius:1px} .lg-in{background:#5b8def} .lg-out{background:var(--green)}
+  .vchart{display:flex;align-items:flex-end;gap:10px;height:170px;padding:6px 2px 0;border-bottom:1px solid var(--grid)}
+  .vcol{flex:1;display:flex;flex-direction:column;align-items:center;height:100%;min-width:28px}
+  .vbars{flex:1;width:100%;display:flex;align-items:flex-end;justify-content:center;gap:3px}
+  .vbars i{display:block;width:40%;max-width:18px;min-height:1px;border-radius:2px 2px 0 0} .vbars i.in{background:#5b8def} .vbars i.out{background:var(--green)}
+  .vcol span{font-size:11px;color:var(--muted);padding:4px 0}
+  #weeks{padding:12px;display:grid;gap:12px;background:var(--soft);min-height:100%}
+  .week{background:var(--card);border:1px solid var(--grid);padding:12px 14px}
   .week.now{border-color:var(--green)}
   .whead{display:flex;align-items:center;gap:10px;margin-bottom:8px}
   .whead b{font-size:15px}
-  .wtag{font-size:12px;background:#e8f2ec;color:var(--green-d);padding:2px 8px;border-radius:2px}
+  .wtag{font-size:12px;background:var(--sh);color:var(--green-d);padding:2px 8px;border-radius:2px}
   .week.now .wtag{background:var(--green);color:#fff}
   .wstats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:8px}
   .wstats span{display:block;font-size:12px;color:var(--muted)}
@@ -136,33 +155,77 @@
   .wcat b{text-align:right}
   .wtop{font-size:13px;color:var(--muted)} .wtop b{color:var(--text)}
   @media (max-width:700px){.cards{grid-template-columns:repeat(2,1fr)}.wstats{grid-template-columns:repeat(2,1fr)}.wcat{grid-template-columns:100px 1fr 80px}}
-  .pnote{display:flex;align-items:flex-start;gap:8px;padding:8px 10px;border-bottom:1px solid var(--grid);background:#fff;color:#c9c9c9;cursor:text}
+  .pnote{display:flex;align-items:flex-start;gap:8px;padding:8px 10px;border-bottom:1px solid var(--grid);background:var(--card);color:#c9c9c9;cursor:text}
   .pnote svg{flex:none;margin-top:3px}
   .pnote textarea{flex:1;border:0;outline:none;resize:none;background:transparent;font:inherit;line-height:1.5;padding:2px 0;min-height:24px;overflow:hidden;color:var(--text)}
   .pnote textarea::placeholder{color:#a8a8a8}
   .pnote:focus-within{box-shadow:inset 0 0 0 2px var(--green)}
-  .pnote.filled{background:#fde2e2;color:var(--nod);box-shadow:inset 4px 0 0 var(--nod)}
+  .pnote.filled{background:var(--redbg);color:var(--nod);box-shadow:inset 4px 0 0 var(--nod)}
   .pnote.filled:focus-within{box-shadow:inset 4px 0 0 var(--nod),inset 0 0 0 2px var(--nod)}
   .pnote.filled textarea{color:var(--nod);font-weight:700;font-size:15px}
   .stage[hidden]{display:none}
-  tr.newrow td{background:#fafafa}
+  tr.newrow td{background:var(--soft2)}
   tr.newrow td.num{color:#b0b0b0}
   tr.newrow td.num svg{margin:auto}
   tr.newrow input::placeholder{color:#a8a8a8}
-  td.tk.filled{background:#fde2e2!important;box-shadow:inset 3px 0 0 var(--nod)}
+  td.tk.filled{background:var(--redbg)!important;box-shadow:inset 3px 0 0 var(--nod)}
   td.tk.filled input{color:var(--nod);font-weight:700}
   .stage{margin:0 0 18px}
-  .shead{display:flex;align-items:center;gap:10px;background:#e8f2ec;border-bottom:1px solid #bcd8c6;border-top:1px solid #bcd8c6;padding:6px 10px;position:sticky;left:0;min-width:0}
+  .shead{display:flex;align-items:center;gap:10px;background:var(--sh);border-bottom:1px solid var(--shb);border-top:1px solid var(--shb);padding:6px 10px;position:sticky;left:0;min-width:0}
   .sname{font:inherit;font-weight:700;font-size:15px;border:1px solid transparent;background:transparent;padding:5px 8px;border-radius:2px;min-width:0;width:260px;max-width:50vw;outline:none;color:var(--green-d)}
-  .sname:hover{border-color:#bcd8c6;background:#fff}
-  .sname:focus{border-color:var(--green);box-shadow:0 0 0 1px var(--green);background:#fff}
+  .sname:hover{border-color:var(--shb);background:var(--card)}
+  .sname:focus{border-color:var(--green);box-shadow:0 0 0 1px var(--green);background:var(--card)}
   .scount{font-size:13px;color:var(--muted);white-space:nowrap}
-  .shead .add{background:#fff;border:1px solid #bdbdbd;padding:5px 10px;border-radius:2px;font-weight:600;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+  .shead .add{background:var(--card);border:1px solid var(--bd);padding:5px 10px;border-radius:2px;font-weight:600;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
   .shead .add:hover{border-color:var(--green);color:var(--green)}
   .stage th{top:0}
   .c-dn{min-width:200px}.c-tx{min-width:170px}
   td.num{text-align:center;font-weight:600;width:72px}
+  .gsearch{flex:1 1 320px;max-width:560px}
+  .gres{flex:1;overflow:auto;background:var(--soft);padding:8px 12px 20px}
+  .ghead{font-size:12px;font-weight:700;color:var(--green-d);text-transform:uppercase;letter-spacing:.05em;margin:12px 4px 4px}
+  .gitem{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--grid);border-left:3px solid transparent;padding:8px 12px;margin:0 0 4px;border-radius:2px}
+  .gitem b{display:block;font-weight:600}
+  .gitem span{display:block;font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .gitem.on,.gitem:hover{border-left-color:var(--green);background:var(--hov)}
+  .gitem mark{background:var(--mark);color:inherit;padding:0 1px}
+  .gmore{color:var(--muted);font-size:13px;padding:6px 4px}
+  @keyframes flash{0%,40%{box-shadow:inset 0 0 0 3px #f2b705}100%{box-shadow:inset 0 0 0 3px transparent}}
+  .flash,.flash td{animation:flash 2.5s ease-out}
+  .fsel{border:0;border-radius:2px;padding:7px 8px;background:var(--card);color:var(--text);font:inherit}
+  .phead{display:flex;align-items:center;gap:12px;padding:10px 12px;border-bottom:1px solid var(--grid)}
+  .phead h2{margin:0;font-size:18px}
+  .phead .add{background:var(--card);border:1px solid var(--bd);padding:5px 10px;border-radius:2px;font-weight:600;display:inline-flex;align-items:center;gap:5px}
+  table.plist{min-width:760px}
+  table.plist td{padding:0 8px}
+  table.plist td.num2{text-align:right;white-space:nowrap}
+  tr.click{cursor:pointer} tr.click:hover td{background:var(--hov)}
+  .post{color:var(--okd);font-weight:700} .negt{color:var(--nod);font-weight:700}
+  .c-n{width:80px}.c-bar{width:200px}.c-st{width:110px}
+  .hbar{height:10px;background:var(--soft2);border-radius:1px} .hbar i{display:block;height:10px;background:var(--nod);border-radius:1px} .hbar i.minus{background:#e8a33d}
+  .wcat i.gave{background:#5b8def}
+  .tag{font-size:12px;padding:2px 8px;border-radius:2px;font-weight:600} .tag.ok{background:var(--ok);color:var(--okd)} .tag.no{background:var(--no);color:var(--nod)}
+  .months{padding:12px;display:grid;gap:12px;background:var(--soft)}
+  .cchart{border-bottom:1px solid var(--grid);background:var(--soft);padding:6px 12px}
+  .cchart summary{cursor:pointer;font-weight:600;color:var(--green-d);padding:4px 0}
+  #cbars{display:grid;gap:8px;padding:8px 0 4px;max-width:900px}
+  #cbars .legend{margin:0}
+  .cgroup{display:grid;grid-template-columns:160px 1fr;gap:2px 10px;align-items:center}
+  .cgroup>span{grid-row:span 2;font-size:13px;font-weight:600}
+  .cline{display:flex;align-items:center;gap:8px;font-size:12px} .cline i{display:block;height:9px;min-width:1px;border-radius:1px} .cline i.dep{background:var(--green)} .cline i.wd{background:#5b8def} .cline b{font-weight:600;white-space:nowrap}
+  .toast.act{display:flex;align-items:center;gap:14px}
+  .toast.act button{background:transparent;border:1px solid rgba(255,255,255,.5);color:#fff;padding:3px 10px;border-radius:2px;font-weight:700}
+  #nArch{background:var(--card);color:var(--green);border-radius:9px;padding:0 6px;font-size:12px;min-width:18px;text-align:center}
+  #nArch:empty{display:none}
+  table.arch{min-width:720px}
+  .c-sec{width:130px}.c-left{width:160px}.c-act{width:150px}
+  table.arch td{padding:0 8px}
+  table.arch td.calc{text-align:left}
+  td.acts{display:flex;gap:6px;align-items:center;justify-content:flex-end;height:34px}
+  td.acts .add{background:var(--card);border:1px solid var(--bd);padding:4px 9px;border-radius:2px;font-weight:600;display:inline-flex;align-items:center;gap:5px}
+  td.acts .add:hover{border-color:var(--green);color:var(--green)}
   .toast{position:fixed;left:50%;bottom:56px;transform:translateX(-50%);background:#323232;color:#fff;padding:9px 14px;border-radius:2px;font-size:13px;z-index:50}
+  @media (max-width:600px){.home{align-content:flex-start;gap:10px;padding:12px}.tile{width:calc(50% - 5px);height:120px;gap:4px}.tile svg{width:30px;height:30px}.tile b{font-size:15px;text-align:center}.tile span{font-size:12px;text-align:center}}
   @media (max-width:600px){.bar .tb span{display:none}.bar .tb{padding:7px 9px}.shead{flex-wrap:wrap;position:sticky;left:0;width:100vw}.shead .scount{order:9;width:100%;white-space:normal}}
 </style>
 </head>
@@ -176,6 +239,25 @@
 <script>
 'use strict';
 // Record panel: separate site (own login), data in rec/ of the same database.
+// ---------- dark mode (remembered on this device) ----------
+function themeSaved() { try { return localStorage.getItem('ck-rec-theme'); } catch { return null; } }
+function applyTheme() {
+  const t = themeSaved() || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  document.documentElement.classList.toggle('dark', t === 'dark');
+}
+function toggleTheme() {
+  const dark = !document.documentElement.classList.contains('dark');
+  try { localStorage.setItem('ck-rec-theme', dark ? 'dark' : 'light'); } catch {}
+  applyTheme(); drawThemeBtn();
+}
+function drawThemeBtn() {
+  const b = document.getElementById('theme'); if (!b) return;
+  const dark = document.documentElement.classList.contains('dark');
+  b.innerHTML = `${dark ? svg.sun : svg.moon}<span>${dark ? 'Light' : 'Dark'}</span>`;
+  b.setAttribute('aria-label', dark ? 'Light mode' : 'Dark mode');
+}
+applyTheme();
+
 const app = firebase.initializeApp(window.CK_FIREBASE, 'ck-records');
 const auth = app.auth(), db = app.database();
 const TS = () => firebase.database.ServerValue.TIMESTAMP;
@@ -191,6 +273,11 @@ const svg = {
   list: '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4h6v3H9zM7 5.5H5V21h14V5.5h-2"/><path d="m8.5 12 1.5 1.5 3-3M8.5 17.5h7"/></svg>',
   grid: '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="1"/><path d="M3 9h18M3 14.5h18M9 4v16"/></svg>',
   alert: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.5v.01"/></svg>',
+  moon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>',
+  sun: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
+  box: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h18v4H3zM5 8v12h14V8M10 12h4"/></svg>',
+  back: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>',
+  undo: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg>',
   swap: '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h13l-3.5-3.5M20 16H7l3.5 3.5"/></svg>',
   idcard: '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="1.5"/><circle cx="8.5" cy="11" r="2"/><path d="M5.8 16c.6-1.4 1.6-2 2.7-2s2.1.6 2.7 2M14 10h4.5M14 13.5h3"/></svg>',
   wallet: '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7.5V18a2 2 0 0 0 2 2h14V9H6a2 2 0 0 1-2-2 2 2 0 0 1 2-2h12v4"/><circle cx="16" cy="14.5" r="1.2"/></svg>',
@@ -200,7 +287,7 @@ const svg = {
 };
 const domain = window.CK_STAFF_EMAIL_DOMAIN || 'staff.cloudkitchen.app';
 const emailOf = u => `${u}.rec@${domain}`;
-function toast(t) { const d = document.createElement('div'); d.className = 'toast'; d.textContent = t; document.body.appendChild(d); setTimeout(() => d.remove(), 2600); }
+function toast(t) { if ([...document.querySelectorAll('.toast:not(.act)')].some(x => x.textContent === t)) return; const d = document.createElement('div'); d.className = 'toast'; d.textContent = t; document.body.appendChild(d); setTimeout(() => d.remove(), 2600); }
 function friendly(e) {
   const c = (e && (e.code || e.message)) || '';
   if (/invalid-credential|wrong-password|user-not-found|invalid-login/i.test(c)) return 'Wrong username or password';
@@ -220,7 +307,7 @@ function route() {
   if (!signedIn) return;
   stop();
   const h = location.hash;
-  if (h === '#records') showSheet(); else if (h === '#needs') showDocs(); else if (h === '#where') showWhere(); else if (h === '#expenses') showExpenses(); else if (h === '#cpa') showCpa(); else if (h === '#leiden') showLeiden(); else showHome();
+  if (h === '#records') showSheet(); else if (h === '#needs') showDocs(); else if (h === '#where') showWhere(); else if (h === '#expenses') showExpenses(); else if (h === '#cpa') showCpa(); else if (h === '#leiden') showLeiden(); else if (h === '#archive') showArchive(); else showHome();
 }
 window.addEventListener('hashchange', route);
 auth.onAuthStateChanged(async user => {
@@ -277,10 +364,14 @@ function showHome() {
   $('#root').innerHTML = `
     <div class="app">
       <div class="bar">
+        <label class="search gsearch">${svg.search}<input id="gq" type="search" placeholder="Search everything" aria-label="Search everything" autocomplete="off"></label>
         <span class="sp"></span>
+        <button class="tb" id="theme" aria-label="Dark mode"></button>
+        <a class="tb" href="#archive" id="goArch">${svg.box}<span>Archive</span><b id="nArch"></b></a>
         <button class="tb" id="out" aria-label="Log out">${svg.out}<span>Log out</span></button>
       </div>
-      <div class="home">
+      <div class="gres" id="gres" hidden></div>
+      <div class="home" id="tiles">
         <a class="tile" href="#needs" id="goNeeds">${svg.list}<b>What I need</b><span id="nDocs"></span></a>
         <a class="tile" href="#records" id="goRecords">${svg.grid}<b>See records</b><span id="nRecs"></span></a>
         <a class="tile" href="#where" id="goWhere">${svg.pin}<b>Where to what</b><span id="nPlaces"></span></a>
@@ -290,29 +381,186 @@ function showHome() {
       </div>
     </div>`;
   $('#out').onclick = () => auth.signOut();
-  const a = db.ref('rec/docs'), b = db.ref('rec/rows'), c = db.ref('rec/places'), ei = db.ref('rec/income'), ee = db.ref('rec/expenses');
-  let gotI = 0, gotE = 0;
-  const fe = () => { const e = $('#nExp'); if (e) e.textContent = `Left ${rs(gotI - gotE)}`; };
-  const fi = s => { gotI = Object.values(s.val() || {}).reduce((t, x) => t + (Number(x.amount) || 0), 0); fe(); };
-  const fx = s => { gotE = Object.values(s.val() || {}).reduce((t, x) => t + (Number(x.cost) || 0), 0); fe(); };
-  ei.on('value', fi, () => {}); ee.on('value', fx, () => {});
-  const cp = db.ref('rec/cpa');
-  const fcp = s => { const n = Object.keys(s.val() || {}).length; const e = $('#nCpa'); if (e) e.textContent = n === 1 ? '1 entry' : n + ' entries'; };
-  cp.on('value', fcp, () => {});
-  const ldr = db.ref('rec/ld');
-  const fld = s => { const v = Object.values(s.val() || {}), rem = v.reduce((t, r) => t + (Number(r.amt) || 0) - (Number(r.gave) || 0), 0); const e = $('#nLd'); if (e) e.textContent = `Remaining ${rs(rem)}`; };
-  ldr.on('value', fld, () => {});
-  const fc = s => { const n = Object.keys(s.val() || {}).length; const e = $('#nPlaces'); if (e) e.textContent = n === 1 ? '1 name' : n + ' names'; };
-  c.on('value', fc, () => {});
-  const fa = s => { const v = Object.values(s.val() || {}), n = v.length, y = v.filter(d => d.have === 'yes').length; const e = $('#nDocs'); if (e) e.textContent = (n === 1 ? '1 document' : n + ' documents') + (n ? ` · I have ${y}` : ''); };
-  const fb = s => { const n = Object.keys(s.val() || {}).length; const e = $('#nRecs'); if (e) e.textContent = n === 1 ? '1 record' : n + ' records'; };
-  a.on('value', fa, () => {}); b.on('value', fb, () => {});
-  unsub = () => { a.off('value', fa); b.off('value', fb); c.off('value', fc); ei.off('value', fi); ee.off('value', fx); cp.off('value', fcp); ldr.off('value', fld); };
+  drawThemeBtn(); $('#theme').onclick = toggleTheme;
+  // one copy of everything: tile counts + search
+  const H = {};
+  const nodes = ['rows', 'topics', 'docs', 'stages', 'places', 'income', 'expenses', 'cpa', 'cpaDays', 'ld', 'ldStages', 'archive'];
+  const set = (id, t) => { const e = $(id); if (e) e.textContent = t; };
+  const counts = () => {
+    const v = k => Object.values(H[k] || {}), n = (k, one, many) => { const c = v(k).length; return c === 1 ? '1 ' + one : c + ' ' + many; };
+    const docsV = v('docs'); set('#nDocs', n('docs', 'document', 'documents') + (docsV.length ? ` · I have ${docsV.filter(d => d.have === 'yes').length}` : ''));
+    set('#nRecs', n('rows', 'record', 'records'));
+    set('#nPlaces', n('places', 'name', 'names'));
+    set('#nExp', `Left ${rs(v('income').reduce((t, x) => t + (Number(x.amount) || 0), 0) - v('expenses').reduce((t, x) => t + (Number(x.cost) || 0), 0))}`);
+    set('#nCpa', n('cpa', 'entry', 'entries'));
+    set('#nLd', `Remaining ${rs(v('ld').reduce((t, r) => t + (Number(r.amt) || 0) - (Number(r.gave) || 0), 0))}`);
+    archive.clear(); Object.entries(H.archive || {}).forEach(([k, a]) => archive.set(k, a));
+    set('#nArch', archive.size ? String(archive.size) : '');
+  };
+  const refs = nodes.map(k => { const r = db.ref('rec/' + k); const h = s => { H[k] = s.val() || {}; counts(); if (k === 'archive') purgeArchive(); if ($('#gq') && $('#gq').value.trim()) drawResults(); }; r.on('value', h, () => {}); return [r, h]; });
+  unsub = () => refs.forEach(([r, h]) => r.off('value', h));
+
+  let sel = 0, results = [];
+  const gq = $('#gq');
+  function drawResults() {
+    const q = gq.value.trim().toLowerCase(), box = $('#gres');
+    results = q ? searchAll(H, q) : [];
+    $('#tiles').hidden = !!q;
+    box.hidden = !q;
+    if (!q) return;
+    if (sel >= results.length) sel = 0;
+    let last = '';
+    box.innerHTML = results.length ? results.slice(0, 60).map((r, k) => {
+      const head = r.section !== last ? `<div class="ghead">${esc(r.section)}</div>` : ''; last = r.section;
+      return `${head}<button type="button" class="gitem ${k === sel ? 'on' : ''}" data-k="${k}"><b>${hilite(r.title, q)}</b><span>${hilite(r.sub, q)}</span></button>`;
+    }).join('') + (results.length > 60 ? `<div class="gmore">${results.length - 60} more. Type more to narrow it down.</div>` : '')
+      : `<div class="empty">Nothing found for "${esc(gq.value.trim())}"</div>`;
+  }
+  gq.oninput = () => { sel = 0; drawResults(); };
+  gq.onkeydown = e => {
+    if (!results.length) return;
+    if (e.key === 'ArrowDown') { e.preventDefault(); sel = Math.min(results.length - 1, sel + 1); drawResults(); $('#gres .gitem.on')?.scrollIntoView({ block: 'nearest' }); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); sel = Math.max(0, sel - 1); drawResults(); $('#gres .gitem.on')?.scrollIntoView({ block: 'nearest' }); }
+    else if (e.key === 'Enter') { e.preventDefault(); goToResult(results[sel]); }
+  };
+  $('#gres').onclick = e => { const b = e.target.closest('.gitem'); if (b) goToResult(results[+b.dataset.k]); };
+  gq.focus();
+}
+const hilite = (t, q) => { const s = String(t || ''), i = s.toLowerCase().indexOf(q); return i < 0 ? esc(s) : esc(s.slice(0, i)) + '<mark>' + esc(s.slice(i, i + q.length)) + '</mark>' + esc(s.slice(i + q.length)); };
+// every section, every useful field
+function searchAll(H, q) {
+  const out = [], has = (...xs) => xs.some(x => String(x ?? '').toLowerCase().includes(q));
+  const E = k => Object.entries(H[k] || {});
+  const nm = (k, id) => ((H[k] || {})[id] || {}).name || '';
+  for (const [id, t] of E('topics')) if (has(t.name)) out.push({ section: 'See records', title: t.name, sub: 'Topic', hash: '#records', sel: `#topics .stage[data-tid="${id}"]` });
+  for (const [id, r] of E('rows')) if (has(r.name, r.sn)) out.push({ section: 'See records', title: r.name || '(no name)', sub: `S.N. ${r.sn || ''} · ${nm('topics', r.topic)}${r.status ? ' · ' + r.status : ''}`, hash: '#records', sel: `#topics tr[data-id="${id}"]` });
+  for (const [id, s] of E('stages')) if (has(s.name)) out.push({ section: 'What I need', title: s.name, sub: 'Stage', hash: '#needs', sel: `#stages .stage[data-sid="${id}"]` });
+  for (const [id, d] of E('docs')) if (has(d.name, d.how, d.task, d.who)) out.push({ section: 'What I need', title: d.name || '(no name)', sub: [nm('stages', d.stage), d.task && 'Task: ' + d.task, d.how, d.who].filter(Boolean).join(' · '), hash: '#needs', sel: `#stages tr[data-id="${id}"]` });
+  for (const [pid, p] of E('places')) {
+    if (has(p.name, p.note)) out.push({ section: 'Where to what', title: p.name || '(no name)', sub: p.note ? 'Instruction: ' + p.note : 'Name', hash: '#where', sel: `#places .stage[data-pid="${pid}"]` });
+    for (const [did, d] of Object.entries(p.docs || {})) if (has(d.doc)) out.push({ section: 'Where to what', title: d.doc, sub: 'Needed for ' + (p.name || ''), hash: '#where', sel: `#places tr[data-id="${did}"]` });
+  }
+  for (const [id, x] of E('expenses')) if (has(x.name, x.where, catName(x.cat))) out.push({ section: 'Expenses', title: x.name || '(no name)', sub: `${rs(x.cost)} · ${x.date || ''}${x.where ? ' · ' + x.where : ''}`, hash: '#expenses', tab: 'spent', sel: `#erows tr[data-id="${id}"]` });
+  for (const [id, x] of E('income')) if (has(x.from, x.note)) out.push({ section: 'Expenses', title: 'Money from ' + (x.from || '?'), sub: `${rs(x.amount)} · ${x.date || ''}${x.note ? ' · ' + x.note : ''}`, hash: '#expenses', tab: 'got', sel: `#irows tr[data-id="${id}"]` });
+  for (const [id, s] of E('cpaDays')) if (has(s.name)) out.push({ section: 'CPA', title: s.name, sub: 'Stage', hash: '#cpa', sel: `#days .stage[data-did="${id}"]` });
+  for (const [id, r] of E('cpa')) if (has(r.cid, r.sn, r.name)) out.push({ section: 'CPA', title: r.cid ? 'ID ' + r.cid : 'S.N. ' + (r.sn || ''), sub: `${nm('cpaDays', r.day)} · S.N. ${r.sn || ''}${r.ap ? ' · ' + r.ap : ''}${r.pay ? ' · ' + r.pay : ''}`, hash: '#cpa', sel: `#days tr[data-id="${id}"]` });
+  for (const [id, s] of E('ldStages')) if (has(s.name)) out.push({ section: 'Leiden', title: s.name, sub: 'Stage', hash: '#leiden', sel: `#ldst .stage[data-sid="${id}"]` });
+  for (const [id, r] of E('ld')) if (has(r.from, r.spent, r.sn)) out.push({ section: 'Leiden', title: r.from || '(no name)', sub: `${nm('ldStages', r.stage)} · got ${rs(r.amt)}, gave ${rs(r.gave)}, remaining ${rs((Number(r.amt) || 0) - (Number(r.gave) || 0))}${r.spent ? ' · ' + r.spent : ''}`, hash: '#leiden', sel: `#ldst tr[data-id="${id}"]` });
+  return out;
+}
+// open the section and light up the line
+async function goToResult(r) {
+  if (!r) return;
+  if (r.tab) { expTab = r.tab; expPeriod = 'all'; }
+  if (r.hash === '#leiden') { ldView = 'entries'; ldPerson = ''; if (location.hash === '#leiden') ldViews(); }
+  location.hash = r.hash;
+  let el = null;
+  for (let i = 0; !el && i < 80; i++) { await new Promise(res => setTimeout(res, 50)); el = document.querySelector(r.sel); }
+  if (!el) return;
+  el.scrollIntoView({ block: 'center' });
+  el.classList.add('flash'); setTimeout(() => el.classList.remove('flash'), 2600);
 }
 const homeBtn = () => `<a class="tb" href="#" id="home">${svg.home}<span>Home</span></a>`;
 
+// ---------- Archive: deleted things wait here 30 days, then go for good ----------
+const ARCH_DAYS = 30, archive = new Map();
+const pickData = o => JSON.parse(JSON.stringify(o)); // plain copy of what is shown
+// items: { 'docs/<id>': data, ... } (paths inside rec/). extra: other changes saved together.
+// ifExists: { 'expenses/<id>/money': value } put back on restore only if that line still exists.
+function toArchive(section, label, items, extra = {}, ifExists = {}) {
+  const aid = db.ref('rec/archive').push().key;
+  const up = { ...extra };
+  for (const k of Object.keys(items)) {
+    up[k] = null;
+    gone.add(k.split('/').pop()); // late saves for this item are skipped
+    cancelSaves('rec/' + k + '/');
+  }
+  up['archive/' + aid] = { section, label: String(label || '').slice(0, 200), data: JSON.stringify({ items, ifExists }), deletedAt: TS() };
+  db.ref('rec').update(up)
+    .then(() => toastAction('Moved to Archive', 'Undo', () => restoreArchive(aid)))
+    .catch(x => toast(friendly(x)));
+  return aid;
+}
+async function restoreArchive(aid) {
+  let a = archive.get(aid);
+  if (!a) a = (await db.ref('rec/archive/' + aid).once('value')).val();
+  if (!a) return;
+  let d; try { d = JSON.parse(a.data); } catch { return toast('This item cannot be restored'); }
+  const up = { ['archive/' + aid]: null };
+  const fresh = v => (v && typeof v === 'object' && 'updatedAt' in v) ? { ...v, updatedAt: TS() } : v;
+  for (const [k, v] of Object.entries(d.items || {})) { up[k] = fresh(v); gone.delete(k.split('/').pop()); }
+  for (const [k, v] of Object.entries(d.ifExists || {})) {
+    const line = k.split('/').slice(0, 2).join('/');
+    if ((await db.ref('rec/' + line).once('value')).exists()) up[k] = v;
+  }
+  try { await db.ref('rec').update(up); toast('Restored'); }
+  catch { toast('Could not restore. Its stage, topic or name is in the Archive too: restore that first.'); }
+}
+function purgeArchive() {
+  const old = Date.now() - ARCH_DAYS * 86400000, up = {};
+  for (const [aid, a] of archive) if ((a.deletedAt || 0) < old) up[aid] = null;
+  if (Object.keys(up).length) db.ref('rec/archive').update(up).catch(() => {});
+}
+function toastAction(text, label, fn) {
+  document.querySelectorAll('.toast.act').forEach(t => t.remove());
+  const d = document.createElement('div'); d.className = 'toast act';
+  d.innerHTML = `<span>${esc(text)}</span><button type="button">${esc(label)}</button>`;
+  d.querySelector('button').onclick = () => { d.remove(); fn(); };
+  document.body.appendChild(d); setTimeout(() => d.remove(), 7000);
+}
+function showArchive() {
+  $('#root').innerHTML = `
+    <div class="app">
+      <div class="bar">
+        ${homeBtn()}
+        <h1 class="ttl">Archive</h1>
+        <label class="search">${svg.search}<input id="aq" type="search" placeholder="Search archive" aria-label="Search archive"></label>
+        <span class="sp"></span>
+        <button class="tb" id="aEmpty">${svg.trash}<span>Empty archive</span></button>
+      </div>
+      <div class="wrap">
+        <table class="arch"><thead><tr><th class="c-date">Moved here</th><th class="c-sec">Section</th><th>What</th><th class="c-left">Deleted for good in</th><th class="c-act"></th></tr></thead>
+        <tbody id="arows"></tbody></table>
+        <div class="empty" id="aempty" hidden>The archive is empty</div>
+      </div>
+      <div class="foot"><span id="asum"></span></div>
+    </div>`;
+  let aq = '';
+  $('#aq').oninput = () => { aq = $('#aq').value.trim().toLowerCase(); draw(); };
+  $('#aEmpty').onclick = () => {
+    if (!archive.size || !confirm(`Delete all ${archive.size} archived ${archive.size === 1 ? 'item' : 'items'} for good? This cannot be undone.`)) return;
+    db.ref('rec/archive').remove().catch(x => toast(friendly(x)));
+  };
+  $('#arows').addEventListener('click', e => {
+    const b = e.target.closest('[data-a]'); if (!b) return;
+    const aid = b.closest('tr').dataset.id, a = archive.get(aid); if (!a) return;
+    if (b.dataset.a === 'restore') return restoreArchive(aid);
+    if (!confirm(`Delete "${a.label}" for good? This cannot be undone.`)) return;
+    db.ref('rec/archive/' + aid).remove().catch(x => toast(friendly(x)));
+  });
+  function draw() {
+    const tb = $('#arows'); if (!tb) return;
+    const ids = [...archive.keys()].sort((x, y) => (archive.get(y).deletedAt || 0) - (archive.get(x).deletedAt || 0))
+      .filter(id => !aq || (archive.get(id).label + ' ' + archive.get(id).section).toLowerCase().includes(aq));
+    tb.innerHTML = ids.map(id => {
+      const a = archive.get(id), left = Math.max(0, Math.ceil(((a.deletedAt || 0) + ARCH_DAYS * 86400000 - Date.now()) / 86400000));
+      return `<tr data-id="${esc(id)}"><td class="calc">${a.deletedAt ? niceDateY(ymd(new Date(a.deletedAt))) : ''}</td><td>${esc(a.section)}</td><td class="alabel">${esc(a.label)}</td>
+        <td class="calc ${left <= 3 ? 'neg' : ''}">${left} ${left === 1 ? 'day' : 'days'}</td>
+        <td class="acts"><button type="button" class="add" data-a="restore">${svg.undo}Restore</button><button type="button" class="x" data-a="del" aria-label="Delete for good">${svg.trash}</button></td></tr>`;
+    }).join('');
+    $('#aempty').hidden = ids.length > 0;
+    $('#aempty').textContent = archive.size ? `Nothing matches "${$('#aq').value.trim()}"` : 'The archive is empty';
+    $('#asum').innerHTML = `<b>${archive.size}</b> ${archive.size === 1 ? 'item' : 'items'} · kept ${ARCH_DAYS} days, then deleted for good`;
+  }
+  const ref = db.ref('rec/archive');
+  const onA = s => { archive.clear(); s.forEach(c => { archive.set(c.key, c.val()); }); purgeArchive(); draw(); };
+  ref.on('value', onA, e => toast(friendly(e)));
+  unsub = () => { ref.off('value', onA); };
+}
+
 // ---------- What I need: documents grouped in stages ----------
 const docs = new Map(), stages = new Map();
+let nf = 'all'; // What I need filter
 const cleanTxt = v => v.replace(/\s+/g, ' ').trim();
 const byTime = m => (a, b) => (m.get(a).createdAt || 0) - (m.get(b).createdAt || 0);
 function showDocs() {
@@ -321,6 +569,7 @@ function showDocs() {
       <div class="bar">
         ${homeBtn()}
         <h1 class="ttl">What I need</h1>
+        <select id="nf" class="fsel" aria-label="Show"><option value="all">All</option><option value="yes">I have</option><option value="no">I don't have</option><option value="none">Not marked</option><option value="task">With a task</option></select>
         <span class="sp"></span>
         <button class="tb" id="addStage">${svg.plus}<span>Add stage</span></button>
       </div>
@@ -331,6 +580,7 @@ function showDocs() {
       </div>
     </div>`;
   $('#addStage').onclick = $('#addStage2').onclick = addStage;
+  nf = 'all'; $('#nf').onchange = () => { nf = $('#nf').value; draw(); };
   const box = $('#stages');
   const saveField = (path, v, now) => {
     clearTimeout(timers[path]);
@@ -357,19 +607,16 @@ function showDocs() {
     const x = e.target.closest('tr .x');
     if (x) {
       const id = x.closest('tr').dataset.id, d = docs.get(id); if (!d) return;
-      if (!confirm(`Delete "${d.name || 'this document'}"?`)) return;
-      cancelSaves('rec/docs/' + id + '/'); gone.add(id);
-      db.ref('rec/docs/' + id).remove().catch(err => toast(friendly(err)));
+      toArchive('What I need', 'Document: ' + (d.name || '(no name)'), { ['docs/' + id]: pickData(d) });
       return;
     }
     const ds = e.target.closest('.sdel');
     if (ds) {
       const sid = ds.closest('.stage').dataset.sid, st = stages.get(sid); if (!st) return;
       const inIt = [...docs.entries()].filter(([, d]) => stageOf(d) === sid).map(([id]) => id);
-      if (!confirm(`Delete "${st.name || 'this stage'}"${inIt.length ? ` and its ${inIt.length} ${inIt.length === 1 ? 'document' : 'documents'}` : ''}?`)) return;
-      const up = { ['stages/' + sid]: null }; inIt.forEach(id => { up['docs/' + id] = null; cancelSaves('rec/docs/' + id + '/'); gone.add(id); });
-      cancelSaves('rec/stages/' + sid + '/'); gone.add(sid);
-      db.ref('rec').update(up).catch(err => toast(friendly(err)));
+      if (!confirm(`Move "${st.name || 'this stage'}"${inIt.length ? ` and its ${inIt.length} ${inIt.length === 1 ? 'document' : 'documents'}` : ''} to the Archive?`)) return;
+      const items = { ['stages/' + sid]: pickData(st) }; inIt.forEach(id => { items['docs/' + id] = pickData(docs.get(id)); });
+      toArchive('What I need', `Stage: ${st.name || '(no name)'}${inIt.length ? ` (${inIt.length} ${inIt.length === 1 ? 'document' : 'documents'})` : ''}`, items);
     }
   });
   box.addEventListener('keydown', e => {
@@ -428,6 +675,8 @@ function showDocs() {
         tr.querySelectorAll('[data-d]').forEach(i => { const v = docs.get(id)[i.dataset.d] || ''; if (i !== document.activeElement && i.value !== v) i.value = v; });
         tr.querySelector('td.tk').classList.toggle('filled', !!(tr.querySelector('[data-d=task]').value || '').trim());
         drawHave(tr, docs.get(id).have);
+        const dd = docs.get(id);
+        tr.hidden = !tr.contains(document.activeElement) && !(nf === 'all' || (nf === 'yes' && dd.have === 'yes') || (nf === 'no' && dd.have === 'no') || (nf === 'none' && !dd.have) || (nf === 'task' && String(dd.task || '').trim()));
       });
       // empty row at the end: type in it to add a document
       let nr = tb.querySelector('tr.newrow');
@@ -546,18 +795,15 @@ function showWhere() {
     const x = e.target.closest('tr .x');
     if (x) {
       const pid = x.closest('.stage').dataset.pid, did = x.closest('tr').dataset.id, d = ((places.get(pid) || {}).docs || {})[did]; if (!d) return;
-      if (!confirm(`Delete "${d.doc || 'this document'}"?`)) return;
-      cancelSaves(`rec/places/${pid}/docs/${did}/`); gone.add(did);
-      db.ref(`rec/places/${pid}/docs/${did}`).remove().catch(err => toast(friendly(err)));
+      toArchive('Where to what', `Document: ${d.doc || '(no name)'} (${(places.get(pid) || {}).name || 'no name'})`, { [`places/${pid}/docs/${did}`]: pickData(d) });
       return;
     }
     const pdel = e.target.closest('.pdel');
     if (pdel) {
       const pid = pdel.closest('.stage').dataset.pid, pl = places.get(pid); if (!pl) return;
       const n = Object.keys(pl.docs || {}).length;
-      if (!confirm(`Delete "${pl.name || 'this name'}"${n ? ` and its ${n} ${n === 1 ? 'document' : 'documents'}` : ''}?`)) return;
-      cancelSaves(`rec/places/${pid}/`); gone.add(pid);
-      db.ref('rec/places/' + pid).remove().catch(err => toast(friendly(err)));
+      if (!confirm(`Move "${pl.name || 'this name'}"${n ? ` and its ${n} ${n === 1 ? 'document' : 'documents'}` : ''} to the Archive?`)) return;
+      toArchive('Where to what', `Name: ${pl.name || '(no name)'}${n ? ` (${n} ${n === 1 ? 'document' : 'documents'})` : ''}`, { ['places/' + pid]: pickData(pl) });
     }
   });
   box.addEventListener('keydown', e => {
@@ -670,7 +916,7 @@ const weekStart = s => { const d = parseYmd(s); d.setDate(d.getDate() - d.getDay
 const addDays = (s, n) => { const d = parseYmd(s); d.setDate(d.getDate() + n); return ymd(d); };
 const niceDate = s => parseYmd(s).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
 const niceDateY = s => parseYmd(s).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-let expTab = 'spent', expPeriod = 'all', eq = '', pendingExp = null;
+let expTab = 'spent', expPeriod = 'all', expCat = '', eq = '', pendingExp = null;
 
 const spentFrom = id => [...expenses.values()].filter(e => e.money === id).reduce((a, e) => a + (Number(e.cost) || 0), 0);
 function inPeriod(date, p) {
@@ -698,12 +944,13 @@ function showExpenses() {
           <button role="tab" data-tab="spent">Expenses</button>
           <button role="tab" data-tab="got">Money received</button>
           <button role="tab" data-tab="weeks">Weekly summary</button>
+          <button role="tab" data-tab="months">Monthly summary</button>
         </div>
         <div id="expBody"></div>
       </div>
       <div class="foot"><span id="esum"></span></div>
     </div>`;
-  eq = ''; expPeriod = 'all';
+  eq = ''; expPeriod = 'all'; expCat = '';
   $('.etabs').onclick = e => { const b = e.target.closest('[data-tab]'); if (!b) return; expTab = b.dataset.tab; drawExpBody(true); };
   $('#expCsv').onclick = expDownload;
   const body = $('#expBody');
@@ -729,15 +976,12 @@ function showExpenses() {
     if (kind === 'income') {
       const it = income.get(id); if (!it) return;
       const used = [...expenses.entries()].filter(([, ex]) => ex.money === id);
-      if (!confirm(`Delete money from "${it.from || '?'}" (${rs(it.amount)})?${used.length ? `\n${used.length} ${used.length === 1 ? 'expense uses' : 'expenses use'} it; they will stay, without "Money used".` : ''}`)) return;
-      const up = { ['income/' + id]: null }; used.forEach(([eid]) => { up[`expenses/${eid}/money`] = ''; });
-      cancelSaves('rec/income/' + id + '/'); gone.add(id);
-      db.ref('rec').update(up).catch(err => toast(friendly(err)));
+      if (used.length && !confirm(`Move money from "${it.from || '?'}" (${rs(it.amount)}) to the Archive?\n${used.length} ${used.length === 1 ? 'expense uses' : 'expenses use'} it; they will stay, without "Money used" (it comes back if you restore).`)) return;
+      const extra = {}, back = {}; used.forEach(([eid]) => { extra[`expenses/${eid}/money`] = ''; back[`expenses/${eid}/money`] = id; });
+      toArchive('Expenses', `Money received: ${it.from || '?'} ${rs(it.amount)}`, { ['income/' + id]: pickData(it) }, extra, back);
     } else {
       const it = expenses.get(id); if (!it) return;
-      if (!confirm(`Delete "${it.name || 'this expense'}" (${rs(it.cost)})?`)) return;
-      cancelSaves('rec/expenses/' + id + '/'); gone.add(id);
-      db.ref('rec/expenses/' + id).remove().catch(err => toast(friendly(err)));
+      toArchive('Expenses', `Expense: ${it.name || '(no name)'} ${rs(it.cost)}`, { ['expenses/' + id]: pickData(it) });
     }
   });
   body.addEventListener('keydown', e => {
@@ -785,6 +1029,7 @@ function drawExpBody(reset) {
         <select id="eper" aria-label="Show">
           <option value="all">All</option><option value="week">This week</option><option value="lastweek">Last week</option><option value="month">This month</option>
         </select>
+        <select id="ecat" aria-label="Category"><option value="">All categories</option>${CATS.map(([k, v]) => `<option value="${k}">${esc(v)}</option>`).join('')}<option value="none">No category</option></select>
       </div>
       <table class="etable" data-kind="expense">
         <thead><tr><th class="c-sn c">S.N.</th><th class="c-date">Date</th><th class="c-en">Expense name</th><th class="c-amt">Cost (Rs.)</th><th class="c-tx">Where</th><th class="c-cat">Category</th><th class="c-mon">Money used</th><th aria-label="Delete"></th></tr></thead>
@@ -795,14 +1040,16 @@ function drawExpBody(reset) {
         <thead><tr><th class="c-sn c">S.N.</th><th class="c-date">Date</th><th class="c-en">From whom</th><th class="c-amt">Amount (Rs.)</th><th class="c-tx">Note</th><th class="c-amt">Spent</th><th class="c-amt">Left</th><th aria-label="Delete"></th></tr></thead>
         <tbody id="irows"></tbody>
       </table>`;
+    else if (expTab === 'months') body.innerHTML = `<div id="months"></div>`;
     else body.innerHTML = `<div id="weeks"></div>`;
     if (expTab === 'spent') {
       $('#eq').value = eq; $('#eper').value = expPeriod;
       $('#eq').oninput = () => { eq = $('#eq').value.trim().toLowerCase(); drawExpRows(); };
       $('#eper').onchange = () => { expPeriod = $('#eper').value; drawExpRows(); };
+      $('#ecat').value = expCat; $('#ecat').onchange = () => { expCat = $('#ecat').value; drawExpRows(); };
     }
   }
-  if (expTab === 'spent') drawExpRows(); else if (expTab === 'got') drawIncomeRows(); else drawWeeks();
+  if (expTab === 'spent') drawExpRows(); else if (expTab === 'got') drawIncomeRows(); else if (expTab === 'months') drawMonths(); else drawWeeks();
 }
 
 const incomeIds = () => [...income.keys()].sort((a, b) => String(income.get(a).date || '').localeCompare(String(income.get(b).date || '')) || byTime(income)(a, b));
@@ -841,7 +1088,7 @@ function drawExpRows() {
     const ms = tr.querySelector('[data-x=money]');
     if (ms.dataset.sig !== sig && ms !== document.activeElement) { ms.innerHTML = moneyOptions(ex.money); ms.dataset.sig = sig; }
     fillRow(tr, ex);
-    const hit = inPeriod(ex.date, expPeriod) && (!eq || String(ex.name || '').toLowerCase().includes(eq) || String(ex.where || '').toLowerCase().includes(eq));
+    const hit = inPeriod(ex.date, expPeriod) && (!expCat || (expCat === 'none' ? !ex.cat : ex.cat === expCat)) && (!eq || String(ex.name || '').toLowerCase().includes(eq) || String(ex.where || '').toLowerCase().includes(eq));
     tr.hidden = !hit && !tr.contains(document.activeElement);
     if (tb.children[k] !== tr) tb.insertBefore(tr, tb.children[k] || null);
     k++;
@@ -900,6 +1147,8 @@ function drawExpTotals() {
   } else if (expTab === 'got') {
     const tot = [...income.values()].reduce((a, x) => a + (Number(x.amount) || 0), 0);
     e.innerHTML = `<b>${income.size}</b> ${income.size === 1 ? 'entry' : 'entries'} · Total received <b>${rs(tot)}</b>`;
+  } else if (expTab === 'months') {
+    e.innerHTML = `Money received and spent in each month.`;
   } else {
     e.innerHTML = `Weeks run Sunday to Saturday. Each finished week is saved.`;
   }
@@ -991,6 +1240,40 @@ function drawWeeks() {
   drawExpTotals();
 }
 
+// ---------- monthly summary (with a chart) ----------
+function drawMonths() {
+  const el = $('#months'); if (!el) return;
+  const M = new Map();
+  const G = k => { if (!M.has(k)) M.set(k, { received: 0, spent: 0, count: 0, cats: {}, items: [] }); return M.get(k); };
+  for (const it of income.values()) if (it.date) G(it.date.slice(0, 7)).received += Number(it.amount) || 0;
+  for (const ex of expenses.values()) if (ex.date) { const m = G(ex.date.slice(0, 7)), c = Number(ex.cost) || 0; m.spent += c; m.count++; m.items.push(ex); const k = ex.cat || 'none'; m.cats[k] = (m.cats[k] || 0) + c; }
+  const keys = [...M.keys()].sort();
+  if (!keys.length) { el.innerHTML = '<div class="empty">No entries yet</div>'; drawExpTotals(); return; }
+  let run = 0; const leftAt = {}; keys.forEach(k => { run += M.get(k).received - M.get(k).spent; leftAt[k] = run; });
+  const last = keys.slice(-12), cmax = Math.max(1, ...last.flatMap(k => [M.get(k).received, M.get(k).spent]));
+  const cur = today().slice(0, 7);
+  el.innerHTML = `
+    <section class="week chartbox"><div class="whead"><b>Received and spent by month</b><span class="legend"><i class="lg-in"></i>Received <i class="lg-out"></i>Spent</span></div>
+      <div class="vchart">${last.map(k => { const m = M.get(k); return `<div class="vcol" title="${esc(monthName(k))}: received ${rs(m.received)}, spent ${rs(m.spent)}"><div class="vbars"><i class="in" style="height:${Math.round(m.received / cmax * 100)}%"></i><i class="out" style="height:${Math.round(m.spent / cmax * 100)}%"></i></div><span>${esc(monthName(k).split(' ')[0].slice(0, 3))}</span></div>`; }).join('')}</div>
+    </section>` + [...keys].reverse().map(k => {
+    const m = M.get(k), cats = Object.entries(m.cats).sort((a, b) => b[1] - a[1]), max = Math.max(1, ...cats.map(c => c[1]));
+    const top = [...m.items].sort((a, b) => (Number(b.cost) || 0) - (Number(a.cost) || 0)).slice(0, 3);
+    return `
+      <section class="week ${k === cur ? 'now' : ''}" data-month="${k}">
+        <div class="whead"><b>${monthName(k)}</b><span class="wtag">${k === cur ? 'This month, so far' : ''}</span></div>
+        <div class="wstats">
+          <div><span>Received</span><b>${rs(m.received)}</b></div>
+          <div><span>Spent</span><b>${rs(m.spent)}</b></div>
+          <div><span>${k === cur ? 'Left now' : 'Left at end of month'}</span><b class="${leftAt[k] < 0 ? 'neg' : 'pos'}">${rs(leftAt[k])}</b></div>
+          <div><span>Expenses</span><b>${m.count}</b></div>
+        </div>
+        ${cats.length ? `<div class="wcats">${cats.map(([c, v]) => `<div class="wcat"><span>${esc(catName(c) || 'No category')}</span><i style="width:${Math.max(4, Math.round(v / max * 100))}%"></i><b>${rs(v)}</b></div>`).join('')}</div>` : ''}
+        ${top.length ? `<div class="wtop"><span>Biggest:</span> ${top.map(t => `${esc(t.name || 'Expense')} <b>${rs(t.cost)}</b>`).join(' · ')}</div>` : ''}
+      </section>`;
+  }).join('');
+  el.querySelectorAll('.wtag:empty').forEach(t => t.remove());
+  drawExpTotals();
+}
 function expDownload() {
   const cell = v => /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
   const lines = [['Type', 'Date', 'Name / From whom', 'Amount (Rs.)', 'Where / Note', 'Category', 'Money used']];
@@ -1006,7 +1289,7 @@ function expDownload() {
 
 // ---------- CPA: entries grouped in named stages ----------
 const cpaDays = new Map(), cpaRows = new Map(); // cpaDays = the stages (node name kept from the first version)
-let cq = '', fixingCpa = false;
+let cq = '', cf = 'all', fixingCpa = false;
 const CPA_TXT = ['sn', 'cid', 'start', 'finish'];
 const CPA_NUM = ['dep', 'depN', 'wd', 'wdN'];
 const CPA_F = CPA_TXT.concat(CPA_NUM);
@@ -1018,15 +1301,20 @@ function showCpa() {
         ${homeBtn()}
         <h1 class="ttl">CPA</h1>
         <label class="search">${svg.search}<input id="cq" type="search" placeholder="Search ID or S.N." aria-label="Search"></label>
+        <select id="cf" class="fsel" aria-label="Show"><option value="all">All</option><option value="approved">Approved</option><option value="declined">Declined</option><option value="paid">Paid</option><option value="unpaid">Unpaid</option><option value="none">Not marked</option></select>
         <span class="sp"></span>
         <button class="tb" id="addDay">${svg.plus}<span>Add stage</span></button>
         <button class="tb" id="cpaCsv">${svg.down}<span>Download Excel</span></button>
       </div>
-      <div class="wrap"><div id="days"></div><div class="empty" id="cempty" hidden></div></div>
+      <div class="wrap">
+        <details class="cchart" id="cchart"><summary>Chart: deposit and withdrawal by stage</summary><div id="cbars"></div></details>
+        <div id="days"></div><div class="empty" id="cempty" hidden></div>
+      </div>
       <div class="foot"><button class="add" id="addDay2">${svg.plus}Add stage</button><span id="csum"></span></div>
     </div>`;
-  cq = '';
+  cq = ''; cf = 'all';
   $('#cq').oninput = () => { cq = $('#cq').value.trim().toLowerCase(); cpaFilter(); };
+  $('#cf').onchange = () => { cf = $('#cf').value; cpaFilter(); };
   $('#addDay').onclick = $('#addDay2').onclick = addCpaStage;
   $('#cpaCsv').onclick = cpaDownload;
   const box = $('#days');
@@ -1061,19 +1349,17 @@ function showCpa() {
     if (dd) {
       const did = dd.closest('.stage').dataset.did, d = cpaDays.get(did); if (!d) return;
       const inIt = [...cpaRows.entries()].filter(([, r]) => r.day === did).map(([id]) => id);
-      if (!confirm(`Delete "${d.name || 'this stage'}"${inIt.length ? ` and its ${inIt.length} ${inIt.length === 1 ? 'entry' : 'entries'}` : ''}?`)) return;
-      const up = { ['cpaDays/' + did]: null };
-      inIt.forEach(id => { up['cpa/' + id] = null; CPA_F.forEach(f => clearTimeout(timers['c' + id + f])); gone.add(id); });
-      cancelSaves('rec/cpaDays/' + did + '/'); gone.add(did);
-      db.ref('rec').update(up).catch(x => toast(friendly(x)));
+      if (!confirm(`Move "${d.name || 'this stage'}"${inIt.length ? ` and its ${inIt.length} ${inIt.length === 1 ? 'entry' : 'entries'}` : ''} to the Archive?`)) return;
+      const items = { ['cpaDays/' + did]: pickData(d) };
+      inIt.forEach(id => { items['cpa/' + id] = pickData(cpaRows.get(id)); CPA_F.forEach(f => clearTimeout(timers['c' + id + f])); });
+      toArchive('CPA', `Stage: ${d.name || '(no name)'}${inIt.length ? ` (${inIt.length} ${inIt.length === 1 ? 'entry' : 'entries'})` : ''}`, items);
       return;
     }
     const b = e.target.closest('tr .chk, tr .x'); if (!b) return;
     const tr = b.closest('tr'), id = tr.dataset.id, r = cpaRows.get(id); if (!r) return;
     if (b.classList.contains('x')) {
-      if (!confirm(`Delete S.N. ${r.sn || ''}${r.cid ? ' (ID ' + r.cid + ')' : ''}?`)) return;
-      CPA_F.forEach(f => clearTimeout(timers['c' + id + f])); gone.add(id);
-      db.ref('rec/cpa/' + id).remove().catch(x => toast(friendly(x)));
+      CPA_F.forEach(f => clearTimeout(timers['c' + id + f]));
+      toArchive('CPA', `S.N. ${r.sn || ''}${r.cid ? ', ID ' + r.cid : ''} (${(cpaDays.get(r.day) || {}).name || ''})`, { ['cpa/' + id]: pickData(r) });
       return;
     }
     const g = b.dataset.g, v = r[g] === b.dataset.v ? '' : b.dataset.v; // tap again to clear
@@ -1090,7 +1376,7 @@ function showCpa() {
     if (tr) tr.querySelector(`[data-c="${i.dataset.c}"]`).focus();
     else if (!cq) addCpaRow(i.closest('.stage').dataset.did, i.dataset.c);
   });
-  box.addEventListener('focusout', () => setTimeout(() => { if (!box.contains(document.activeElement)) sortCpa(); }, 0));
+  box.addEventListener('focusout', e => { const i = e.target.closest('[data-c]'); if (i && i.type !== 'date') onEdit({ type: 'change', target: i }); setTimeout(() => { if (!box.contains(document.activeElement)) sortCpa(); }, 0); });
   let gd = false, gr = false;
   const dref = db.ref('rec/cpaDays'), rref = db.ref('rec/cpa');
   const onD = s => { cpaDays.clear(); s.forEach(c => { cpaDays.set(c.key, c.val()); }); gd = true; if (gr) drawCpa(); };
@@ -1197,7 +1483,8 @@ const blank = () => ({ n: 0, hit: 0, approved: 0, declined: 0, paid: 0, unpaid: 
 function cpaFilter() {
   const tot = { ...blank(), shown: 0 }, per = {};
   for (const [id, r] of cpaRows) {
-    const hit = !cq || String(r.cid || '').includes(cq) || String(r.sn || '').toLowerCase() === cq;
+    const hit = (!cq || String(r.cid || '').includes(cq) || String(r.sn || '').toLowerCase() === cq)
+      && (cf === 'all' || (cf === 'none' ? !r.ap && !r.pay : r.ap === cf || r.pay === cf));
     const tr = cpaTr(id); if (tr) tr.hidden = !hit;
     const c = per[r.day] || (per[r.day] = blank());
     c.n++; tot.n++; if (hit) { c.hit++; tot.shown++; }
@@ -1209,12 +1496,20 @@ function cpaFilter() {
     const c = per[sec.dataset.did] || blank();
     sec.querySelector('.scount').textContent = `${c.n} ${c.n === 1 ? 'entry' : 'entries'}${c.n ? ` · Deposit ${rs(c.dep)} · Withdrawal ${rs(c.wd)} · Approved ${c.approved} · Declined ${c.declined} · Paid ${c.paid} · Unpaid ${c.unpaid}` : ''}`;
     sec.querySelector('.tempty').hidden = c.n > 0;
-    sec.hidden = !!cq && !c.hit && !sec.contains(document.activeElement);
+    sec.hidden = (!!cq || cf !== 'all') && !c.hit && !sec.contains(document.activeElement);
   });
   const e = $('#cempty');
-  e.hidden = cpaDays.size > 0 && (!cq || tot.shown > 0);
-  e.textContent = cpaDays.size ? `Nothing matches "${$('#cq').value.trim()}"` : 'No stages yet';
-  $('#csum').innerHTML = `${cq ? `<b>${tot.shown}</b> of ${tot.n} shown · ` : ''}<b>${cpaDays.size}</b> ${cpaDays.size === 1 ? 'stage' : 'stages'} · <b>${tot.n}</b> ${tot.n === 1 ? 'entry' : 'entries'} · Deposit <b>${rs(tot.dep)}</b> · Withdrawal <b>${rs(tot.wd)}</b> · Approved <b>${tot.approved}</b> · Declined <b>${tot.declined}</b> · Paid <b>${tot.paid}</b> · Unpaid <b>${tot.unpaid}</b>`;
+  e.hidden = cpaDays.size > 0 && ((!cq && cf === 'all') || tot.shown > 0);
+  e.textContent = cpaDays.size ? (cq ? `Nothing matches "${$('#cq').value.trim()}"` : 'Nothing to show for this filter') : 'No stages yet';
+  const cb = $('#cbars');
+  if (cb) {
+    const st = dayIds().map(did => ({ name: (cpaDays.get(did) || {}).name || '', ...(per[did] || blank()) }));
+    const mx = Math.max(1, ...st.flatMap(x => [x.dep, x.wd]));
+    cb.innerHTML = st.length ? `<span class="legend"><i class="lg-out"></i>Deposit <i class="lg-in"></i>Withdrawal</span>` + st.map(x => `
+      <div class="cgroup"><span>${esc(x.name)}</span><div class="cline"><i class="dep" style="width:${Math.round(x.dep / mx * 100)}%"></i><b>${rs(x.dep)}</b></div><div class="cline"><i class="wd" style="width:${Math.round(x.wd / mx * 100)}%"></i><b>${rs(x.wd)}</b></div></div>`).join('') : '';
+    $('#cchart').hidden = !st.length;
+  }
+  $('#csum').innerHTML = `${cq || cf !== 'all' ? `<b>${tot.shown}</b> of ${tot.n} shown · ` : ''}<b>${cpaDays.size}</b> ${cpaDays.size === 1 ? 'stage' : 'stages'} · <b>${tot.n}</b> ${tot.n === 1 ? 'entry' : 'entries'} · Deposit <b>${rs(tot.dep)}</b> · Withdrawal <b>${rs(tot.wd)}</b> · Approved <b>${tot.approved}</b> · Declined <b>${tot.declined}</b> · Paid <b>${tot.paid}</b> · Unpaid <b>${tot.unpaid}</b>`;
 }
 async function addCpaStage() {
   const ref = db.ref('rec/cpaDays').push();
@@ -1254,7 +1549,7 @@ function cpaDownload() {
 
 // ---------- Leiden: money from whom, given back, remaining; grouped in named stages ----------
 const ldStages = new Map(), ldRows = new Map();
-let lq = '';
+let lq = '', lf = 'all', ldView = 'entries', ldPerson = '';
 const LD_TXT = ['sn', 'date', 'from', 'spent'];
 const LD_NUM = ['amt', 'gave'];
 const LD_F = LD_TXT.concat(LD_NUM);
@@ -1265,15 +1560,29 @@ function showLeiden() {
         ${homeBtn()}
         <h1 class="ttl">Leiden</h1>
         <label class="search">${svg.search}<input id="lq" type="search" placeholder="Search name, place or S.N." aria-label="Search"></label>
+        <select id="lf" class="fsel" aria-label="Show"><option value="all">All</option><option value="cleared">Cleared</option><option value="notcleared">Not cleared</option><option value="none">Not marked</option><option value="remaining">Still remaining</option></select>
         <span class="sp"></span>
         <button class="tb" id="addLdStage">${svg.plus}<span>Add stage</span></button>
         <button class="tb" id="ldCsv">${svg.down}<span>Download Excel</span></button>
       </div>
-      <div class="wrap"><div id="ldst"></div><div class="empty" id="lempty" hidden></div></div>
+      <div class="wrap">
+        <div class="etabs" role="tablist"><button role="tab" data-lv="entries">Entries</button><button role="tab" data-lv="people">People</button><button role="tab" data-lv="months">Monthly</button></div>
+        <div id="ldEntries"><div id="ldst"></div><div class="empty" id="lempty" hidden></div></div>
+        <div id="ldPeople" hidden></div>
+        <div id="ldMonths" hidden></div>
+      </div>
       <div class="foot"><button class="add" id="addLdStage2">${svg.plus}Add stage</button><span id="lsum"></span></div>
     </div>`;
-  lq = '';
-  $('#lq').oninput = () => { lq = $('#lq').value.trim().toLowerCase(); ldFilter(); };
+  lq = ''; lf = 'all'; ldPerson = ''; ldView = 'entries';
+  $('#lq').oninput = () => { lq = $('#lq').value.trim().toLowerCase(); ldFilter(); ldViews(); };
+  $('#lf').onchange = () => { lf = $('#lf').value; ldFilter(); };
+  $('.etabs').onclick = e => { const b = e.target.closest('[data-lv]'); if (!b) return; ldView = b.dataset.lv; ldPerson = ''; ldViews(); };
+  $('#ldPeople').onclick = e => {
+    const back = e.target.closest('.pback'); if (back) { ldPerson = ''; return ldViews(); }
+    const pr = e.target.closest('[data-person]'); if (pr) { ldPerson = pr.dataset.person; return ldViews(); }
+    const en = e.target.closest('[data-entry]');
+    if (en) goToResult({ hash: '#leiden', sel: `#ldst tr[data-id="${en.dataset.entry}"]`, view: 'entries' });
+  };
   $('#addLdStage').onclick = $('#addLdStage2').onclick = addLdStage;
   $('#ldCsv').onclick = ldDownload;
   const box = $('#ldst');
@@ -1301,19 +1610,17 @@ function showLeiden() {
     if (dd) {
       const sid = dd.closest('.stage').dataset.sid, st = ldStages.get(sid); if (!st) return;
       const inIt = [...ldRows.entries()].filter(([, r]) => r.stage === sid).map(([id]) => id);
-      if (!confirm(`Delete "${st.name || 'this stage'}"${inIt.length ? ` and its ${inIt.length} ${inIt.length === 1 ? 'entry' : 'entries'}` : ''}?`)) return;
-      const up = { ['ldStages/' + sid]: null };
-      inIt.forEach(id => { up['ld/' + id] = null; LD_F.forEach(f => clearTimeout(timers['l' + id + f])); gone.add(id); });
-      cancelSaves('rec/ldStages/' + sid + '/'); gone.add(sid);
-      db.ref('rec').update(up).catch(x => toast(friendly(x)));
+      if (!confirm(`Move "${st.name || 'this stage'}"${inIt.length ? ` and its ${inIt.length} ${inIt.length === 1 ? 'entry' : 'entries'}` : ''} to the Archive?`)) return;
+      const items = { ['ldStages/' + sid]: pickData(st) };
+      inIt.forEach(id => { items['ld/' + id] = pickData(ldRows.get(id)); LD_F.forEach(f => clearTimeout(timers['l' + id + f])); });
+      toArchive('Leiden', `Stage: ${st.name || '(no name)'}${inIt.length ? ` (${inIt.length} ${inIt.length === 1 ? 'entry' : 'entries'})` : ''}`, items);
       return;
     }
     const b = e.target.closest('tr .chk, tr .x'); if (!b) return;
     const tr = b.closest('tr'), id = tr.dataset.id, r = ldRows.get(id); if (!r) return;
     if (b.classList.contains('x')) {
-      if (!confirm(`Delete S.N. ${r.sn || ''}${r.from ? ' (' + r.from + ')' : ''}?`)) return;
-      LD_F.forEach(f => clearTimeout(timers['l' + id + f])); gone.add(id);
-      db.ref('rec/ld/' + id).remove().catch(x => toast(friendly(x)));
+      LD_F.forEach(f => clearTimeout(timers['l' + id + f]));
+      toArchive('Leiden', `${r.from || '(no name)'} ${rs(r.amt)} (${(ldStages.get(r.stage) || {}).name || ''})`, { ['ld/' + id]: pickData(r) });
       return;
     }
     const v = r.clr === b.dataset.v ? '' : b.dataset.v; // tap again to clear
@@ -1330,11 +1637,11 @@ function showLeiden() {
     if (tr) tr.querySelector(`[data-l="${i.dataset.l}"]`).focus();
     else if (!lq) addLdRow(i.closest('.stage').dataset.sid, i.dataset.l);
   });
-  box.addEventListener('focusout', () => setTimeout(() => { if (!box.contains(document.activeElement)) sortLd(); }, 0));
+  box.addEventListener('focusout', e => { const i = e.target.closest('[data-l]'); if (i && i.type !== 'date') onEdit({ type: 'change', target: i }); setTimeout(() => { if (!box.contains(document.activeElement)) sortLd(); }, 0); });
   let gs = false, gr = false;
   const sref = db.ref('rec/ldStages'), rref = db.ref('rec/ld');
-  const onS = s => { ldStages.clear(); s.forEach(c => { ldStages.set(c.key, c.val()); }); gs = true; if (gr) drawLd(); };
-  const onR = s => { ldRows.clear(); s.forEach(c => { ldRows.set(c.key, c.val()); }); gr = true; if (gs) drawLd(); };
+  const onS = s => { ldStages.clear(); s.forEach(c => { ldStages.set(c.key, c.val()); }); gs = true; if (gr) { drawLd(); ldViews(); } };
+  const onR = s => { ldRows.clear(); s.forEach(c => { ldRows.set(c.key, c.val()); }); gr = true; if (gs) { drawLd(); ldViews(); } };
   sref.on('value', onS, e => toast(friendly(e)));
   rref.on('value', onR, e => toast(friendly(e)));
   unsub = () => { sref.off('value', onS); rref.off('value', onR); ldStages.clear(); ldRows.clear(); };
@@ -1421,7 +1728,8 @@ const ldBlank = () => ({ n: 0, hit: 0, amt: 0, gave: 0, cleared: 0, notcleared: 
 function ldFilter() {
   const tot = { ...ldBlank(), shown: 0 }, per = {};
   for (const [id, r] of ldRows) {
-    const hit = !lq || String(r.from || '').toLowerCase().includes(lq) || String(r.spent || '').toLowerCase().includes(lq) || String(r.sn || '').toLowerCase() === lq;
+    const hit = (!lq || String(r.from || '').toLowerCase().includes(lq) || String(r.spent || '').toLowerCase().includes(lq) || String(r.sn || '').toLowerCase() === lq)
+      && (lf === 'all' || (lf === 'none' ? !r.clr : lf === 'remaining' ? remainOf(r) !== 0 : r.clr === lf));
     const tr = ldTr(id); if (tr) tr.hidden = !hit;
     const c = per[r.stage] || (per[r.stage] = ldBlank());
     c.n++; tot.n++; if (hit) { c.hit++; tot.shown++; }
@@ -1433,13 +1741,78 @@ function ldFilter() {
     const c = per[sec.dataset.sid] || ldBlank();
     sec.querySelector('.scount').textContent = `${c.n} ${c.n === 1 ? 'entry' : 'entries'}${c.n ? ` · Got ${rs(c.amt)} · Gave ${rs(c.gave)} · Remaining ${rs(c.amt - c.gave)} · Cleared ${c.cleared} · Not cleared ${c.notcleared}` : ''}`;
     sec.querySelector('.tempty').hidden = c.n > 0;
-    sec.hidden = !!lq && !c.hit && !sec.contains(document.activeElement);
+    sec.hidden = (!!lq || lf !== 'all') && !c.hit && !sec.contains(document.activeElement);
   });
   const e = $('#lempty');
-  e.hidden = ldStages.size > 0 && (!lq || tot.shown > 0);
-  e.textContent = ldStages.size ? `Nothing matches "${$('#lq').value.trim()}"` : 'No stages yet';
-  $('#lsum').innerHTML = `${lq ? `<b>${tot.shown}</b> of ${tot.n} shown · ` : ''}<b>${ldStages.size}</b> ${ldStages.size === 1 ? 'stage' : 'stages'} · <b>${tot.n}</b> ${tot.n === 1 ? 'entry' : 'entries'} · Got <b>${rs(tot.amt)}</b> · Gave <b>${rs(tot.gave)}</b> · Remaining <b class="${tot.amt - tot.gave ? 'negt' : ''}">${rs(tot.amt - tot.gave)}</b> · Cleared <b>${tot.cleared}</b> · Not cleared <b>${tot.notcleared}</b>`;
+  e.hidden = ldStages.size > 0 && ((!lq && lf === 'all') || tot.shown > 0);
+  e.textContent = ldStages.size ? (lq ? `Nothing matches "${$('#lq').value.trim()}"` : 'Nothing to show for this filter') : 'No stages yet';
+  $('#lsum').innerHTML = `${lq || lf !== 'all' ? `<b>${tot.shown}</b> of ${tot.n} shown · ` : ''}<b>${ldStages.size}</b> ${ldStages.size === 1 ? 'stage' : 'stages'} · <b>${tot.n}</b> ${tot.n === 1 ? 'entry' : 'entries'} · Got <b>${rs(tot.amt)}</b> · Gave <b>${rs(tot.gave)}</b> · Remaining <b class="${tot.amt - tot.gave ? 'negt' : ''}">${rs(tot.amt - tot.gave)}</b> · Cleared <b>${tot.cleared}</b> · Not cleared <b>${tot.notcleared}</b>`;
 }
+// ---------- Leiden: People and Monthly views ----------
+const pKey = n => String(n || '').trim().replace(/\s+/g, ' ').toLowerCase();
+function ldViews() {
+  if (!$('#ldEntries')) return;
+  document.querySelectorAll('.etabs [data-lv]').forEach(b => { const on = b.dataset.lv === ldView; b.classList.toggle('on', on); b.setAttribute('aria-selected', on); });
+  $('#ldEntries').hidden = ldView !== 'entries';
+  $('#ldPeople').hidden = ldView !== 'people';
+  $('#ldMonths').hidden = ldView !== 'months';
+  ['#addLdStage', '#addLdStage2', '#lf'].forEach(s => { const e = $(s); if (e) e.hidden = ldView !== 'entries'; });
+  if (ldView === 'people') drawPeople(); else if (ldView === 'months') drawLdMonths();
+}
+function peopleList() {
+  const P = new Map();
+  for (const [id, r] of ldRows) {
+    const k = pKey(r.from) || '(no name)';
+    if (!P.has(k)) P.set(k, { key: k, name: String(r.from || '').trim() || '(no name)', n: 0, amt: 0, gave: 0, cleared: 0, notcleared: 0, ids: [] });
+    const p = P.get(k); p.n++; p.amt += Number(r.amt) || 0; p.gave += Number(r.gave) || 0; if (r.clr) p[r.clr]++; p.ids.push(id);
+  }
+  return [...P.values()];
+}
+function drawPeople() {
+  const box = $('#ldPeople'); if (!box) return;
+  const all = peopleList();
+  if (ldPerson) {
+    const p = all.find(x => x.key === ldPerson);
+    if (!p) { ldPerson = ''; return drawPeople(); }
+    const ids = p.ids.sort((a, b) => String(ldRows.get(a).date || '').localeCompare(String(ldRows.get(b).date || '')));
+    const rem = p.amt - p.gave;
+    box.innerHTML = `
+      <div class="phead"><button type="button" class="add pback">${svg.back}All people</button><h2>${esc(p.name)}</h2></div>
+      <div class="cards">
+        <div class="card"><span>Got</span><b>${rs(p.amt)}</b></div>
+        <div class="card"><span>Gave</span><b>${rs(p.gave)}</b></div>
+        <div class="card ${rem ? 'neg' : 'pos'}"><span>Remaining</span><b>${rs(rem)}</b></div>
+        <div class="card"><span>Entries</span><b>${p.n}</b></div>
+        <div class="card"><span>Cleared / Not cleared</span><b>${p.cleared} / ${p.notcleared}</b></div>
+      </div>
+      <table class="plist"><thead><tr><th class="c-date">Date</th><th>Stage</th><th class="c-amt">How much</th><th class="c-amt">Gave</th><th class="c-amt">Remaining</th><th>Where did I spend</th><th class="c-st">Status</th></tr></thead>
+      <tbody>${ids.map(id => { const r = ldRows.get(id), v = remainOf(r); return `<tr class="click" data-entry="${esc(id)}" title="Open in Entries"><td>${r.date ? esc(niceDateY(r.date)) : ''}</td><td>${esc((ldStages.get(r.stage) || {}).name || '')}</td><td class="num2">${rs(r.amt)}</td><td class="num2">${rs(r.gave)}</td><td class="num2 ${v ? 'negt' : 'post'}">${rs(v)}</td><td>${esc(r.spent || '')}</td><td>${r.clr === 'cleared' ? '<span class="tag ok">Cleared</span>' : r.clr === 'notcleared' ? '<span class="tag no">Not cleared</span>' : ''}</td></tr>`; }).join('')}</tbody></table>`;
+    return;
+  }
+  const list = all.filter(p => !lq || p.key.includes(lq)).sort((a, b) => (b.amt - b.gave) - (a.amt - a.gave) || a.name.localeCompare(b.name));
+  const max = Math.max(1, ...list.map(p => Math.abs(p.amt - p.gave)));
+  box.innerHTML = list.length ? `
+    <table class="plist"><thead><tr><th>Name</th><th class="c-n c">Entries</th><th class="c-amt">Got</th><th class="c-amt">Gave</th><th class="c-amt">Remaining</th><th class="c-bar">Remaining</th><th class="c-st">Not cleared</th></tr></thead>
+    <tbody>${list.map(p => { const v = p.amt - p.gave; return `<tr class="click" data-person="${esc(p.key)}"><td><b>${esc(p.name)}</b></td><td class="c">${p.n}</td><td class="num2">${rs(p.amt)}</td><td class="num2">${rs(p.gave)}</td><td class="num2 ${v ? 'negt' : 'post'}">${rs(v)}</td><td><div class="hbar"><i class="${v < 0 ? 'minus' : ''}" style="width:${Math.round(Math.abs(v) / max * 100)}%"></i></div></td><td class="c">${p.notcleared || ''}</td></tr>`; }).join('')}</tbody></table>`
+    : `<div class="empty">${ldRows.size ? 'Nobody matches' : 'No entries yet'}</div>`;
+}
+function drawLdMonths() {
+  const box = $('#ldMonths'); if (!box) return;
+  const M = new Map();
+  for (const r of ldRows.values()) {
+    const k = r.date ? r.date.slice(0, 7) : 'none';
+    if (!M.has(k)) M.set(k, { amt: 0, gave: 0, n: 0, people: new Set() });
+    const m = M.get(k); m.amt += Number(r.amt) || 0; m.gave += Number(r.gave) || 0; m.n++; if (pKey(r.from)) m.people.add(pKey(r.from));
+  }
+  const keys = [...M.keys()].sort().reverse();
+  const max = Math.max(1, ...[...M.values()].flatMap(m => [m.amt, m.gave]));
+  box.innerHTML = keys.length ? `<div class="months">${keys.map(k => { const m = M.get(k); return `
+    <section class="week"><div class="whead"><b>${k === 'none' ? 'No date' : monthName(k)}</b></div>
+      <div class="wstats"><div><span>Got</span><b>${rs(m.amt)}</b></div><div><span>Gave</span><b>${rs(m.gave)}</b></div><div><span>Difference</span><b class="${m.amt - m.gave ? 'neg' : 'pos'}">${rs(m.amt - m.gave)}</b></div><div><span>Entries / people</span><b>${m.n} / ${m.people.size}</b></div></div>
+      <div class="wcats"><div class="wcat"><span>Got</span><i style="width:${Math.max(2, Math.round(m.amt / max * 100))}%"></i><b>${rs(m.amt)}</b></div><div class="wcat"><span>Gave</span><i class="gave" style="width:${Math.max(2, Math.round(m.gave / max * 100))}%"></i><b>${rs(m.gave)}</b></div></div>
+    </section>`; }).join('')}</div>` : '<div class="empty">No entries yet</div>';
+}
+const monthName = k => { const [y, m] = k.split('-').map(Number); return new Date(y, m - 1, 1).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }); };
 async function addLdStage() {
   const ref = db.ref('rec/ldStages').push();
   ref.set({ name: 'Stage ' + (ldStages.size + 1), createdAt: TS() }).catch(x => toast(friendly(x)));
@@ -1476,6 +1849,7 @@ function ldDownload() {
 
 // ---------- See records (grouped in topics) ----------
 const recTopics = new Map();
+let rf = 'all'; // records filter
 let fixingTopics = false;
 const SHEET_HEAD = `<thead><tr>
   <th class="c-sn c">S.N.</th><th class="c-name">Name</th><th class="c-date">For when</th><th class="c-date">Sent date</th><th class="c-date">Reply received date</th>
@@ -1486,6 +1860,7 @@ function showSheet() {
       <div class="bar">
         ${homeBtn()}
         <label class="search">${svg.search}<input id="q" type="search" placeholder="Search name or S.N." aria-label="Search"></label>
+        <select id="rf" class="fsel" aria-label="Show"><option value="all">All</option><option value="approved">Approved</option><option value="rejected">Rejected</option><option value="waiting">Waiting</option></select>
         <span class="net" id="net" hidden>Offline</span>
         <span class="sp"></span>
         <button class="tb" id="addTopic">${svg.plus}<span>Add topic</span></button>
@@ -1500,8 +1875,9 @@ function showSheet() {
         <span id="sum"></span>
       </div>
     </div>`;
-  q = '';
+  q = ''; rf = 'all';
   $('#q').oninput = () => { q = $('#q').value.trim().toLowerCase(); filter(); };
+  $('#rf').onchange = () => { rf = $('#rf').value; filter(); };
   $('#addTopic').onclick = $('#addTopic2').onclick = addTopic;
   $('#csv').onclick = download;
   const box = $('#topics');
@@ -1509,7 +1885,7 @@ function showSheet() {
   box.addEventListener('change', onInput);
   box.addEventListener('click', onClick);
   box.addEventListener('keydown', onKey);
-  box.addEventListener('focusout', () => setTimeout(() => { if (!box.contains(document.activeElement)) sortRows(); }, 0));
+  box.addEventListener('focusout', e => { const i = e.target.closest('[data-f]'); if (i && i.type !== 'date') onInput({ type: 'change', target: i }); setTimeout(() => { if (!box.contains(document.activeElement)) sortRows(); }, 0); });
 
   let gotR = false, gotT = false;
   const ref = db.ref('rec/rows'), tref = db.ref('rec/topics');
@@ -1604,7 +1980,8 @@ function filter() {
   let shown = 0, ap = 0, rj = 0;
   const per = {};
   for (const [id, r] of rows) {
-    const hit = !q || String(r.name || '').toLowerCase().includes(q) || String(r.sn || '').toLowerCase() === q;
+    const hit = (!q || String(r.name || '').toLowerCase().includes(q) || String(r.sn || '').toLowerCase() === q)
+      && (rf === 'all' || (rf === 'waiting' ? !r.status : r.status === rf));
     const tr = trOf(id); if (tr) tr.hidden = !hit;
     const t = topicOf(r), c = per[t] || (per[t] = { n: 0, hit: 0, ap: 0, rj: 0 });
     c.n++; if (hit) { c.hit++; shown++; }
@@ -1614,12 +1991,12 @@ function filter() {
     const c = per[sec.dataset.tid] || { n: 0, hit: 0, ap: 0, rj: 0 };
     sec.querySelector('.scount').textContent = `${c.n} ${c.n === 1 ? 'record' : 'records'}${c.n ? ` · Approved ${c.ap} · Rejected ${c.rj}` : ''}`;
     sec.querySelector('.tempty').hidden = c.n > 0;
-    sec.hidden = !!q && !c.hit && !sec.contains(document.activeElement);
+    sec.hidden = (!!q || rf !== 'all') && !c.hit && !sec.contains(document.activeElement);
   });
   const total = rows.size, e = $('#empty');
-  e.hidden = !q || shown > 0;
-  e.textContent = `No name matches "${$('#q').value.trim()}"`;
-  $('#sum').innerHTML = `${q ? `<b>${shown}</b> of ${total} shown · ` : ''}<b>${recTopics.size}</b> ${recTopics.size === 1 ? 'topic' : 'topics'} · <b>${total}</b> total · Approved <b>${ap}</b> · Rejected <b>${rj}</b> · Waiting <b>${total - ap - rj}</b>`;
+  e.hidden = (!q && rf === 'all') || shown > 0;
+  e.textContent = q ? `No name matches "${$('#q').value.trim()}"` : 'Nothing to show for this filter';
+  $('#sum').innerHTML = `${q || rf !== 'all' ? `<b>${shown}</b> of ${total} shown · ` : ''}<b>${recTopics.size}</b> ${recTopics.size === 1 ? 'topic' : 'topics'} · <b>${total}</b> total · Approved <b>${ap}</b> · Rejected <b>${rj}</b> · Waiting <b>${total - ap - rj}</b>`;
 }
 
 // save typing (short delay so every key isn't a save)
@@ -1643,19 +2020,17 @@ function onClick(e) {
   if (td) {
     const tid = td.closest('.stage').dataset.tid, t = recTopics.get(tid); if (!t) return;
     const inIt = [...rows.entries()].filter(([, r]) => topicOf(r) === tid).map(([id]) => id);
-    if (!confirm(`Delete "${t.name || 'this topic'}"${inIt.length ? ` and its ${inIt.length} ${inIt.length === 1 ? 'record' : 'records'}` : ''}?`)) return;
-    const up = { ['topics/' + tid]: null };
-    inIt.forEach(id => { up['rows/' + id] = null; FIELDS.forEach(f => clearTimeout(timers[id + f])); gone.add(id); });
-    cancelSaves('rec/topics/' + tid + '/'); gone.add(tid);
-    db.ref('rec').update(up).catch(x => toast(friendly(x)));
+    if (!confirm(`Move "${t.name || 'this topic'}"${inIt.length ? ` and its ${inIt.length} ${inIt.length === 1 ? 'record' : 'records'}` : ''} to the Archive?`)) return;
+    const items = { ['topics/' + tid]: pickData(t) };
+    inIt.forEach(id => { items['rows/' + id] = pickData(rows.get(id)); FIELDS.forEach(f => clearTimeout(timers[id + f])); });
+    toArchive('Records', `Topic: ${t.name || '(no name)'}${inIt.length ? ` (${inIt.length} ${inIt.length === 1 ? 'record' : 'records'})` : ''}`, items);
     return;
   }
   const b = e.target.closest('tr .chk, tr .x'); if (!b) return;
   const tr = b.closest('tr'), id = tr.dataset.id, r = rows.get(id); if (!r) return;
   if (b.classList.contains('x')) {
-    if (!confirm(`Delete row ${r.sn || ''} ${r.name || ''}?`.replace(/\s+/g, ' '))) return;
-    FIELDS.forEach(f => clearTimeout(timers[id + f])); gone.add(id);
-    db.ref('rec/rows/' + id).remove().catch(x => toast(friendly(x)));
+    FIELDS.forEach(f => clearTimeout(timers[id + f]));
+    toArchive('Records', `Record ${r.sn || ''} ${r.name || '(no name)'} (${(recTopics.get(topicOf(r)) || {}).name || ''})`.replace(/\s+/g, ' '), { ['rows/' + id]: pickData(r) });
     return;
   }
   const status = r.status === b.dataset.s ? '' : b.dataset.s; // tick again to clear
