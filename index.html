@@ -192,6 +192,18 @@
   td.tk.filled{background:var(--redbg)!important;box-shadow:inset 3px 0 0 var(--nod)}
   td.tk.filled input{color:var(--nod);font-weight:700}
   .stage{margin:0 0 18px}
+  /* CPA and Leiden stages: pink and purple in turn */
+  #days .stage:nth-child(odd) .shead,#ldst .stage:nth-child(odd) .shead{background:#fce4ef;border-color:#f3b6d0;box-shadow:inset 5px 0 0 #e0609a}
+  #days .stage:nth-child(even) .shead,#ldst .stage:nth-child(even) .shead{background:#ede4fb;border-color:#cdb8f0;box-shadow:inset 5px 0 0 #8a5cd6}
+  #days .stage:nth-child(odd) .sname,#ldst .stage:nth-child(odd) .sname{color:#b0306c}
+  #days .stage:nth-child(even) .sname,#ldst .stage:nth-child(even) .sname{color:#6a3cb5}
+  html.dark #days .stage:nth-child(odd) .shead,html.dark #ldst .stage:nth-child(odd) .shead{background:#3b2230;border-color:#5a3449}
+  html.dark #days .stage:nth-child(even) .shead,html.dark #ldst .stage:nth-child(even) .shead{background:#2d2440;border-color:#46385f}
+  html.dark #days .stage:nth-child(odd) .sname,html.dark #ldst .stage:nth-child(odd) .sname{color:#f08bbb}
+  html.dark #days .stage:nth-child(even) .sname,html.dark #ldst .stage:nth-child(even) .sname{color:#b89af0}
+  .snote{position:sticky;left:0;padding:4px 10px;font-size:13px;color:#e8a0a0;border-bottom:1px solid var(--grid)}
+  .snote textarea{min-height:20px;color:var(--nod);font-weight:600}
+  .snote.filled textarea{font-size:13px}
   .shead{display:flex;align-items:center;gap:10px;background:var(--sh);border-bottom:1px solid var(--shb);border-top:1px solid var(--shb);padding:6px 10px;position:sticky;left:0;min-width:0}
   .sname{font:inherit;font-weight:700;font-size:15px;border:1px solid transparent;background:transparent;padding:5px 8px;border-radius:2px;min-width:0;width:260px;max-width:50vw;outline:none;color:var(--green-d)}
   .sname:hover{border-color:var(--shb);background:var(--card)}
@@ -332,7 +344,7 @@ function route() {
   stop();
   SEL.on = false; SEL.ids.clear(); SEL.cfg = null; // selecting ends when the page changes
   const h = location.hash;
-  if (h === '#records') showSheet(); else if (h === '#needs') showDocs(); else if (h === '#where') showWhere(); else if (h === '#expenses') showExpenses(); else if (h === '#cpa') showCpa(); else if (h === '#leiden') showLeiden(); else if (h === '#work') showWork(); else if (h === '#profit') showProfit(); else if (h === '#archive') showArchive(); else showHome();
+  if (h === '#records') showSheet(); else if (h === '#needs') showDocs(); else if (h === '#where') showWhere(); else if (h === '#expenses') showExpenses(); else if (h === '#cpa') showCpa(); else if (h === '#leiden') showLdChoice(); else if (h === '#leihen') showLeiden('ld'); else if (h === '#ausleihen') showLeiden('al'); else if (h === '#work') showWork(); else if (h === '#profit') showProfit(); else if (h === '#archive') showArchive(); else showHome();
 }
 window.addEventListener('hashchange', route);
 auth.onAuthStateChanged(async user => {
@@ -411,7 +423,7 @@ function showHome() {
   drawThemeBtn(); $('#theme').onclick = toggleTheme;
   // one copy of everything: tile counts + search
   const H = {};
-  const nodes = ['rows', 'topics', 'docs', 'stages', 'places', 'income', 'expenses', 'cpa', 'cpaDays', 'ld', 'ldStages', 'work', 'profit', 'archive'];
+  const nodes = ['rows', 'topics', 'docs', 'stages', 'places', 'income', 'expenses', 'cpa', 'cpaDays', 'ld', 'ldStages', 'al', 'alStages', 'work', 'profit', 'archive'];
   const set = (id, t) => { const e = $(id); if (e) e.textContent = t; };
   const counts = () => {
     const v = k => Object.values(H[k] || {}), n = (k, one, many) => { const c = v(k).length; return c === 1 ? '1 ' + one : c + ' ' + many; };
@@ -420,7 +432,8 @@ function showHome() {
     set('#nPlaces', n('places', 'name', 'names'));
     set('#nExp', `Left ${rs(v('income').reduce((t, x) => t + (Number(x.amount) || 0), 0) - v('expenses').reduce((t, x) => t + (Number(x.cost) || 0), 0))}`);
     set('#nCpa', n('cpa', 'entry', 'entries'));
-    set('#nLd', `Remaining ${rs(v('ld').reduce((t, r) => t + (Number(r.amt) || 0) - (Number(r.gave) || 0), 0))}`);
+    const remOf = k => rs(v(k).reduce((t, r) => t + (Number(r.amt) || 0) - (Number(r.gave) || 0), 0));
+    set('#nLd', `Leihen ${remOf('ld')} · Ausleihen ${remOf('al')}`);
     set('#nWork', n('work', 'entry', 'entries'));
     set('#nProfit', `Total ${rs(v('profit').reduce((t, r) => t + (Number(r.amt) || 0), 0))}`);
     archive.clear(); Object.entries(H.archive || {}).forEach(([k, a]) => archive.set(k, a));
@@ -473,8 +486,10 @@ function searchAll(H, q) {
   for (const [id, x] of E('income')) if (has(x.from, x.note)) out.push({ section: 'Expenses', title: 'Money from ' + (x.from || '?'), sub: `${rs(x.amount)} · ${x.date || ''}${x.note ? ' · ' + x.note : ''}`, hash: '#expenses', tab: 'got', sel: `#irows tr[data-id="${id}"]` });
   for (const [id, s] of E('cpaDays')) if (has(s.name)) out.push({ section: 'CPA', title: s.name, sub: 'Stage', hash: '#cpa', sel: `#days .stage[data-did="${id}"]` });
   for (const [id, r] of E('cpa')) if (has(r.cid, r.sn, r.name, r.pfrom)) out.push({ section: 'CPA', title: r.cid ? 'ID ' + r.cid : 'S.N. ' + (r.sn || ''), sub: `${nm('cpaDays', r.day)} · S.N. ${r.sn || ''}${r.ap ? ' · ' + r.ap : ''}${r.pay ? ' · ' + r.pay : ''}`, hash: '#cpa', sel: `#days tr[data-id="${id}"]` });
-  for (const [id, s] of E('ldStages')) if (has(s.name)) out.push({ section: 'Leiden', title: s.name, sub: 'Stage', hash: '#leiden', sel: `#ldst .stage[data-sid="${id}"]` });
-  for (const [id, r] of E('ld')) if (has(r.from, r.spent, r.sn)) out.push({ section: 'Leiden', title: r.from || '(no name)', sub: `${nm('ldStages', r.stage)} · got ${rs(r.amt)}, gave ${rs(r.gave)}, remaining ${rs((Number(r.amt) || 0) - (Number(r.gave) || 0))}${r.spent ? ' · ' + r.spent : ''}`, hash: '#leiden', sel: `#ldst tr[data-id="${id}"]` });
+  for (const [node, st, sec, hash, got, gave] of [['ld', 'ldStages', 'Leihen', '#leihen', 'got', 'gave'], ['al', 'alStages', 'Ausleihen', '#ausleihen', 'lent', 'took back']]) {
+    for (const [id, s] of E(st)) if (has(s.name, s.note)) out.push({ section: sec, title: s.name, sub: 'Stage' + (s.note ? ' · ' + s.note : ''), hash, sel: `#ldst .stage[data-sid="${id}"]` });
+    for (const [id, r] of E(node)) if (has(r.from, r.spent, r.sn)) out.push({ section: sec, title: r.from || '(no name)', sub: `${nm(st, r.stage)} · ${got} ${rs(r.amt)}, ${gave} ${rs(r.gave)}, remaining ${rs((Number(r.amt) || 0) - (Number(r.gave) || 0))}${r.spent ? ' · ' + r.spent : ''}`, hash, sel: `#ldst tr[data-id="${id}"]` });
+  }
   for (const [id, r] of E('profit')) if (has(r.how, r.sn, r.ename)) out.push({ section: 'Profit', title: rs(r.amt) + (r.ename ? ' · ' + r.ename : '') + (r.how ? ' · ' + String(r.how).slice(0, 80) : ''), sub: `S.N. ${r.sn || ''}${r.date ? ' · ' + niceDateY(r.date) : ''}`, hash: '#profit', sel: `#prows tr[data-id="${id}"]` });
   for (const [id, r] of E('work')) if (has(r.name, r.sn)) out.push({ section: 'Work money', title: r.name || '(no name)', sub: `S.N. ${r.sn || ''} · profit ${rs(r.profit)}, loss ${rs(r.loss)}${r.fin === 'finished' ? ' · finished' : r.fin === 'notfinished' ? ' · not finished' : ''}`, hash: '#work', sel: `#wrows tr[data-id="${id}"]` });
   return out;
@@ -484,7 +499,7 @@ async function goToResult(r) {
   if (!r) return;
   pendingAll = r.hash;
   if (r.tab) expTab = r.tab;
-  if (r.hash === '#leiden') { ldView = 'entries'; ldPerson = ''; if (location.hash === '#leiden') ldViews(); }
+  if (r.hash === '#leihen' || r.hash === '#ausleihen') { ldView = 'entries'; ldPerson = ''; if (location.hash === r.hash) ldViews(); }
   location.hash = r.hash;
   let el = null;
   for (let i = 0; !el && i < 80; i++) { await new Promise(res => setTimeout(res, 50)); el = document.querySelector(r.sel); }
@@ -782,6 +797,13 @@ async function addStage() {
 }
 
 // ---------- saving helper ----------
+// small red note under a stage name (CPA, Leihen, Ausleihen)
+function drawStageNote(sec, note) {
+  const t = sec.querySelector('.stnote'); if (!t) return;
+  if (t !== document.activeElement && t.value !== (note || '')) t.value = note || '';
+  t.closest('.pnote').classList.toggle('filled', !!t.value.trim());
+  grow(t);
+}
 function saveAt(path, v, now) {
   clearTimeout(timers[path]);
   const dead = () => path.split('/').some(seg => gone.has(seg)); // deleted meanwhile
@@ -1500,6 +1522,8 @@ function showCpa() {
   const onEdit = e => {
     const sn = e.target.closest('.cname');
     if (sn) { const did = sn.closest('.stage').dataset.did, d = cpaDays.get(did); if (d) d.name = sn.value; saveAt(`rec/cpaDays/${did}/name`, cleanTxt(sn.value), e.type === 'change'); return; }
+    const nt = e.target.closest('.stnote');
+    if (nt) { grow(nt); const did = nt.closest('.stage').dataset.did, d = cpaDays.get(did); if (d) d.note = nt.value; nt.closest('.pnote').classList.toggle('filled', !!nt.value.trim()); saveAt(`rec/cpaDays/${did}/note`, nt.value.trim(), e.type === 'change'); return; }
     const i = e.target.closest('[data-c]'); if (!i) return;
     const tr = i.closest('tr'), id = tr.dataset.id, f = i.dataset.c, r = cpaRows.get(id);
     const isNum = CPA_NUM.includes(f), isDate = f === 'start' || f === 'finish';
@@ -1591,6 +1615,7 @@ function drawCpa() {
           <button type="button" class="add cadd">${svg.plus}New row</button>
           <button type="button" class="x ddel" aria-label="Delete stage">${svg.trash}</button>
         </div>
+        <label class="pnote snote">${svg.alert}<textarea class="stnote" rows="1" maxlength="300" aria-label="Stage note" placeholder="Add note"></textarea></label>
         <table class="cpa"><thead><tr>
           <th class="c-sn c">S.N.</th><th class="c-id">ID</th><th class="c-date">Start date</th><th class="c-date">Finish date</th>
           <th class="c-amt">Deposit Rs.</th><th class="c-amt">WD Rs.</th><th class="c-amt" title="Got from deal">GFD</th><th class="c-amt" title="Paid to worker">PTW</th><th class="c-amt" title="GFD minus PTW">Profit</th>
@@ -1601,6 +1626,7 @@ function drawCpa() {
     if (box.children[n] !== sec) box.insertBefore(sec, box.children[n] || null);
     const ni = sec.querySelector('.cname'), nv = cpaDays.get(did).name || '';
     if (ni !== document.activeElement && ni.value !== nv) ni.value = nv;
+    drawStageNote(sec, cpaDays.get(did).note);
   });
   document.querySelectorAll('#days tr[data-id]').forEach(tr => { if (!cpaRows.has(tr.dataset.id)) tr.remove(); });
   for (const id of cpaRows.keys()) drawCpaRow(id);
@@ -2057,12 +2083,37 @@ const ldDate = r => r.date || dayOfTs(r.createdAt);
 const LD_TXT = ['sn', 'date', 'from', 'spent'];
 const LD_NUM = ['amt', 'gave'];
 const LD_F = LD_TXT.concat(LD_NUM);
-function showLeiden() {
+// two lists share this code: Leihen (money I got, rec/ld) and Ausleihen (money I lent, rec/al)
+const LDM = {
+  ld: { node: 'ld', st: 'ldStages', hash: '#leihen', title: 'Leihen', section: 'Leiden', file: 'leihen', date: true, who: 'From whom', back: 'How much I gave', got: 'Got', gave: 'Gave', tip: 'Gave more than you got' },
+  al: { node: 'al', st: 'alStages', hash: '#ausleihen', title: 'Ausleihen', section: 'Ausleihen', file: 'ausleihen', date: false, who: 'To whom', back: 'How much I take', got: 'Lent', gave: 'Took back', tip: 'Took back more than you lent' },
+};
+let LM = LDM.ld, LD_FS = LD_F;
+// Leiden tile: choose Leihen or Ausleihen
+function showLdChoice() {
+  $('#root').innerHTML = `
+    <div class="app">
+      <div class="bar">${homeBtn()}<h1 class="ttl">Leiden</h1><span class="sp"></span></div>
+      <div class="home">
+        <a class="tile" href="#leihen" id="goLeihen">${svg.swap}<b>Leihen</b><span id="nLeihen"></span></a>
+        <a class="tile" href="#ausleihen" id="goAusleihen">${svg.swap}<b>Ausleihen</b><span id="nAusleihen"></span></a>
+      </div>
+    </div>`;
+  const rem = s => { let t = 0; s.forEach(c => { const r = c.val(); t += (Number(r.amt) || 0) - (Number(r.gave) || 0); }); return t; };
+  const a = db.ref('rec/ld'), b = db.ref('rec/al');
+  const onA = s => { const e = $('#nLeihen'); if (e) e.textContent = `Remaining ${rs(rem(s))}`; };
+  const onB = s => { const e = $('#nAusleihen'); if (e) e.textContent = `Remaining ${rs(rem(s))}`; };
+  a.on('value', onA, e => toast(friendly(e))); b.on('value', onB, e => toast(friendly(e)));
+  unsub = () => { a.off('value', onA); b.off('value', onB); };
+}
+function showLeiden(mode) {
+  LM = LDM[mode] || LDM.ld; LD_FS = LM.date ? LD_F : LD_F.filter(f => f !== 'date');
   $('#root').innerHTML = `
     <div class="app">
       <div class="bar">
         ${homeBtn()}
-        <h1 class="ttl">Leiden</h1>
+        <a class="tb" href="#leiden" id="ldBack">${svg.back}<span>Leiden</span></a>
+        <h1 class="ttl">${LM.title}</h1>
         <label class="search">${svg.search}<input id="lq" type="search" placeholder="Search name, place or S.N." aria-label="Search"></label>
         <select id="lf" class="fsel" aria-label="Show"><option value="all">All</option><option value="cleared">Cleared</option><option value="notcleared">Not cleared</option><option value="none">Not marked</option><option value="remaining">Still remaining</option></select>
         <span id="lperW">${perHtml('lper')}</span>
@@ -2079,9 +2130,9 @@ function showLeiden() {
       </div>
       <div class="foot"><button class="add" id="addLdStage2">${svg.plus}Add stage</button><span id="lsum"></span></div>
     </div>`;
-  lq = ''; lf = 'all'; ldPerson = ''; ldView = 'entries'; Object.assign(lP, newPer()); if (pendingAll === '#leiden') lP.k = 'all'; pendingAll = '';
+  lq = ''; lf = 'all'; ldPerson = ''; ldView = 'entries'; Object.assign(lP, newPer()); if (pendingAll === LM.hash) lP.k = 'all'; pendingAll = '';
   perBind('lper', lP, () => { ldFilter(); ldViews(); });
-  selSetup({ box: '#ldst', map: () => ldRows, node: 'ld', section: 'Leiden', what: ['entry', 'entries'], stamp: true, marks: [['clr', 'cleared', 'Cleared'], ['clr', 'notcleared', 'Not cleared']] });
+  selSetup({ box: '#ldst', map: () => ldRows, node: LM.node, section: LM.section, what: ['entry', 'entries'], stamp: true, marks: [['clr', 'cleared', 'Cleared'], ['clr', 'notcleared', 'Not cleared']] });
   $('#lq').oninput = () => { lq = $('#lq').value.trim().toLowerCase(); ldFilter(); ldViews(); };
   $('#lf').onchange = () => { lf = $('#lf').value; ldFilter(); };
   $('.etabs').onclick = e => { const b = e.target.closest('[data-lv]'); if (!b) return; ldView = b.dataset.lv; ldPerson = ''; ldViews(); };
@@ -2089,14 +2140,16 @@ function showLeiden() {
     const back = e.target.closest('.pback'); if (back) { ldPerson = ''; return ldViews(); }
     const pr = e.target.closest('[data-person]'); if (pr) { ldPerson = pr.dataset.person; return ldViews(); }
     const en = e.target.closest('[data-entry]');
-    if (en) goToResult({ hash: '#leiden', sel: `#ldst tr[data-id="${en.dataset.entry}"]`, view: 'entries' });
+    if (en) goToResult({ hash: LM.hash, sel: `#ldst tr[data-id="${en.dataset.entry}"]`, view: 'entries' });
   };
   $('#addLdStage').onclick = $('#addLdStage2').onclick = addLdStage;
   $('#ldCsv').onclick = ldDownload;
   const box = $('#ldst');
   const onEdit = e => {
     const sn = e.target.closest('.lname');
-    if (sn) { const sid = sn.closest('.stage').dataset.sid, st = ldStages.get(sid); if (st) st.name = sn.value; saveAt(`rec/ldStages/${sid}/name`, cleanTxt(sn.value), e.type === 'change'); return; }
+    if (sn) { const sid = sn.closest('.stage').dataset.sid, st = ldStages.get(sid); if (st) st.name = sn.value; saveAt(`rec/${LM.st}/${sid}/name`, cleanTxt(sn.value), e.type === 'change'); return; }
+    const nt = e.target.closest('.stnote');
+    if (nt) { grow(nt); const sid = nt.closest('.stage').dataset.sid, st = ldStages.get(sid); if (st) st.note = nt.value; nt.closest('.pnote').classList.toggle('filled', !!nt.value.trim()); saveAt(`rec/${LM.st}/${sid}/note`, nt.value.trim(), e.type === 'change'); return; }
     const i = e.target.closest('[data-l]'); if (!i) return;
     const tr = i.closest('tr'), id = tr.dataset.id, f = i.dataset.l, r = ldRows.get(id);
     const isNum = LD_NUM.includes(f), isDate = f === 'date';
@@ -2105,7 +2158,7 @@ function showLeiden() {
     if (r) r[f] = v;
     if (isNum) drawRemain(tr);
     clearTimeout(timers['l' + id + f]);
-    const save = () => { if (gone.has(id)) return; db.ref('rec/ld/' + id).update({ [f]: isNum || isDate ? v : cleanTxt(v), updatedAt: TS() }).catch(x => { if (!gone.has(id)) toast(friendly(x)); }); };
+    const save = () => { if (gone.has(id)) return; db.ref(`rec/${LM.node}/` + id).update({ [f]: isNum || isDate ? v : cleanTxt(v), updatedAt: TS() }).catch(x => { if (!gone.has(id)) toast(friendly(x)); }); };
     if (e.type === 'change' || isDate) save(); else timers['l' + id + f] = setTimeout(save, 500);
     ldFilter();
   };
@@ -2119,21 +2172,21 @@ function showLeiden() {
       const sid = dd.closest('.stage').dataset.sid, st = ldStages.get(sid); if (!st) return;
       const inIt = [...ldRows.entries()].filter(([, r]) => r.stage === sid).map(([id]) => id);
       if (!confirm(`Move "${st.name || 'this stage'}"${inIt.length ? ` and its ${inIt.length} ${inIt.length === 1 ? 'entry' : 'entries'}` : ''} to the Archive?`)) return;
-      const items = { ['ldStages/' + sid]: pickData(st) };
-      inIt.forEach(id => { items['ld/' + id] = pickData(ldRows.get(id)); LD_F.forEach(f => clearTimeout(timers['l' + id + f])); });
-      toArchive('Leiden', `Stage: ${st.name || '(no name)'}${inIt.length ? ` (${inIt.length} ${inIt.length === 1 ? 'entry' : 'entries'})` : ''}`, items);
+      const items = { [LM.st + '/' + sid]: pickData(st) };
+      inIt.forEach(id => { items[LM.node + '/' + id] = pickData(ldRows.get(id)); LD_F.forEach(f => clearTimeout(timers['l' + id + f])); });
+      toArchive(LM.section, `Stage: ${st.name || '(no name)'}${inIt.length ? ` (${inIt.length} ${inIt.length === 1 ? 'entry' : 'entries'})` : ''}`, items);
       return;
     }
     const b = e.target.closest('tr .chk, tr .x'); if (!b) return;
     const tr = b.closest('tr'), id = tr.dataset.id, r = ldRows.get(id); if (!r) return;
     if (b.classList.contains('x')) {
       LD_F.forEach(f => clearTimeout(timers['l' + id + f]));
-      toArchive('Leiden', `${r.from || '(no name)'} ${rs(r.amt)} (${(ldStages.get(r.stage) || {}).name || ''})`, { ['ld/' + id]: pickData(r) });
+      toArchive(LM.section, `${r.from || '(no name)'} ${rs(r.amt)} (${(ldStages.get(r.stage) || {}).name || ''})`, { [LM.node + '/' + id]: pickData(r) });
       return;
     }
     const v = r.clr === b.dataset.v ? '' : b.dataset.v; // tap again to clear
     r.clr = v; drawLdRow(id); ldFilter();
-    db.ref('rec/ld/' + id).update({ clr: v, updatedAt: TS() }).catch(x => toast(friendly(x)));
+    db.ref(`rec/${LM.node}/` + id).update({ clr: v, updatedAt: TS() }).catch(x => toast(friendly(x)));
   });
   box.addEventListener('keydown', e => {
     if (e.key !== 'Enter') return;
@@ -2147,7 +2200,7 @@ function showLeiden() {
   });
   box.addEventListener('focusout', e => { const i = e.target.closest('[data-l]'); if (i && i.type !== 'date') onEdit({ type: 'change', target: i }); setTimeout(() => { if (!box.contains(document.activeElement)) sortLd(); ldFilter(); }, 0); });
   let gs = false, gr = false;
-  const sref = db.ref('rec/ldStages'), rref = db.ref('rec/ld');
+  const sref = db.ref('rec/' + LM.st), rref = db.ref('rec/' + LM.node);
   const onS = s => { ldStages.clear(); s.forEach(c => { ldStages.set(c.key, c.val()); }); gs = true; if (gr) { drawLd(); ldViews(); } };
   const onR = s => { ldRows.clear(); s.forEach(c => { ldRows.set(c.key, c.val()); }); gr = true; if (gs) { drawLd(); ldViews(); } };
   sref.on('value', onS, e => toast(friendly(e)));
@@ -2172,8 +2225,9 @@ function drawLd() {
           <button type="button" class="add ladd">${svg.plus}New row</button>
           <button type="button" class="x ldel" aria-label="Delete stage">${svg.trash}</button>
         </div>
+        <label class="pnote snote">${svg.alert}<textarea class="stnote" rows="1" maxlength="300" aria-label="Stage note" placeholder="Add note"></textarea></label>
         <table class="ld"><thead><tr>
-          <th class="c-sn c">S.N.</th><th class="c-date">Date</th><th class="c-en">From whom</th><th class="c-amt">How much</th><th class="c-amt">How much I gave</th><th class="c-amt">How much remaining</th>
+          <th class="c-sn c">S.N.</th>${LM.date ? '<th class="c-date">Date</th>' : ''}<th class="c-en">${LM.who}</th><th class="c-amt">How much</th><th class="c-amt">${LM.back}</th><th class="c-amt">How much remaining</th>
           <th class="c-sp">Where did I spend</th><th class="c">Cleared</th><th class="c">Not cleared</th><th aria-label="Delete"></th>
         </tr></thead><tbody></tbody></table>
         <div class="tempty">No entries in this stage yet</div>`;
@@ -2181,6 +2235,7 @@ function drawLd() {
     if (box.children[n] !== sec) box.insertBefore(sec, box.children[n] || null);
     const ni = sec.querySelector('.lname'), nv = ldStages.get(sid).name || '';
     if (ni !== document.activeElement && ni.value !== nv) ni.value = nv;
+    drawStageNote(sec, ldStages.get(sid).note);
   });
   document.querySelectorAll('#ldst tr[data-id]').forEach(tr => { if (!ldRows.has(tr.dataset.id)) tr.remove(); });
   for (const id of ldRows.keys()) drawLdRow(id);
@@ -2193,7 +2248,7 @@ function drawRemain(tr) {
   const c = tr.querySelector('.rem'), v = amt - gave;
   c.textContent = rs(v);
   c.classList.toggle('neg', v !== 0); c.classList.toggle('pos', v === 0 && amt > 0);
-  c.title = v < 0 ? 'Gave more than you got' : '';
+  c.title = v < 0 ? LM.tip : '';
 }
 function drawLdRow(id) {
   const r = ldRows.get(id); if (!r) return;
@@ -2203,10 +2258,10 @@ function drawLdRow(id) {
     tr = document.createElement('tr'); tr.dataset.id = id;
     tr.innerHTML = `
       <td><input type="text" data-l="sn" maxlength="12" inputmode="numeric" aria-label="S.N."></td>
-      <td><input type="date" data-l="date" aria-label="Date"></td>
-      <td><input type="text" data-l="from" maxlength="120" aria-label="From whom"></td>
+      ${LM.date ? '<td><input type="date" data-l="date" aria-label="Date"></td>' : ''}
+      <td><input type="text" data-l="from" maxlength="120" aria-label="${LM.who}"></td>
       <td class="amt"><input type="number" data-l="amt" min="0" step="any" inputmode="decimal" aria-label="How much"></td>
-      <td class="amt"><input type="number" data-l="gave" min="0" step="any" inputmode="decimal" aria-label="How much I gave"></td>
+      <td class="amt"><input type="number" data-l="gave" min="0" step="any" inputmode="decimal" aria-label="${LM.back}"></td>
       <td class="calc rem"></td>
       <td><input type="text" data-l="spent" maxlength="300" aria-label="Where did I spend"></td>
       <td class="tick"><button type="button" class="chk ap" data-v="cleared" aria-label="Cleared">${svg.check}</button></td>
@@ -2214,7 +2269,7 @@ function drawLdRow(id) {
       <td class="del"><button type="button" class="x" aria-label="Delete entry">${svg.trash}</button></td>`;
   }
   if (tr.parentElement !== tb && !tr.contains(document.activeElement)) tb.appendChild(tr);
-  for (const f of LD_F) {
+  for (const f of LD_FS) {
     const i = tr.querySelector(`[data-l="${f}"]`); if (i === document.activeElement) continue;
     let v = r[f] ?? '';
     if (LD_NUM.includes(f) && Number(v) === 0) v = '';
@@ -2251,7 +2306,7 @@ function ldFilter() {
   let vis = 0;
   document.querySelectorAll('#ldst .stage').forEach(sec => {
     const c = per[sec.dataset.sid] || ldBlank(), n = all[sec.dataset.sid] || 0;
-    sec.querySelector('.scount').textContent = `${c.n} ${c.n === 1 ? 'entry' : 'entries'}${c.n ? ` · Got ${rs(c.amt)} · Gave ${rs(c.gave)} · Remaining ${rs(c.amt - c.gave)} · Cleared ${c.cleared} · Not cleared ${c.notcleared}` : ''}`;
+    sec.querySelector('.scount').textContent = `${c.n} ${c.n === 1 ? 'entry' : 'entries'}${c.n ? ` · ${LM.got} ${rs(c.amt)} · ${LM.gave} ${rs(c.gave)} · Remaining ${rs(c.amt - c.gave)} · Cleared ${c.cleared} · Not cleared ${c.notcleared}` : ''}`;
     sec.querySelector('.tempty').hidden = n > 0;
     sec.hidden = !c.hit && !sec.contains(document.activeElement) && (n > 0 || !!lq || lf !== 'all');
     if (!sec.hidden) vis++;
@@ -2259,7 +2314,7 @@ function ldFilter() {
   const e = $('#lempty');
   e.hidden = ldStages.size > 0 && vis > 0;
   e.textContent = !ldStages.size ? 'No stages yet' : lq ? `Nothing matches "${$('#lq').value.trim()}"` : lf !== 'all' ? 'Nothing to show for this filter' : `No entries in ${lP.k === 'cur' ? 'this month' : perLabel(lP)}`;
-  $('#lsum').innerHTML = `<b>${esc(perLabel(lP))}</b> · ${lq || lf !== 'all' ? `<b>${tot.shown}</b> of ${tot.n} shown · ` : ''}<b>${tot.n}</b> ${tot.n === 1 ? 'entry' : 'entries'} · Got <b>${rs(tot.amt)}</b> · Gave <b>${rs(tot.gave)}</b> · Remaining <b class="${tot.amt - tot.gave ? 'negt' : ''}">${rs(tot.amt - tot.gave)}</b> · Cleared <b>${tot.cleared}</b> · Not cleared <b>${tot.notcleared}</b>`;
+  $('#lsum').innerHTML = `<b>${esc(perLabel(lP))}</b> · ${lq || lf !== 'all' ? `<b>${tot.shown}</b> of ${tot.n} shown · ` : ''}<b>${tot.n}</b> ${tot.n === 1 ? 'entry' : 'entries'} · ${LM.got} <b>${rs(tot.amt)}</b> · ${LM.gave} <b>${rs(tot.gave)}</b> · Remaining <b class="${tot.amt - tot.gave ? 'negt' : ''}">${rs(tot.amt - tot.gave)}</b> · Cleared <b>${tot.cleared}</b> · Not cleared <b>${tot.notcleared}</b>`;
   perFill('lper', lP, [...ldRows.values()].map(ldDate));
   selSync();
 }
@@ -2292,25 +2347,25 @@ function drawPeople() {
   if (ldPerson) {
     const p = all.find(x => x.key === ldPerson);
     if (!p) { ldPerson = ''; return drawPeople(); }
-    const ids = p.ids.sort((a, b) => String(ldRows.get(a).date || '').localeCompare(String(ldRows.get(b).date || '')));
+    const ids = p.ids.sort((a, b) => String(ldDate(ldRows.get(a)) || '').localeCompare(String(ldDate(ldRows.get(b)) || '')));
     const rem = p.amt - p.gave;
     box.innerHTML = `
       <div class="phead"><button type="button" class="add pback">${svg.back}All people</button><h2>${esc(p.name)}</h2></div>
       <div class="cards">
-        <div class="card"><span>Got</span><b>${rs(p.amt)}</b></div>
-        <div class="card"><span>Gave</span><b>${rs(p.gave)}</b></div>
+        <div class="card"><span>${LM.got}</span><b>${rs(p.amt)}</b></div>
+        <div class="card"><span>${LM.gave}</span><b>${rs(p.gave)}</b></div>
         <div class="card ${rem ? 'neg' : 'pos'}"><span>Remaining</span><b>${rs(rem)}</b></div>
         <div class="card"><span>Entries</span><b>${p.n}</b></div>
         <div class="card"><span>Cleared / Not cleared</span><b>${p.cleared} / ${p.notcleared}</b></div>
       </div>
-      <table class="plist"><thead><tr><th class="c-date">Date</th><th>Stage</th><th class="c-amt">How much</th><th class="c-amt">Gave</th><th class="c-amt">Remaining</th><th>Where did I spend</th><th class="c-st">Status</th></tr></thead>
-      <tbody>${ids.map(id => { const r = ldRows.get(id), v = remainOf(r); return `<tr class="click" data-entry="${esc(id)}" title="Open in Entries"><td>${r.date ? esc(niceDateY(r.date)) : ''}</td><td>${esc((ldStages.get(r.stage) || {}).name || '')}</td><td class="num2">${rs(r.amt)}</td><td class="num2">${rs(r.gave)}</td><td class="num2 ${v ? 'negt' : 'post'}">${rs(v)}</td><td>${esc(r.spent || '')}</td><td>${r.clr === 'cleared' ? '<span class="tag ok">Cleared</span>' : r.clr === 'notcleared' ? '<span class="tag no">Not cleared</span>' : ''}</td></tr>`; }).join('')}</tbody></table>`;
+      <table class="plist"><thead><tr><th class="c-date">${LM.date ? 'Date' : 'Added'}</th><th>Stage</th><th class="c-amt">How much</th><th class="c-amt">${LM.gave}</th><th class="c-amt">Remaining</th><th>Where did I spend</th><th class="c-st">Status</th></tr></thead>
+      <tbody>${ids.map(id => { const r = ldRows.get(id), v = remainOf(r); return `<tr class="click" data-entry="${esc(id)}" title="Open in Entries"><td>${ldDate(r) ? esc(niceDateY(ldDate(r))) : ''}</td><td>${esc((ldStages.get(r.stage) || {}).name || '')}</td><td class="num2">${rs(r.amt)}</td><td class="num2">${rs(r.gave)}</td><td class="num2 ${v ? 'negt' : 'post'}">${rs(v)}</td><td>${esc(r.spent || '')}</td><td>${r.clr === 'cleared' ? '<span class="tag ok">Cleared</span>' : r.clr === 'notcleared' ? '<span class="tag no">Not cleared</span>' : ''}</td></tr>`; }).join('')}</tbody></table>`;
     return;
   }
   const list = all.filter(p => !lq || p.key.includes(lq)).sort((a, b) => (b.amt - b.gave) - (a.amt - a.gave) || a.name.localeCompare(b.name));
   const max = Math.max(1, ...list.map(p => Math.abs(p.amt - p.gave)));
   box.innerHTML = list.length ? `
-    <table class="plist"><thead><tr><th>Name</th><th class="c-n c">Entries</th><th class="c-amt">Got</th><th class="c-amt">Gave</th><th class="c-amt">Remaining</th><th class="c-bar">Remaining</th><th class="c-st">Not cleared</th></tr></thead>
+    <table class="plist"><thead><tr><th>Name</th><th class="c-n c">Entries</th><th class="c-amt">${LM.got}</th><th class="c-amt">${LM.gave}</th><th class="c-amt">Remaining</th><th class="c-bar">Remaining</th><th class="c-st">Not cleared</th></tr></thead>
     <tbody>${list.map(p => { const v = p.amt - p.gave; return `<tr class="click" data-person="${esc(p.key)}"><td><b>${esc(p.name)}</b></td><td class="c">${p.n}</td><td class="num2">${rs(p.amt)}</td><td class="num2">${rs(p.gave)}</td><td class="num2 ${v ? 'negt' : 'post'}">${rs(v)}</td><td><div class="hbar"><i class="${v < 0 ? 'minus' : ''}" style="width:${Math.round(Math.abs(v) / max * 100)}%"></i></div></td><td class="c">${p.notcleared || ''}</td></tr>`; }).join('')}</tbody></table>`
     : `<div class="empty">${ldRows.size ? 'Nobody matches' : 'No entries yet'}</div>`;
 }
@@ -2318,7 +2373,7 @@ function drawLdMonths() {
   const box = $('#ldMonths'); if (!box) return;
   const M = new Map();
   for (const r of ldRows.values()) {
-    const k = r.date ? monthKeyOf(r.date) : 'none';
+    const k = ldDate(r) ? monthKeyOf(ldDate(r)) : 'none';
     if (!M.has(k)) M.set(k, { amt: 0, gave: 0, n: 0, people: new Set() });
     const m = M.get(k); m.amt += Number(r.amt) || 0; m.gave += Number(r.gave) || 0; m.n++; if (pKey(r.from)) m.people.add(pKey(r.from));
   }
@@ -2326,13 +2381,13 @@ function drawLdMonths() {
   const max = Math.max(1, ...[...M.values()].flatMap(m => [m.amt, m.gave]));
   box.innerHTML = keys.length ? `<div class="months">${keys.map(k => { const m = M.get(k); return `
     <section class="week"><div class="whead"><b>${k === 'none' ? 'No date' : monthName(k)}</b>${k === 'none' ? '' : `<span class="wtag">${monthSpan(k)}</span>`}</div>
-      <div class="wstats"><div><span>Got</span><b>${rs(m.amt)}</b></div><div><span>Gave</span><b>${rs(m.gave)}</b></div><div><span>Difference</span><b class="${m.amt - m.gave ? 'neg' : 'pos'}">${rs(m.amt - m.gave)}</b></div><div><span>Entries / people</span><b>${m.n} / ${m.people.size}</b></div></div>
-      <div class="wcats"><div class="wcat"><span>Got</span><i style="width:${Math.max(2, Math.round(m.amt / max * 100))}%"></i><b>${rs(m.amt)}</b></div><div class="wcat"><span>Gave</span><i class="gave" style="width:${Math.max(2, Math.round(m.gave / max * 100))}%"></i><b>${rs(m.gave)}</b></div></div>
+      <div class="wstats"><div><span>${LM.got}</span><b>${rs(m.amt)}</b></div><div><span>${LM.gave}</span><b>${rs(m.gave)}</b></div><div><span>Difference</span><b class="${m.amt - m.gave ? 'neg' : 'pos'}">${rs(m.amt - m.gave)}</b></div><div><span>Entries / people</span><b>${m.n} / ${m.people.size}</b></div></div>
+      <div class="wcats"><div class="wcat"><span>${LM.got}</span><i style="width:${Math.max(2, Math.round(m.amt / max * 100))}%"></i><b>${rs(m.amt)}</b></div><div class="wcat"><span>${LM.gave}</span><i class="gave" style="width:${Math.max(2, Math.round(m.gave / max * 100))}%"></i><b>${rs(m.gave)}</b></div></div>
     </section>`; }).join('')}</div>` : '<div class="empty">No entries yet</div>';
 }
 const monthName = k => { const [y, m] = k.split('-').map(Number); return new Date(y, m - 1, 1).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }); };
 async function addLdStage() {
-  const ref = db.ref('rec/ldStages').push();
+  const ref = db.ref('rec/' + LM.st).push();
   ref.set({ name: 'Stage ' + (ldStages.size + 1), createdAt: TS() }).catch(x => toast(friendly(x)));
   if (lq) { $('#lq').value = ''; lq = ''; ldFilter(); }
   const sec = await waitFor(`#ldst .stage[data-sid="${CSS.escape(ref.key)}"]`);
@@ -2341,27 +2396,27 @@ async function addLdStage() {
 async function addLdRow(sid, field) {
   if (!ldStages.has(sid)) return;
   const max = Math.max(0, ...[...ldRows.keys()].filter(id => ldRows.get(id).stage === sid).map(ldSn).filter(isFinite));
-  const ref = db.ref('rec/ld').push();
+  const ref = db.ref('rec/' + LM.node).push();
   if (!inPer(today(), lP)) Object.assign(lP, newPer()); // a new entry is dated today: show it
-  ref.set({ stage: sid, sn: String(Math.floor(max) + 1), date: today(), from: '', amt: 0, gave: 0, spent: '', clr: '', createdAt: TS(), updatedAt: TS() }).catch(x => toast(friendly(x)));
+  ref.set({ stage: sid, sn: String(Math.floor(max) + 1), ...(LM.date ? { date: today() } : {}), from: '', amt: 0, gave: 0, spent: '', clr: '', createdAt: TS(), updatedAt: TS() }).catch(x => toast(friendly(x)));
   if (lq) { $('#lq').value = ''; lq = ''; ldFilter(); }
   const tr = await waitFor(`#ldst tr[data-id="${CSS.escape(ref.key)}"]`);
   if (tr) { sortLd(); tr.scrollIntoView({ block: 'nearest' }); tr.querySelector(`[data-l="${typeof field === 'string' ? field : 'from'}"]`).focus(); }
 }
 function ldDownload() {
   const cell = v => /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
-  const lines = [['Stage', 'S.N.', 'Date', 'From whom', 'How much', 'How much I gave', 'How much remaining', 'Where did I spend', 'Cleared', 'Not cleared']];
+  const lines = [['Stage', 'S.N.', ...(LM.date ? ['Date'] : []), LM.who, 'How much', LM.back, 'How much remaining', 'Where did I spend', 'Cleared', 'Not cleared']];
   ldStageIds().forEach(sid => {
     const name = ldStages.get(sid).name || '';
     [...ldRows.keys()].filter(id => ldRows.get(id).stage === sid && inPer(ldDate(ldRows.get(id)), lP)).sort((a, b) => ldSn(a) - ldSn(b)).forEach(id => {
       const r = ldRows.get(id);
-      lines.push([name, r.sn || '', r.date || '', r.from || '', r.amt || 0, r.gave || 0, remainOf(r), r.spent || '', r.clr === 'cleared' ? 'Yes' : '', r.clr === 'notcleared' ? 'Yes' : '']);
+      lines.push([name, r.sn || '', ...(LM.date ? [r.date || ''] : []), r.from || '', r.amt || 0, r.gave || 0, remainOf(r), r.spent || '', r.clr === 'cleared' ? 'Yes' : '', r.clr === 'notcleared' ? 'Yes' : '']);
     });
   });
   const csv = '﻿' + lines.map(l => l.map(x => cell(String(x))).join(',')).join('\r\n');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
-  a.download = `leiden-${perFile(lP)}.csv`;
+  a.download = `${LM.file}-${perFile(lP)}.csv`;
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
